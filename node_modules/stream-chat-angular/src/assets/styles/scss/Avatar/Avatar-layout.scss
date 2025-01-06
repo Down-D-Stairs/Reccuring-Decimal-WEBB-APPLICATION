@@ -1,0 +1,69 @@
+.str-chat {
+  /* The size of the avatar, only available in Angular v5+ */
+  --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 32);
+
+  .stream-chat__avatar--autocomplete-item {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 30);
+  }
+
+  .stream-chat__avatar--channel-header {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 40);
+  }
+
+  .stream-chat__avatar--channel-preview {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 49);
+  }
+
+  .stream-chat__avatar--quoted-message-sender {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 20);
+  }
+
+  .stream-chat__avatar--reaction {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 30);
+  }
+}
+
+.str-chat__avatar {
+  position: relative;
+
+  .str-chat__avatar-fallback {
+    text-align: center;
+    height: inherit;
+    width: inherit;
+  }
+
+  .str-chat__avatar--online-indicator {
+    position: absolute;
+    width: calc(var(--str-chat__spacing-px) * 12);
+    height: calc(var(--str-chat__spacing-px) * 12);
+    inset-inline-end: 3%;
+    inset-block-start: 2%;
+  }
+}
+
+.str-chat__loading-channels-avatar {
+  flex-shrink: 0;
+  width: calc(var(--str-chat__spacing-px) * 49);
+  height: calc(var(--str-chat__spacing-px) * 49);
+}
+
+.str-chat-angular__avatar {
+  height: var(--str-chat__avatar-size);
+  line-height: var(--str-chat__avatar-size);
+  width: var(--str-chat__avatar-size);
+
+  &.stream-chat__avatar--one-letter {
+    font-size: calc(var(--str-chat__avatar-size) * 0.5);
+  }
+
+  &.stream-chat__avatar--multiple-letters {
+    font-size: calc(var(--str-chat__avatar-size) * 0.3);
+  }
+
+  .str-chat__avatar-image {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;;
+  }
+  
+}

@@ -1,0 +1,44 @@
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
+<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
+<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
+<!-- * * * * * * * to get started with your project! * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+
+<div id="root">
+  <stream-channel-list>
+    <input channel-list-top placeholder="Search" />
+    <button channel-list-bottom>Add new channel</button>
+  </stream-channel-list>
+  
+  <stream-channel>
+    <stream-channel-header></stream-channel-header>
+    <stream-message-list></stream-message-list>
+    <stream-notification-list></stream-notification-list>
+    <stream-message-input></stream-message-input>
+    <stream-thread name="thread">
+      <stream-message-list mode="thread"></stream-message-list>
+      <stream-message-input mode="thread"></stream-message-input>
+    </stream-thread>
+  </stream-channel>
+</div>
+
+<ng-template #customMessageTemplate let-message="message">
+  <app-message [message]="message"></app-message>
+</ng-template>
+
+<ng-template #customChannelPreviewTemplate let-channel="channel">
+  <app-channel-preview [channel]="channel"></app-channel-preview>
+</ng-template>
+
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * * -->
+<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+
+

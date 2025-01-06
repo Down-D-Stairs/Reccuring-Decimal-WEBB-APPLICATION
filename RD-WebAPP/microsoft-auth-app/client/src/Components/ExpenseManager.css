@@ -1,0 +1,89 @@
+.expense-manager-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header-bar {
+  background-color: black;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.expense-table th,
+.expense-table td {
+  border: 1px solid black;
+  padding: 12px;
+}
+
+.expense-table th {
+  background-color: #f5f5f5;
+}
+
+.expense-table td.employee-name {
+  text-decoration: underline wavy red;
+}
+
+.expense-table td.cost,
+.expense-table td.date-range {
+  text-align: center;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.back-btn {
+  background-color: #ff0000;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.create-btn {
+  background-color: #0066cc;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.approve-btn {
+  background-color: #ff8c00;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.expense-dropdown {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+}
+
+tr {
+  cursor: pointer;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}

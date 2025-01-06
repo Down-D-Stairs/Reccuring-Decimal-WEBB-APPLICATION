@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@videogular/ngx-videogular": "^8.0.0",
+    "ngx-float-ui": "^18.0.1-rc.0",
+    "stream-chat-angular": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/core-js": "^2.5.8"
+  }
+}
