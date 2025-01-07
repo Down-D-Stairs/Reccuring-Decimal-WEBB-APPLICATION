@@ -45,12 +45,14 @@ function ExpenseManager({ onBack, user }) {
     fetchTrips();
   }, [user]);
   
+  const API_URL = 'https://Reccuring-Decimal-WEBB-APPLICATION-Down-D-Stairs.onrender.com'
+
   const fetchTrips = async () => {
     try {
       console.log('Current user:', user.username);
       console.log('Is admin?', ADMIN_EMAILS.includes(user.username));
       
-      const response = await fetch(`http://localhost:5000/api/trips?userEmail=${user.username}`);
+      const response = await fetch(`${API_URL}/api/trips?userEmail=${user.username}`);
       if (!response.ok) {
         throw new Error('Failed to fetch trips');
       }

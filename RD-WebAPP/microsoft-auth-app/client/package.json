@@ -13,7 +13,7 @@
     "proxy": "http://localhost:5000/api"
   },
   "scripts": {
-    "start": "cd server && npm install && node index.js",
+    "start": "cd client && npm install && node index.js",
     "build": "cd server && npm install && npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
