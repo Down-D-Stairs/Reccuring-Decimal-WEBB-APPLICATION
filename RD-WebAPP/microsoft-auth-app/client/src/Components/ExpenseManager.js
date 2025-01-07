@@ -45,7 +45,7 @@ function ExpenseManager({ onBack, user }) {
     fetchTrips();
   }, [user]);
   
-  const API_URL = 'https://Reccuring-Decimal-WEBB-APPLICATION-Down-D-Stairs.onrender.com'
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const fetchTrips = async () => {
     try {
@@ -164,7 +164,7 @@ function ExpenseManager({ onBack, user }) {
       trip._id === tripId ? { ...trip, status: newStatus } : trip
     ));
     try {
-      const response = await fetch(`http://localhost:5000/api/trips/${tripId}/status`, {
+      const response = await fetch(`${API_URL}/api/trips/${tripId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -190,7 +190,7 @@ function ExpenseManager({ onBack, user }) {
   const handleSubmitDecision = async (tripId) => {
     const trip = trips.find(t => t._id === tripId);
     try {
-      const response = await fetch(`http://localhost:5000/api/trips/${tripId}/status`, {
+      const response = await fetch(`${API_URL}/api/trips/${tripId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -211,7 +211,7 @@ const handleNewTripSubmit = async () => {
   setIsSubmitting(true);
   try {
       // First create the trip
-      const tripResponse = await fetch('http://localhost:5000/api/trips', {
+      const tripResponse = await fetch('${API_URL}/api/trips', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -227,7 +227,7 @@ const handleNewTripSubmit = async () => {
 
       // Then create expenses for the new trip
       const expensePromises = receipts.map(receipt => {
-          return fetch(`http://localhost:5000/api/trips/${newTrip._id}/expenses`, {
+          return fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -276,7 +276,7 @@ const handleEditSubmit = async (tripId) => {
     
     console.log('Sending exact data:', JSON.stringify(updateData, null, 2));
 
-    const response = await fetch(`http://localhost:5000/api/trips/${tripId}`, {
+    const response = await fetch(`${API_URL}/api/trips/${tripId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updateData)
