@@ -210,7 +210,7 @@ function ExpenseManager({ onBack, user }) {
   const handleNewTripSubmit = async () => {
     setIsSubmitting(true);
     try {
-        // First create the trip
+        // Create trip and get its ID
         const tripResponse = await fetch(`${API_URL}/api/trips`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -223,11 +223,11 @@ function ExpenseManager({ onBack, user }) {
             })
         });
 
-        const trip = await tripResponse.json();
+        const { _id } = await tripResponse.json();
 
-        // Then add each expense to the trip
+        // Add expenses using the trip ID
         for (const receipt of receipts) {
-            await fetch(`${API_URL}/api/trips/${trip._id}/expenses`, {
+            await fetch(`${API_URL}/api/trips/${_id}/expenses`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -247,6 +247,7 @@ function ExpenseManager({ onBack, user }) {
         setIsSubmitting(false);
     }
 };
+
 
 
 
