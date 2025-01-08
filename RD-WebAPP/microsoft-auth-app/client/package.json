@@ -13,8 +13,8 @@
     "proxy": "https://reccuring-decimal-webb-application-down.onrender.com"
   },
   "scripts": {
-    "start": "cd server && npm install && node server.js",
-    "build": "cd client && npm install && npm run build",
+    "build": "cd RD-WebAPP/microsoft-auth-app/client && npm install && npm run build",
+    "start": "cd RD-WebAPP/microsoft-auth-app/server && npm install && node server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
