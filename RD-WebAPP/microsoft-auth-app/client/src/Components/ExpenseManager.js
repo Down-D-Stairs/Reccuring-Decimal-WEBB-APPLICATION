@@ -210,35 +210,29 @@ function ExpenseManager({ onBack, user }) {
   const handleNewTripSubmit = async () => {
     setIsSubmitting(true);
     try {
-        // Create trip
-        const tripResponse = await fetch(`${API_URL}/api/trips`, {
+        // First create the trip
+        const tripResponse = await fetch('${API_URL}/api/trips', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 tripName: tripDetails.tripName,
                 employeeName: tripDetails.employeeName,
                 dateRange: tripDetails.dateRange,
-                email: user.username,
-                totalAmount
-            })
-        });
-
-        const trip = await tripResponse.json();
-
-        // Save expenses
-        for (const receipt of receipts) {
-            await fetch(`${API_URL}/api/trips/${trip._id}/expenses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                userEmail: user.username,
+                totalAmount,
+                expenses: receipts.map(receipt => ({
                     amount: receipt.amount,
                     date: receipt.date,
                     vendor: receipt.vendor,
                     receipt: receipt.receipt
-                })
-            });
-        }
-
+                }))
+            })
+        });
+  
+      
+  
+        await tripResponse.json();
+  
         setExpenseView('list');
         fetchTrips();
     } catch (error) {
@@ -246,11 +240,8 @@ function ExpenseManager({ onBack, user }) {
     } finally {
         setIsSubmitting(false);
     }
-};
-
-
-
-
+  };
+  
 
 
 const handleSubmit = () => {
