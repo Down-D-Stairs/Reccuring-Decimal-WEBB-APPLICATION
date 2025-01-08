@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd RD-WebAPP/microsoft-auth-app/client && npm install && npm run build",
-    "start": "cd RD-WebAPP/microsoft-auth-app/server && npm install && node server.js"
+    "build": "cd RD-WebAPP/microsoft-auth-app/client && npm install --no-proxy && npm run build",
+    "start": "cd RD-WebAPP/microsoft-auth-app/server && npm install --no-proxy && node server.js"
   },
   "keywords": [],
   "author": "",
