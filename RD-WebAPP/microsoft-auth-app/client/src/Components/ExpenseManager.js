@@ -220,12 +220,8 @@ function ExpenseManager({ onBack, user }) {
                 dateRange: tripDetails.dateRange,
                 userEmail: user.username,
                 totalAmount,
-                expenses: receipts.map(receipt => ({
-                    amount: receipt.amount,
-                    date: receipt.date,
-                    vendor: receipt.vendor,
-                    receipt: receipt.receipt
-                }))
+                expenses: receipts
+               
             })
         });
   
