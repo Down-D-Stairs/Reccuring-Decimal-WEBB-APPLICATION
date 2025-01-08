@@ -207,48 +207,36 @@ function ExpenseManager({ onBack, user }) {
     }
   };  
 
-const handleNewTripSubmit = async () => {
-  setIsSubmitting(true);
-  try {
-      // First create the trip
-      const tripResponse = await fetch('${API_URL}/api/trips', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-              tripName: tripDetails.tripName,
-              employeeName: tripDetails.employeeName,
-              dateRange: tripDetails.dateRange,
-              userEmail: user.username,
-              totalAmount
-          })
-      });
+  const handleNewTripSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+        const tripResponse = await fetch(`${API_URL}/api/trips`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tripName: tripDetails.tripName,
+                employeeName: tripDetails.employeeName,
+                dateRange: tripDetails.dateRange,
+                userEmail: user.username,
+                totalAmount,
+                expenses: receipts
+            })
+        });
 
-      const newTrip = await tripResponse.json();
+        if (!tripResponse.ok) {
+            throw new Error(`HTTP error! status: ${tripResponse.status}`);
+        }
 
-      // Then create expenses for the new trip
-      const expensePromises = receipts.map(receipt => {
-          return fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  amount: receipt.amount,
-                  date: receipt.date,
-                  vendor: receipt.vendor,
-                  receipt: receipt.receipt
-              })
-          }).then(res => res.json());
-      });
-
-      await Promise.all(expensePromises);
-
-      setExpenseView('list');
-      fetchTrips();
-  } catch (error) {
-      console.error('Error creating new trip:', error);
-  } finally {
-      setIsSubmitting(false);
-  }
+        const newTrip = await tripResponse.json();
+        setExpenseView('list');
+        fetchTrips();
+    } catch (error) {
+        console.error('Error creating new trip:', error);
+    } finally {
+        setIsSubmitting(false);
+    }
 };
+
 
 const handleSubmit = () => {
       handleNewTripSubmit();
