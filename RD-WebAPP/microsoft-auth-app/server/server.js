@@ -43,7 +43,7 @@ app.post('/api/trips', async (req, res) => {
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
       userEmail: req.body.userEmail,
-      totalAmount: req.body.totalAmount || 0
+      totalAmount: 0
     });
     console.log('Created trip object:', trip);  // Add this line
     await trip.save();
