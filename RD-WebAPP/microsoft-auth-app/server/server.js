@@ -44,7 +44,7 @@ app.post('/api/trips', async (req, res) => {
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
       userEmail: req.body.email,
-      totalAmount: req.body.totalAmount || 0,
+      totalAmount: 0,
       status: 'pending'
     });
     
