@@ -217,7 +217,14 @@ function ExpenseManager({ onBack, user }) {
             dateRange: tripDetails.dateRange,
             email: user.username,
             totalAmount,
-            expenses: receipts  // Include all expenses in the initial trip creation
+            expenses: receipts.map(receipt => ({
+              vendor: receipt.vendor,
+              amount: Number(receipt.amount),
+              date: receipt.date,
+              comments: receipt.comments || '',
+              receipt: receipt.receipt,
+              tripId: tripId
+            }))  // Include all expenses in the initial trip creation
         };
 
         await fetch(`${API_URL}/api/trips`, {
