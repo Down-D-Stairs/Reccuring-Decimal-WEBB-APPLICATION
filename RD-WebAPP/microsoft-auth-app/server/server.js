@@ -37,22 +37,20 @@ app.get('/api/trips', async (req, res) => {
 // Create new trip
 app.post('/api/trips', async (req, res) => {
   try {
-    console.log('Received trip data:', req.body);  // Add this line
-    const trip = new Trip({
-      tripName: req.body.tripName,
-      employeeName: req.body.employeeName,
-      dateRange: req.body.dateRange,
-      userEmail: req.body.userEmail,
-      totalAmount: 0
-    });
-    console.log('Created trip object:', trip);  // Add this line
-    await trip.save();
-    res.json(trip);
+      const trip = new Trip({
+          tripName: req.body.tripName,
+          employeeName: req.body.employeeName,
+          dateRange: req.body.dateRange,
+          email: req.body.email,
+          totalAmount: req.body.totalAmount
+      });
+      await trip.save();
+      res.sendStatus(200);
   } catch (error) {
-    console.log('Error details:', error);  // Add this line
-    res.status(500).json({ error: error.message });
+      res.sendStatus(500);
   }
 });
+
 
 
 // Add expense to trip
