@@ -209,7 +209,8 @@ function ExpenseManager({ onBack, user }) {
 
   const handleNewTripSubmit = async () => {
     try {
-        const response = await fetch(`${API_URL}/api/trips`, {
+        // First create the trip
+        const tripResponse = await fetch(`${API_URL}/api/trips`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -221,17 +222,30 @@ function ExpenseManager({ onBack, user }) {
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        const newTrip = await tripResponse.text();
+        const trip = JSON.parse(newTrip);
+
+        // Now add each expense
+        for (const receipt of receipts) {
+            await fetch(`${API_URL}/api/trips/${trip._id}/expenses`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: receipt.amount,
+                    date: receipt.date,
+                    vendor: receipt.vendor,
+                    receipt: receipt.receipt
+                })
+            });
         }
 
-        // Skip JSON parsing for now
         setExpenseView('list');
-        await fetchTrips();
+        fetchTrips();
     } catch (error) {
         console.error('Error:', error);
     }
 };
+
 
 
 
