@@ -227,8 +227,7 @@ function ExpenseManager({ onBack, user }) {
             throw new Error('HTTP error! status: ${tripResponse.status}');
         }
 
-        const text = await tripResponse.json();
-        const newTrip = text ? JSON.parse(text) : {};
+        await tripresponse.text();
   
         // Then create expenses for the new trip
         const expensePromises = receipts.map(receipt => {
