@@ -208,27 +208,47 @@ function ExpenseManager({ onBack, user }) {
   };  
 
   const handleNewTripSubmit = async () => {
+    setIsSubmitting(true);
     try {
-        const response = await fetch(`${API_URL}/api/trips`, {
+        // First create the trip
+        const tripResponse = await fetch('${API_URL}/api/trips', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 tripName: tripDetails.tripName,
                 employeeName: tripDetails.employeeName,
                 dateRange: tripDetails.dateRange,
-                email: user.username,
-                totalAmount: totalAmount
+                userEmail: user.username,
+                totalAmount
             })
         });
-        
-        if (response.ok) {
-            setExpenseView('list');
-            fetchTrips();
-        }
+  
+        const newTrip = await tripResponse.json();
+  
+        // Then create expenses for the new trip
+        const expensePromises = receipts.map(receipt => {
+            return fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: receipt.amount,
+                    date: receipt.date,
+                    vendor: receipt.vendor,
+                    receipt: receipt.receipt
+                })
+            }).then(res => res.json());
+        });
+  
+        await Promise.all(expensePromises);
+  
+        setExpenseView('list');
+        fetchTrips();
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error creating new trip:', error);
+    } finally {
+        setIsSubmitting(false);
     }
-};
+  };
 
 
 
