@@ -223,27 +223,27 @@ function ExpenseManager({ onBack, user }) {
             })
         });
         
-        if(!tripResponse.ok) {
-            throw new Error('HTTP error! status: ${tripResponse.status}');
-        }
 
-        const newTrip = await tripResponse.text();
-  
+        const newTripData = await tripResponse.text();
+        const newTrip = JSON.parse(newTripData);
         // Then create expenses for the new trip
-        const expensePromises = receipts.map(receipt => {
-            return fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: receipt.amount,
-                    date: receipt.date,
-                    vendor: receipt.vendor,
-                    receipt: receipt.receipt
-                })
-            }).then(res => res.json());
-        });
+        // Only try to save expenses if we have a trip ID
+        if (newTrip && newTrip._id) {
+            // Now save the expenses
+            for (const receipt of receipts) {
+                await fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: receipt.amount,
+                        date: receipt.date,
+                        vendor: receipt.vendor,
+                        receipt: receipt.receipt
+                    })
+                });
+            }
+        }
   
-        await Promise.all(expensePromises);
   
         setExpenseView('list');
         fetchTrips();
