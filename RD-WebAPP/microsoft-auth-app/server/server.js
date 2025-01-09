@@ -47,7 +47,8 @@ app.post('/api/trips', async (req, res) => {
     });
     console.log('Created trip object:', trip);  // Add this line
     const savedTrip = await trip.save();
-    res.json(savedTrip.toJSON());
+    console.log('Trip saved:', savedTrip);
+    res.status(200).send(savedTrip);
   } catch (error) {
     console.log('Error details:', error);  // Add this line
     res.status(500).json({ error: error.message });
