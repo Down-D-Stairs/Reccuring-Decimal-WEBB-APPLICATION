@@ -210,49 +210,32 @@ function ExpenseManager({ onBack, user }) {
   const handleNewTripSubmit = async () => {
     setIsSubmitting(true);
     try {
-        // First create the trip
-        const tripResponse = await fetch('${API_URL}/api/trips', {
+        // First save the trip
+        const tripData = {
+            tripName: tripDetails.tripName,
+            employeeName: tripDetails.employeeName,
+            dateRange: tripDetails.dateRange,
+            email: user.username,
+            totalAmount,
+            expenses: receipts  // Include all expenses in the initial trip creation
+        };
+
+        await fetch(`${API_URL}/api/trips`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tripName: tripDetails.tripName,
-                employeeName: tripDetails.employeeName,
-                dateRange: tripDetails.dateRange,
-                userEmail: user.username,
-                totalAmount
-            })
+            body: JSON.stringify(tripData)
         });
-        
 
-        const newTripData = await tripResponse.text();
-        const newTrip = JSON.parse(newTripData);
-        // Then create expenses for the new trip
-        // Only try to save expenses if we have a trip ID
-        if (newTrip && newTrip._id) {
-            // Now save the expenses
-            for (const receipt of receipts) {
-                await fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        amount: receipt.amount,
-                        date: receipt.date,
-                        vendor: receipt.vendor,
-                        receipt: receipt.receipt
-                    })
-                });
-            }
-        }
-  
-  
         setExpenseView('list');
-        fetchTrips();
+        await fetchTrips();
     } catch (error) {
         console.error('Error creating new trip:', error);
     } finally {
         setIsSubmitting(false);
     }
-  };
+};
+
+
   
 
 
