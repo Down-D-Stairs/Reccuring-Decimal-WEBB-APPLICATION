@@ -210,30 +210,33 @@ function ExpenseManager({ onBack, user }) {
   const handleNewTripSubmit = async () => {
     setIsSubmitting(true);
     try {
-        // First save the trip
-        const tripData = {
-            tripName: tripDetails.tripName,
-            employeeName: tripDetails.employeeName,
-            dateRange: tripDetails.dateRange,
-            email: user.username,
-            totalAmount,
-            expenses: receipts  // Include all expenses in the initial trip creation
-        };
-
-        await fetch(`${API_URL}/api/trips`, {
+        // First create the trip
+        const tripResponse = await fetch('${API_URL}/api/trips', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(tripData)
+            body: JSON.stringify({
+                tripName: tripDetails.tripName,
+                employeeName: tripDetails.employeeName,
+                dateRange: tripDetails.dateRange,
+                userEmail: user.username,
+                totalAmount,
+                expenses: receipts
+            })
         });
-
+  
+        if (!tripResponse.ok) {
+            throw new Error('HTTP error! status: ${tripResponse.status}');
+        }
+        const newTrip = await tripResponse.json();
+  
         setExpenseView('list');
-        await fetchTrips();
+        fetchTrips();
     } catch (error) {
         console.error('Error creating new trip:', error);
     } finally {
         setIsSubmitting(false);
     }
-};
+  };
 
 
   

@@ -37,36 +37,20 @@ app.get('/api/trips', async (req, res) => {
 // Create new trip
 app.post('/api/trips', async (req, res) => {
   try {
+    console.log('Received trip data:', req.body);  // Add this line
     const trip = new Trip({
       tripName: req.body.tripName,
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
-      email: req.body.email,
-      totalAmount: req.body.totalAmount,
-      expenses: []  // Initialize empty expenses array
+      userEmail: req.body.userEmail,
+      totalAmount: req.body.totalAmount || 0
     });
-
-    const savedTrip = await trip.save();
-
-    // Now save each expense
-    if (req.body.expenses && req.body.expenses.length > 0) {
-      for (const expenseData of req.body.expenses) {
-        const expense = new Expense({
-          amount: expenseData.amount,
-          date: expenseData.date,
-          vendor: expenseData.vendor,
-          receipt: expenseData.receipt,
-          tripId: savedTrip._id
-        });
-        await expense.save();
-        savedTrip.expenses.push(expense._id);
-      }
-      await savedTrip.save();
-    }
-
-    res.status(200).send('Trip created successfully');
+    console.log('Created trip object:', trip);  // Add this line
+    await trip.save();
+    res.json(trip);
   } catch (error) {
-    res.status(500).send('Failed to create trip');
+    console.log('Error details:', error);  // Add this line
+    res.status(500).json({ error: error.message });
   }
 });
 
