@@ -226,20 +226,22 @@ function ExpenseManager({ onBack, user }) {
         const newTrip = await tripResponse.json();
   
         // Then create expenses for the new trip
-        const expensePromises = receipts.map(receipt => {
-            return fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: receipt.amount,
-                    date: receipt.date,
-                    vendor: receipt.vendor,
-                    receipt: receipt.receipt
-                })
-            }).then(res => res.json());
-        });
-  
-        await Promise.all(expensePromises);
+        const expensePromises = receipts.map(async (receipt) => {
+          const response = await fetch(`${API_URL}/api/trips/${newTrip._id}/expenses`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  amount: receipt.amount,
+                  date: receipt.date,
+                  vendor: receipt.vendor,
+                  receipt: receipt.receipt
+              })
+          });
+          return response.json();
+      });
+      
+      await Promise.all(expensePromises);
+      
   
         setExpenseView('list');
         fetchTrips();
