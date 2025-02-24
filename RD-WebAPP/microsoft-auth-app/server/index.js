@@ -15,9 +15,6 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI);
 
-const timeTableConnection = mongoose.createConnection(process.env.MONGODB_URI_TIMETABLE);
-
-
 // User model
 const User = require('./models/User');
 
@@ -95,7 +92,6 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
   }
 });
 
-module.exports = {timeTableConnection};
 
 // Protected route example
 app.get('/api/protected', validateToken, (req, res) => {

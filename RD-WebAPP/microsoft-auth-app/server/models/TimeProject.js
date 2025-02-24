@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { timeTableConnection } = require('../server');
+const { timeTableConnection } = require('../config/database');
 
 const timeEntrySchema = new mongoose.Schema({
   employeeName: String,
