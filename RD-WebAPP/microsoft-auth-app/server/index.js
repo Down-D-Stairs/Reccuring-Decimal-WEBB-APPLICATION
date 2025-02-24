@@ -60,18 +60,20 @@ app.get('/api/projects', async (req, res) => {
 // Create new project
 app.post('/api/projects', async (req, res) => {
   try {
-    const project = new TimeProject({
+    const project = new Project({
       projectName: req.body.projectName,
       clientName: req.body.clientName,
-      totalHours: 0,
+      projectTotalHours: 0,
       employeeTimes: []
     });
     await project.save();
     res.json(project);
   } catch (error) {
+    console.error('Error creating project:', error);
     res.status(500).json({ error: 'Failed to create project' });
   }
 });
+
 
 // Add time to project
 app.post('/api/projects/:projectId/time', async (req, res) => {
@@ -80,9 +82,9 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
     project.employeeTimes.push({
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
-      totalHours: req.body.totalHours
+      employeeHours: req.body.employeeHours
     });
-    project.totalHours += req.body.totalHours;
+    project.projectTotalHours += req.body.employeeHours;
     await project.save();
     res.json(project);
   } catch (error) {
