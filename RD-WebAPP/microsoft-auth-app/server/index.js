@@ -51,15 +51,18 @@ app.post('/api/auth/microsoft', async (req, res) => {
 
 // Add these endpoints after your existing routes
 
-// Get all projects
+// In your server.js, add this to check what's happening
 app.get('/api/projects', async (req, res) => {
   try {
     const projects = await Project.find();
+    console.log('Projects found:', projects); // Add this line
     res.json(projects);
   } catch (error) {
+    console.error('Error:', error); // Add this line
     res.status(500).json({ error: 'Failed to fetch projects' });
   }
 });
+
 
 // Create new project
 app.post('/api/projects', async (req, res) => {
