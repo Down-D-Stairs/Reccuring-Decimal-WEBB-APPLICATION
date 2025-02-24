@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const { validateToken } = require('./middleware/auth');
 const { Trip, Expense } = require('./models/Expense');
-const { TimeProject } = require('./models/TimeProject');
+const { Project, TimeEntry} = require('./models/TimeProject');
 
 
 const app = express();
@@ -14,6 +14,9 @@ app.use(cors());
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI);
+
+const timeTableConnection = mongoose.createConnection(process.env.MONGODB_URI_TIMETABLE);
+
 
 // User model
 const User = require('./models/User');
@@ -50,7 +53,7 @@ app.post('/api/auth/microsoft', async (req, res) => {
 // Get all projects
 app.get('/api/projects', async (req, res) => {
   try {
-    const projects = await TimeProject.find();
+    const projects = await Project.find();
     res.json(projects);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch projects' });
@@ -78,7 +81,7 @@ app.post('/api/projects', async (req, res) => {
 // Add time to project
 app.post('/api/projects/:projectId/time', async (req, res) => {
   try {
-    const project = await TimeProject.findById(req.params.projectId);
+    const project = await Project.findById(req.params.projectId);
     project.employeeTimes.push({
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
@@ -92,7 +95,7 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
   }
 });
 
-
+module.exports = {timeTableConnection};
 
 // Protected route example
 app.get('/api/protected', validateToken, (req, res) => {
@@ -101,4 +104,5 @@ app.get('/api/protected', validateToken, (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log('Server running on port 5000'));
+
 
