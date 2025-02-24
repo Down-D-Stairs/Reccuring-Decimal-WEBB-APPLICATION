@@ -15,7 +15,7 @@ function TimeTableManager({ onBack, user }) {
       start: '',
       end: ''
     },
-    totalHours: ''
+    employeeHours: ''
   });
 
   const ADMIN_EMAILS = useMemo(() => [
@@ -50,7 +50,7 @@ function TimeTableManager({ onBack, user }) {
         body: JSON.stringify({
           projectName: newProject.projectName,
           clientName: newProject.clientName,
-          totalHours: 0
+          projectTotalHours: 0
         })
       });
 
@@ -94,7 +94,7 @@ function TimeTableManager({ onBack, user }) {
       setTimeEntry({
         employeeName: '',
         dateRange: { start: '', end: '' },
-        totalHours: ''
+        employeeHours: ''
       });
       setView('list');
     } catch (error) {
@@ -139,7 +139,7 @@ function TimeTableManager({ onBack, user }) {
                 <tr key={project._id}>
                   <td>{project.projectName}</td>
                   <td>{project.clientName}</td>
-                  <td>{project.totalHours}</td>
+                  <td>{project.projectTotalHours}</td>
                   <td>
                     <div className="action-buttons">
                       <button
@@ -218,8 +218,8 @@ function TimeTableManager({ onBack, user }) {
             <input
               type="number"
               placeholder="Total Hours"
-              value={timeEntry.totalHours}
-              onChange={(e) => setTimeEntry({...timeEntry, totalHours: Number(e.target.value)})}
+              value={timeEntry.employeeHours}
+              onChange={(e) => setTimeEntry({...timeEntry, employeeHours: Number(e.target.value)})}
             />
             <div className="form-buttons">
               <button onClick={() => setView('list')}>Cancel</button>
@@ -231,7 +231,7 @@ function TimeTableManager({ onBack, user }) {
         <div className="details-container">
           <h2>{selectedProjectDetails?.projectName}</h2>
           <p>Client: {selectedProjectDetails?.clientName}</p>
-          <p>Total Hours: {selectedProjectDetails?.totalHours}</p>
+          <p>Total Hours: {selectedProjectDetails?.projectTotalHours}</p>
           
           <h3>Employee Time Entries</h3>
           <table className="details-table">
@@ -249,7 +249,7 @@ function TimeTableManager({ onBack, user }) {
                   <td>{entry.employeeName}</td>
                   <td>{new Date(entry.dateRange.start).toLocaleDateString()}</td>
                   <td>{new Date(entry.dateRange.end).toLocaleDateString()}</td>
-                  <td>{entry.totalHours}</td>
+                  <td>{entry.employeeHours}</td>
                 </tr>
               ))}
             </tbody>
@@ -260,6 +260,6 @@ function TimeTableManager({ onBack, user }) {
       : null}
     </div>
   );
-}
+} 
 
 export default TimeTableManager;
