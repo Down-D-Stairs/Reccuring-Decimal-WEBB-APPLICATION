@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { timeTableConnection } = require('../server');
 
-const timeEntrySchema = new timeTableConnection.Schema({
+const timeEntrySchema = new mongoose.Schema({
   employeeName: String,
   dateRange: {
     start: Date,
@@ -9,12 +9,12 @@ const timeEntrySchema = new timeTableConnection.Schema({
   },
   employeeHours: Number,
   projectId: {
-    type: timeTableConnection.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Project'
   }
 });
 
-const projectSchema = new timeTableConnection.Schema({
+const projectSchema = new mongoose.Schema({
   projectName: String,
   clientName: String,
   projectTotalHours: {
@@ -22,7 +22,7 @@ const projectSchema = new timeTableConnection.Schema({
     default: 0
   },
   employeeTimes: [{
-    type: timeTableConnection.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'TimeEntry'
   }]
 });
