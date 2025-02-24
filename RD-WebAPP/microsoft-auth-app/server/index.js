@@ -10,7 +10,11 @@ const { Project, TimeEntry} = require('./models/TimeProject');
 
 
 const app = express();
-app.use(cors());
+// Update your CORS configuration
+app.use(cors({
+  origin: ['https://reccuring-decimal-webb-application.onrender.com'],
+  credentials: true
+}));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI);
