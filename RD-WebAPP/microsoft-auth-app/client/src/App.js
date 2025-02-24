@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as msal from "@azure/msal-browser";
 import ExpenseManager from './Components/ExpenseManager';
+import TimeTableManager from './Components/TimeTableManager';
 
 const msalConfig = {
   auth: {
@@ -61,28 +62,48 @@ function App() {
       justifyContent: 'center',
       height: '100vh'
     }}>
+      {console.log('Current view:', currentView)}
+      {console.log('User:', user)}
       {currentView === 'main' ? (
         <>
           <h1>Welcome to Our App</h1>
           {user ? (
             <div style={{ textAlign: 'center' }}>
+              {console.log('Rendering logged-in user view')}
               <h2>Welcome, {user.name}!</h2>
               <p>Email: {user.username}</p>
-              <button 
-                style={{
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  backgroundColor: '#0078d4',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginBottom: '20px'
-                }}
-                onClick={() => setCurrentView('expense-manager')}
-              >
-                Expense Manager
-              </button>
+              
+                <button 
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '16px',
+                    backgroundColor: '#0078d4',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setCurrentView('expense-manager')}
+                >
+                  Expense Manager
+                </button>
+                {console.log('Rendering logged-in user view')}
+                <button 
+                  style={{
+                    padding: '30px 24px',
+                    fontSize: '16px',
+                    backgroundColor: '#0078d4',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setCurrentView('timetable')}
+                >
+                  TimeTable
+                </button>
+              
+              
               <button 
                 onClick={handleLogout}
                 style={{
@@ -116,9 +137,11 @@ function App() {
             </button>
           )}
         </>
-      ) : (
+      ) : currentView === 'expense-manager' ? (
         <ExpenseManager onBack={() => setCurrentView('main')} user={user} />
-      )}
+      ) : currentView === 'timetable' ? (
+        <TimeTableManager onBack={() => setCurrentView('main')} user={user} />
+      ) : null}
     </div>
   );
 }
