@@ -56,7 +56,7 @@ function TimeTableManager({ onBack, user }) {
       });
 
       const data = await response.json();
-      setProjects(prevProjects => [...prevProjects, data]);
+      setProjects(prevProjects => Array.isArray(prevProjects) ? [...prevProjects, data] : [data]);
       setNewProject({ projectName: '', clientName: '' });
       setView('list');
     } catch (error) {
