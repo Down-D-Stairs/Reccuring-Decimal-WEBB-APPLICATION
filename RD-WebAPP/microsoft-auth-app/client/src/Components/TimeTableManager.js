@@ -34,6 +34,7 @@ function TimeTableManager({ onBack, user }) {
     try {
       const response = await fetch(`${API_URL}/api/projects`);
       const data = await response.json();
+      consolele.log('Projects data:', data);
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -135,7 +136,7 @@ function TimeTableManager({ onBack, user }) {
               </tr>
             </thead>
             <tbody>
-              {projects.map(project => (
+              {(Array.isArray(projects) ? projects : []).map(project => (
                 <tr key={project._id}>
                   <td>{project.projectName}</td>
                   <td>{project.clientName}</td>
