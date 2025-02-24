@@ -34,7 +34,7 @@ function TimeTableManager({ onBack, user }) {
     try {
       const response = await fetch(`${API_URL}/api/projects`);
       const data = await response.json();
-      consolele.log('Projects data:', data);
+      console.log('Projects data:', data);
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
