@@ -215,7 +215,7 @@ app.post('/api/projects', async (req, res) => {
 });
 
 // Add time entry to project
-app.post('/api/projects/:projectId/entries', async (req, res) => {
+app.post('/api/projects/:projectId/time', async (req, res) => {
   try {
     console.log('Received time entry data:', req.body);
     console.log('Project ID:', req.params.projectId);
