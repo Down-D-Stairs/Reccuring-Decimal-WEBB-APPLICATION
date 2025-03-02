@@ -53,15 +53,17 @@ app.get('/api/protected', validateToken, (req, res) => {
   res.json({ message: 'Access granted to protected resource' });
 });
 
-// Create new trip endpoint
+// Create new trip
 app.post('/api/trips', async (req, res) => {
   console.log("Creating trip with data:", req.body);
   try {
     const trip = new Trip({
       tripName: req.body.tripName,
+      employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
-      email: req.body.email,
-      totalAmount: 0
+      userEmail: req.body.email, // Assuming client sends 'email'
+      totalAmount: req.body.totalAmount || 0,
+      reason: req.body.reason || ''
     });
     await trip.save();
     res.json(trip);
@@ -71,7 +73,7 @@ app.post('/api/trips', async (req, res) => {
   }
 });
 
-// Add expense endpoint
+// Add expense to existing trip
 app.post('/api/trips/:tripId/expenses', async (req, res) => {
   console.log("Adding expense to trip:", req.params.tripId, "with data:", req.body);
   try {
@@ -80,6 +82,7 @@ app.post('/api/trips/:tripId/expenses', async (req, res) => {
       date: req.body.date,
       vendor: req.body.vendor,
       receipt: req.body.receipt,
+      comments: req.body.comments || '',
       tripId: req.params.tripId
     });
     
@@ -103,7 +106,7 @@ app.post('/api/trips/:tripId/expenses', async (req, res) => {
 // Get all trips for a user
 app.get('/api/trips', async (req, res) => {
   try {
-    const trips = await Trip.find({ email: req.query.email }).populate('expenses');
+    const trips = await Trip.find({ userEmail: req.query.email }).populate('expenses');
     res.json(trips);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch trips' });
@@ -115,7 +118,10 @@ app.put('/api/trips/:tripId', async (req, res) => {
   try {
     const trip = await Trip.findByIdAndUpdate(
       req.params.tripId,
-      { status: req.body.status },
+      { 
+        status: req.body.status,
+        reason: req.body.reason || trip.reason 
+      },
       { new: true }
     ).populate('expenses');
     res.json(trip);
