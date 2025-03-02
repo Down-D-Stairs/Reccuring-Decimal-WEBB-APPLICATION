@@ -53,8 +53,9 @@ app.get('/api/protected', validateToken, (req, res) => {
   res.json({ message: 'Access granted to protected resource' });
 });
 
-// Create new trip with initial expense
+// Create new trip endpoint
 app.post('/api/trips', async (req, res) => {
+  console.log("Creating trip with data:", req.body);
   try {
     const trip = new Trip({
       tripName: req.body.tripName,
@@ -65,12 +66,14 @@ app.post('/api/trips', async (req, res) => {
     await trip.save();
     res.json(trip);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create trip' });
+    console.error("Trip creation error:", error);
+    res.status(500).json({ error: 'Failed to create trip', details: error.message });
   }
 });
 
-// Add expense to existing trip
+// Add expense endpoint
 app.post('/api/trips/:tripId/expenses', async (req, res) => {
+  console.log("Adding expense to trip:", req.params.tripId, "with data:", req.body);
   try {
     const expense = new Expense({
       amount: req.body.amount,
@@ -83,13 +86,17 @@ app.post('/api/trips/:tripId/expenses', async (req, res) => {
     await expense.save();
     
     const trip = await Trip.findById(req.params.tripId);
+    if (!trip) {
+      throw new Error(`Trip with ID ${req.params.tripId} not found`);
+    }
     trip.expenses.push(expense._id);
-    trip.totalAmount += expense.amount;
+    trip.totalAmount += parseFloat(req.body.amount);
     await trip.save();
     
     res.json(expense);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add expense' });
+    console.error("Expense creation error:", error);
+    res.status(500).json({ error: 'Failed to add expense', details: error.message });
   }
 });
 
