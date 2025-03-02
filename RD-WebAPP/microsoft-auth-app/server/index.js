@@ -1,134 +1,175 @@
-require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const { validateToken } = require('./middleware/auth');
-const { Expense, Trip } = require('./models/Expense');
+const { Trip, Expense } = require('./models/Expense');
+require('dotenv').config();
 
+const { sendStatusEmail } = require('./services/notificationService');
 const app = express();
-
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB Connected! 🚀'))
+  .catch(err => console.error('MongoDB Error:', err));
 
-// User model
-const User = require('./models/User');
-
-app.post('/api/auth/microsoft', async (req, res) => {
-  const { accessToken, userDetails } = req.body;
-  
+// Get all trips
+app.get('/api/trips', async (req, res) => {
   try {
-    let user = await User.findOne({ email: userDetails.email });
+    console.log('Incoming request query:', req.query);
+    // Let's try fetching ALL trips first to see what's in the database
+    const allTrips = await Trip.find({});
+    console.log('All trips in database:', allTrips);
     
-    if (!user) {
-      user = new User({
-        email: userDetails.email,
-        name: userDetails.name,
-        microsoftId: userDetails.id
-      });
-      await user.save();
-    }
+    // Then let's see what we get with the userEmail filter
+    const userTrips = await Trip.find({ userEmail: req.query.userEmail }).populate('expenses');
+    console.log('User filtered trips:', userTrips);
     
-    const jwtToken = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-    
-    res.json({ token: jwtToken, user });
+    res.json(userTrips);
   } catch (error) {
-    res.status(500).json({ error: 'Authentication failed' });
+    console.error('Database query error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Protected route example
-app.get('/api/protected', validateToken, (req, res) => {
-  res.json({ message: 'Access granted to protected resource' });
-});
 
 // Create new trip
 app.post('/api/trips', async (req, res) => {
-  console.log("Creating trip with data:", req.body);
   try {
+    console.log('POST /api/trips - Request body:', req.body);
+    
     const trip = new Trip({
       tripName: req.body.tripName,
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
-      userEmail: req.body.email, // Assuming client sends 'email'
-      totalAmount: req.body.totalAmount || 0,
-      reason: req.body.reason || ''
+      userEmail: req.body.email,
+      totalAmount: 0,
+      status: 'pending'
     });
-    await trip.save();
-    res.json(trip);
+    
+    console.log('Created trip object:', trip);
+    const savedTrip = await trip.save();
+    console.log('Saved trip:', savedTrip);
+    
+    res.status(200).json(savedTrip);
   } catch (error) {
-    console.error("Trip creation error:", error);
-    res.status(500).json({ error: 'Failed to create trip', details: error.message });
+    console.error('Error creating trip:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Add expense to existing trip
+
+
+
+// Add expense to trip
 app.post('/api/trips/:tripId/expenses', async (req, res) => {
-  console.log("Adding expense to trip:", req.params.tripId, "with data:", req.body);
   try {
+    console.log('Received expense data:', req.body);
+    console.log('Trip ID:', req.params.tripId);
+
     const expense = new Expense({
       amount: req.body.amount,
       date: req.body.date,
       vendor: req.body.vendor,
       receipt: req.body.receipt,
-      comments: req.body.comments || '',
       tripId: req.params.tripId
     });
-    
     await expense.save();
-    
+    console.log('Saved expense:', expense);
+
     const trip = await Trip.findById(req.params.tripId);
-    if (!trip) {
-      throw new Error(`Trip with ID ${req.params.tripId} not found`);
-    }
+    console.log('Found trip:', trip);
+
     trip.expenses.push(expense._id);
-    trip.totalAmount += parseFloat(req.body.amount);
+    trip.totalAmount += expense.amount;
     await trip.save();
-    
+    console.log('Updated trip:', trip);
+
     res.json(expense);
   } catch (error) {
-    console.error("Expense creation error:", error);
-    res.status(500).json({ error: 'Failed to add expense', details: error.message });
+    console.error('Error in expense creation:', error);
+    res.status(500).json({ error: 'Failed to add expense' });
   }
 });
 
-// Get all trips for a user
-app.get('/api/trips', async (req, res) => {
-  try {
-    const trips = await Trip.find({ userEmail: req.query.email }).populate('expenses');
-    res.json(trips);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch trips' });
-  }
-});
+// Add this new endpoint for status updates only
+app.put('/api/trips/:tripId/status', async (req, res) => {
+  const notificationService = require('./services/notificationService');
+  console.log('NOTIFICATION SERVICE LOADED:', notificationService);
 
-// Update trip status (for admins)
-app.put('/api/trips/:tripId', async (req, res) => {
   try {
-    const trip = await Trip.findByIdAndUpdate(
+    const updatedTrip = await Trip.findByIdAndUpdate(
       req.params.tripId,
-      { 
+      {
         status: req.body.status,
-        reason: req.body.reason || trip.reason 
+        reason: req.body.reason
       },
       { new: true }
     ).populate('expenses');
-    res.json(trip);
+
+   const token = req.headers.authorization?.split(' ')[1];
+
+   if(token) {
+    await sendStatusEmail(token, updatedTrip);
+   }
+
+    res.json(updatedTrip);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update trip' });
+    console.error('Server error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update status' });
   }
 });
 
+
+// Update trip status
+app.put('/api/trips/:tripId', async (req, res) => {
+  try {
+    // First update the trip details
+    const updatedTrip = await Trip.findByIdAndUpdate(
+      req.params.tripId,
+      {
+        tripName: req.body.tripName,
+        employeeName: req.body.employeeName,
+        dateRange: req.body.dateRange,
+        totalAmount: req.body.totalAmount,
+       
+      },
+      { new: true }
+    );
+
+    // Then handle expenses separately
+    // First remove old expenses
+    await Expense.deleteMany({ tripId: req.params.tripId });
+
+    // Create new expenses
+    const expensePromises = req.body.expenses.map(expense => {
+      const newExpense = new Expense({
+        amount: expense.amount,
+        date: expense.date,
+        vendor: expense.vendor,
+        receipt: expense.receipt,
+        tripId: req.params.tripId
+      });
+      return newExpense.save();
+    });
+
+    const savedExpenses = await Promise.all(expensePromises);
+    
+    // Update trip with new expense IDs
+    updatedTrip.expenses = savedExpenses.map(exp => exp._id);
+    await updatedTrip.save();
+
+    res.json(updatedTrip);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update trip' });
+  }
+});
+
+
+
+
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
