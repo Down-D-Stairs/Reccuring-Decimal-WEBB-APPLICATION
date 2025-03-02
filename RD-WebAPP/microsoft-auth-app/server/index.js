@@ -174,16 +174,10 @@ app.get('/api/projects', async (req, res) => {
     console.log('Incoming project request query:', req.query);
     
     // Let's try fetching ALL projects first to see what's in the database
-    const allProjects = await Project.find({});
+    const allProjects = await Project.find({}).populate('employeeTimes');
     console.log('All projects in database:', allProjects);
     
-    // Then filter by userEmail if provided
-    const userProjects = req.query.userEmail 
-      ? await Project.find({ userEmail: req.query.userEmail }).populate('employeeTimes')
-      : allProjects;
-    console.log('Filtered projects:', userProjects);
-    
-    res.json(userProjects);
+    res.json(allProjects);
   } catch (error) {
     console.error('Database query error:', error);
     res.status(500).json({ error: error.message });
@@ -198,9 +192,8 @@ app.post('/api/projects', async (req, res) => {
     const project = new Project({
       projectName: req.body.projectName,
       clientName: req.body.clientName,
-      projectTotalHours: 0,
-      userEmail: req.body.email,
-      status: 'active'
+      projectTotalHours: 0
+      
     });
     
     console.log('Created project object:', project);
@@ -244,26 +237,27 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
   }
 });
 
-// Update project status
-app.put('/api/projects/:projectId/status', async (req, res) => {
+// Get a single project by ID
+app.get('/api/projects/:projectId', async (req, res) => {
   try {
-    console.log('Updating project status:', req.params.projectId, req.body.status);
+    console.log('Fetching project by ID:', req.params.projectId);
     
-    const updatedProject = await Project.findByIdAndUpdate(
-      req.params.projectId,
-      {
-        status: req.body.status
-      },
-      { new: true }
-    ).populate('employeeTimes');
-
-    console.log('Updated project status:', updatedProject);
-    res.json(updatedProject);
+    const project = await Project.findById(req.params.projectId).populate('employeeTimes');
+    
+    if (!project) {
+      console.log('Project not found:', req.params.projectId);
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    console.log('Found project:', project);
+    res.json(project);
   } catch (error) {
-    console.error('Server error:', error);
-    res.status(500).json({ error: error.message || 'Failed to update status' });
+    console.error('Error fetching project:', error);
+    res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // Update full project
 app.put('/api/projects/:projectId', async (req, res) => {
