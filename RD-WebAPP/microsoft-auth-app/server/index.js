@@ -208,11 +208,19 @@ app.post('/api/projects', async (req, res) => {
 });
 
 // Add time entry to project
+// Add time entry to project - FIXED VERSION
 app.post('/api/projects/:projectId/time', async (req, res) => {
   try {
     console.log('Received time entry data:', req.body);
     console.log('Project ID:', req.params.projectId);
 
+    // First, check if project exists
+    const projectExists = await Project.findById(req.params.projectId);
+    if (!projectExists) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Create the time entry
     const timeEntry = new TimeEntry({
       employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
@@ -222,20 +230,29 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
     await timeEntry.save();
     console.log('Saved time entry:', timeEntry);
 
-    const project = await Project.findById(req.params.projectId);
-    console.log('Found project:', project);
+    // Update the project - make sure we don't overwrite any fields
+    const updatedProject = await Project.findByIdAndUpdate(
+      req.params.projectId,
+      {
+        $push: { employeeTimes: timeEntry._id },
+        $inc: { projectTotalHours: parseFloat(req.body.employeeHours) }
+      },
+      { new: true }
+    ).populate('employeeTimes');
 
-    project.employeeTimes.push(timeEntry._id);
-    project.projectTotalHours += parseFloat(timeEntry.employeeHours);
-    await project.save();
-    console.log('Updated project:', project);
-
-    res.json(timeEntry);
+    console.log('Updated project:', updatedProject);
+    
+    // Return the full project with time entry
+    res.json({
+      timeEntry,
+      project: updatedProject
+    });
   } catch (error) {
     console.error('Error adding time entry:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Get a single project by ID
 app.get('/api/projects/:projectId', async (req, res) => {

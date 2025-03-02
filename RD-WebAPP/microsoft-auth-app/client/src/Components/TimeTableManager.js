@@ -68,15 +68,19 @@ function TimeTableManager({ onBack, user }) {
 
   const handleShowDetails = async (projectId) => {
     try {
+      // First refresh all projects to ensure data is current
+      await fetchProjects();
+      
       const response = await fetch(`${API_URL}/api/projects/${projectId}`);
       const data = await response.json();
+      console.log("Project details:", data); // Add this for debugging
       setSelectedProjectDetails(data);
       setView('show-details');
     } catch (error) {
       console.error('Error fetching project details:', error);
     }
   };
-
+  
 
   const handleAddTime = async (projectId) => {
     try {
@@ -88,10 +92,9 @@ function TimeTableManager({ onBack, user }) {
         body: JSON.stringify(timeEntry)
       });
 
-      const updatedProject = await response.json();
-      setProjects(projects.map(p => 
-        p._id === projectId ? updatedProject : p
-      ));
+      // After adding time, refresh the projects list
+      await fetchProjects();
+
       setTimeEntry({
         employeeName: '',
         dateRange: { start: '', end: '' },
@@ -245,14 +248,20 @@ function TimeTableManager({ onBack, user }) {
               </tr>
             </thead>
             <tbody>
-              {selectedProjectDetails?.employeeTimes.map((entry, index) => (
+            {selectedProjectDetails?.employeeTimes && selectedProjectDetails.employeeTimes.length > 0 ? (
+              selectedProjectDetails.employeeTimes.map((entry, index) => (
                 <tr key={index}>
                   <td>{entry.employeeName}</td>
                   <td>{new Date(entry.dateRange.start).toLocaleDateString()}</td>
                   <td>{new Date(entry.dateRange.end).toLocaleDateString()}</td>
                   <td>{entry.employeeHours}</td>
                 </tr>
-              ))}
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4">No time entries found.</td>
+              </tr>
+              )}
             </tbody>
           </table>
           <button onClick={() => setView('list')}>Back to List</button>
