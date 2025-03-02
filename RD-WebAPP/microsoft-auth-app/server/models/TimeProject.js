@@ -1,5 +1,5 @@
+// models/TimeProject.js
 const mongoose = require('mongoose');
-const { timeTableConnection } = require('../config/database');
 
 const timeEntrySchema = new mongoose.Schema({
   employeeName: String,
@@ -27,7 +27,7 @@ const projectSchema = new mongoose.Schema({
   }]
 });
 
-const TimeEntry = timeTableConnection.model('TimeEntry', timeEntrySchema);
-const Project = timeTableConnection.model('Project', projectSchema);
+const TimeEntry = mongoose.model('TimeEntry', timeEntrySchema);
+const Project = mongoose.model('Project', projectSchema);
 
 module.exports = { TimeEntry, Project };

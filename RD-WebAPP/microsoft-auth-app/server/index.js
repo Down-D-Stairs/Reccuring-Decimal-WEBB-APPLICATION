@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { Trip, Expense } = require('./models/Expense');
+const { Project, TimeEntry } = require('./models/TimeProject');
 require('dotenv').config();
 
 const { sendStatusEmail } = require('./services/notificationService');
@@ -167,6 +168,154 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
+// Get all projects
+app.get('/api/projects', async (req, res) => {
+  try {
+    console.log('Incoming project request query:', req.query);
+    
+    // Let's try fetching ALL projects first to see what's in the database
+    const allProjects = await Project.find({});
+    console.log('All projects in database:', allProjects);
+    
+    // Then filter by userEmail if provided
+    const userProjects = req.query.userEmail 
+      ? await Project.find({ userEmail: req.query.userEmail }).populate('employeeTimes')
+      : allProjects;
+    console.log('Filtered projects:', userProjects);
+    
+    res.json(userProjects);
+  } catch (error) {
+    console.error('Database query error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create new project
+app.post('/api/projects', async (req, res) => {
+  try {
+    console.log('POST /api/projects - Request body:', req.body);
+    
+    const project = new Project({
+      projectName: req.body.projectName,
+      clientName: req.body.clientName,
+      projectTotalHours: 0,
+      userEmail: req.body.email,
+      status: 'active'
+    });
+    
+    console.log('Created project object:', project);
+    const savedProject = await project.save();
+    console.log('Saved project:', savedProject);
+    
+    res.status(200).json(savedProject);
+  } catch (error) {
+    console.error('Error creating project:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add time entry to project
+app.post('/api/projects/:projectId/entries', async (req, res) => {
+  try {
+    console.log('Received time entry data:', req.body);
+    console.log('Project ID:', req.params.projectId);
+
+    const timeEntry = new TimeEntry({
+      employeeName: req.body.employeeName,
+      dateRange: req.body.dateRange,
+      employeeHours: req.body.employeeHours,
+      projectId: req.params.projectId
+    });
+    await timeEntry.save();
+    console.log('Saved time entry:', timeEntry);
+
+    const project = await Project.findById(req.params.projectId);
+    console.log('Found project:', project);
+
+    project.employeeTimes.push(timeEntry._id);
+    project.projectTotalHours += parseFloat(timeEntry.employeeHours);
+    await project.save();
+    console.log('Updated project:', project);
+
+    res.json(timeEntry);
+  } catch (error) {
+    console.error('Error adding time entry:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update project status
+app.put('/api/projects/:projectId/status', async (req, res) => {
+  try {
+    console.log('Updating project status:', req.params.projectId, req.body.status);
+    
+    const updatedProject = await Project.findByIdAndUpdate(
+      req.params.projectId,
+      {
+        status: req.body.status
+      },
+      { new: true }
+    ).populate('employeeTimes');
+
+    console.log('Updated project status:', updatedProject);
+    res.json(updatedProject);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update status' });
+  }
+});
+
+// Update full project
+app.put('/api/projects/:projectId', async (req, res) => {
+  try {
+    console.log('Updating project:', req.params.projectId, req.body);
+    
+    // First update the project details
+    const updatedProject = await Project.findByIdAndUpdate(
+      req.params.projectId,
+      {
+        projectName: req.body.projectName,
+        clientName: req.body.clientName
+      },
+      { new: true }
+    );
+
+    // Then handle time entries separately
+    // First remove old entries if requested
+    if (req.body.replaceEntries) {
+      await TimeEntry.deleteMany({ projectId: req.params.projectId });
+      
+      // Create new time entries
+      if (req.body.timeEntries && req.body.timeEntries.length > 0) {
+        const entryPromises = req.body.timeEntries.map(entry => {
+          const newEntry = new TimeEntry({
+            employeeName: entry.employeeName,
+            dateRange: entry.dateRange,
+            employeeHours: entry.employeeHours,
+            projectId: req.params.projectId
+          });
+          return newEntry.save();
+        });
+
+        const savedEntries = await Promise.all(entryPromises);
+        
+        // Recalculate total hours
+        updatedProject.projectTotalHours = savedEntries.reduce(
+          (total, entry) => total + parseFloat(entry.employeeHours), 0
+        );
+        
+        // Update project with new entry IDs
+        updatedProject.employeeTimes = savedEntries.map(entry => entry._id);
+        await updatedProject.save();
+      }
+    }
+
+    res.json(updatedProject);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update project' });
+  }
+});
 
 
 
