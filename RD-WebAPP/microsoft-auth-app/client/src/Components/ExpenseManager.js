@@ -401,81 +401,109 @@ function ExpenseManager({ onBack, user }) {
               value={filters.searchTerm}
               onChange={(e) => setFilters({...filters, searchTerm: e.target.value})}
             />
-              <button
-                className="clear-filters-btn"
-                onClick={() => setFilters({
-                  dateStart: '',
-                  dateEnd: '',
-                  status: 'all',
-                  searchTerm: '',
-                  sortOrder: 'none'
-                })}
-              >
-                Clear All Filters
-              </button>
+            <button
+              className="clear-filters-btn"
+              onClick={() => setFilters({
+                dateStart: '',
+                dateEnd: '',
+                status: 'all',
+                searchTerm: '',
+                sortOrder: 'none'
+              })}
+            >
+              Clear All Filters
+            </button>
           </div>
-          {applyFilters(trips).map(trip => (
-            <div key={trip._id} className="trip-card">
-              <div className="trip-header">
-                <h3>{trip.tripName}</h3>
-                <button
-                  className="edit-button"
-                  onClick={() => {
-                    // Load trip data into state
-                    setTripDetails({
-                      _id: trip._id,
-                      tripName: trip.tripName,
-                      dateRange: trip.dateRange
-                    });
-                    // Load expenses
-                    setReceipts(trip.expenses);
-                    // Set total amount
-                    setTotalAmount(trip.totalAmount);
-                    setExpenseDetails({
-                      vendor: '',
-                      amount: '',
-                      date: '',
-                      comments: '',
-                      receipt: null
-                    });
-                    // Switch to edit view
-                    // Switch to edit view
-                    setExpenseView('edit');
-                  }}
-                >
-                  Edit Report
-                </button>
-              </div>
-              <p>Email: {trip.email || user.username}</p>
-              <p>${trip.totalAmount.toFixed(2)}</p>
-              <p>Date Range: {
-                new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })
-              } - {
-                new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })
-              }</p>
-              <div className={`status-badge ${trip.status}`}>{trip.status}</div>
-              {trip.reason && <p className="status-reason">Reason: {trip.reason}</p>}
-              <button onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}>
-                {expandedTrip === trip._id ? 'Hide Details' : 'Show Details'}
-              </button>
-              {expandedTrip === trip._id && (
-                <div className="trip-details">
-                  {trip.expenses?.map((expense, index) => (
-                    <div key={index} className="expense-item">
-                      <img src={expense.receipt} alt="Receipt" />
-                      <div>
-                      <p>Vendor: {expense.vendor}</p>
-                      <p>Amount: ${expense.amount.toFixed(2)}</p>
-                      <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
-                      <p>Comments: {expense.comments}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          
+          <div className="trips-table-container">
+            <table className="reports-table">
+              <thead>
+                <tr>
+                  <th>Report Name</th>
+                  <th>Email</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Total Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applyFilters(trips).map(trip => (
+                  <React.Fragment key={trip._id}>
+                    <tr className={`report-row ${expandedTrip === trip._id ? 'expanded' : ''}`}>
+                      <td>{trip.tripName}</td>
+                      <td>{trip.email || user.username}</td>
+                      <td>{new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
+                      <td>{new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
+                      <td className="amount-cell">${trip.totalAmount.toFixed(2)}</td>
+                      <td>
+                        <span className={`status-badge ${trip.status}`}>{trip.status}</span>
+                        {trip.reason && <p className="status-reason">Reason: {trip.reason}</p>}
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          <button 
+                            className="details-toggle"
+                            onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}
+                          >
+                            {expandedTrip === trip._id ? 'Hide Details' : 'Show Details'}
+                          </button>
+                          <button
+                            className="edit-button"
+                            onClick={() => {
+                              // Load trip data into state
+                              setTripDetails({
+                                _id: trip._id,
+                                tripName: trip.tripName,
+                                dateRange: trip.dateRange
+                              });
+                              // Load expenses
+                              setReceipts(trip.expenses);
+                              // Set total amount
+                              setTotalAmount(trip.totalAmount);
+                              setExpenseDetails({
+                                vendor: '',
+                                amount: '',
+                                date: '',
+                                comments: '',
+                                receipt: null
+                              });
+                              // Switch to edit view
+                              setExpenseView('edit');
+                            }}
+                          >
+                            Edit Report
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedTrip === trip._id && (
+                      <tr className="expense-details-row">
+                        <td colSpan="7">
+                          <div className="trip-details">
+                            {trip.expenses?.map((expense, index) => (
+                              <div key={index} className="expense-item">
+                                <img src={expense.receipt} alt="Receipt" />
+                                <div>
+                                  <p>Vendor: {expense.vendor}</p>
+                                  <p>Amount: ${expense.amount.toFixed(2)}</p>
+                                  <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                                  <p>Comments: {expense.comments}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+
        
       ) : expenseView === 'add-expense' ? (
         <div className="add-expense-container">
