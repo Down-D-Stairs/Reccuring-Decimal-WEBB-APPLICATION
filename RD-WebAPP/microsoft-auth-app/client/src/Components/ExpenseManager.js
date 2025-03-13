@@ -725,14 +725,14 @@ function ExpenseManager({ onBack, user }) {
               <label className="field-label">Report Name</label>
               <input
                 type="text"
-                placeholder="Enter Trip Name"
+                placeholder="Enter Report Name"
                 value={tripDetails.tripName}
                 onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
                 className="trip-name-input"
               />
             </div>
 
-            <p>Email: {user.username}</p>
+            
             
             <div className="form-field">
               <label className="field-label">Date Range</label>
