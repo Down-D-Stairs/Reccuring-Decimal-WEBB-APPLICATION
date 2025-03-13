@@ -24,10 +24,6 @@ const tripSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  employeeName: {
-    type: String,
-    required: true
-  },
   dateRange: {
     start: {
       type: Date,
@@ -42,7 +38,7 @@ const tripSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  userEmail: {
+  email: {
     type: String,
     required: true
   },

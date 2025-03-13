@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const { sendStatusEmail } = require('./services/notificationService');
 const app = express();
+
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
@@ -22,11 +23,11 @@ app.get('/api/trips', async (req, res) => {
     // Let's try fetching ALL trips first to see what's in the database
     const allTrips = await Trip.find({});
     console.log('All trips in database:', allTrips);
-    
-    // Then let's see what we get with the userEmail filter
-    const userTrips = await Trip.find({ userEmail: req.query.userEmail }).populate('expenses');
+   
+    // Then let's see what we get with the email filter
+    const userTrips = await Trip.find({ email: req.query.email }).populate('expenses');
     console.log('User filtered trips:', userTrips);
-    
+   
     res.json(userTrips);
   } catch (error) {
     console.error('Database query error:', error);
@@ -34,34 +35,29 @@ app.get('/api/trips', async (req, res) => {
   }
 });
 
-
 // Create new trip
 app.post('/api/trips', async (req, res) => {
   try {
     console.log('POST /api/trips - Request body:', req.body);
-    
+   
     const trip = new Trip({
       tripName: req.body.tripName,
-      employeeName: req.body.employeeName,
       dateRange: req.body.dateRange,
-      userEmail: req.body.email,
+      email: req.body.email,
       totalAmount: 0,
       status: 'pending'
     });
-    
+   
     console.log('Created trip object:', trip);
     const savedTrip = await trip.save();
     console.log('Saved trip:', savedTrip);
-    
+   
     res.status(200).json(savedTrip);
   } catch (error) {
     console.error('Error creating trip:', error);
     res.status(500).json({ error: error.message });
   }
 });
-
-
-
 
 // Add expense to trip
 app.post('/api/trips/:tripId/expenses', async (req, res) => {
@@ -122,7 +118,6 @@ app.put('/api/trips/:tripId/status', async (req, res) => {
   }
 });
 
-
 // Update trip status
 app.put('/api/trips/:tripId', async (req, res) => {
   try {
@@ -131,10 +126,8 @@ app.put('/api/trips/:tripId', async (req, res) => {
       req.params.tripId,
       {
         tripName: req.body.tripName,
-        employeeName: req.body.employeeName,
         dateRange: req.body.dateRange,
         totalAmount: req.body.totalAmount,
-       
       },
       { new: true }
     );
@@ -156,7 +149,7 @@ app.put('/api/trips/:tripId', async (req, res) => {
     });
 
     const savedExpenses = await Promise.all(expensePromises);
-    
+   
     // Update trip with new expense IDs
     updatedTrip.expenses = savedExpenses.map(exp => exp._id);
     await updatedTrip.save();
@@ -172,11 +165,11 @@ app.put('/api/trips/:tripId', async (req, res) => {
 app.get('/api/projects', async (req, res) => {
   try {
     console.log('Incoming project request query:', req.query);
-    
+   
     // Let's try fetching ALL projects first to see what's in the database
     const allProjects = await Project.find({}).populate('employeeTimes');
     console.log('All projects in database:', allProjects);
-    
+   
     res.json(allProjects);
   } catch (error) {
     console.error('Database query error:', error);
@@ -188,18 +181,18 @@ app.get('/api/projects', async (req, res) => {
 app.post('/api/projects', async (req, res) => {
   try {
     console.log('POST /api/projects - Request body:', req.body);
-    
+   
     const project = new Project({
       projectName: req.body.projectName,
       clientName: req.body.clientName,
       projectTotalHours: 0
-      
+     
     });
-    
+   
     console.log('Created project object:', project);
     const savedProject = await project.save();
     console.log('Saved project:', savedProject);
-    
+   
     res.status(200).json(savedProject);
   } catch (error) {
     console.error('Error creating project:', error);
@@ -207,7 +200,6 @@ app.post('/api/projects', async (req, res) => {
   }
 });
 
-// Add time entry to project
 // Add time entry to project - FIXED VERSION
 app.post('/api/projects/:projectId/time', async (req, res) => {
   try {
@@ -241,7 +233,7 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
     ).populate('employeeTimes');
 
     console.log('Updated project:', updatedProject);
-    
+   
     // Return the full project with time entry
     res.json({
       timeEntry,
@@ -253,19 +245,18 @@ app.post('/api/projects/:projectId/time', async (req, res) => {
   }
 });
 
-
 // Get a single project by ID
 app.get('/api/projects/:projectId', async (req, res) => {
   try {
     console.log('Fetching project by ID:', req.params.projectId);
-    
+   
     const project = await Project.findById(req.params.projectId).populate('employeeTimes');
-    
+   
     if (!project) {
       console.log('Project not found:', req.params.projectId);
       return res.status(404).json({ error: 'Project not found' });
     }
-    
+   
     console.log('Found project:', project);
     res.json(project);
   } catch (error) {
@@ -274,13 +265,11 @@ app.get('/api/projects/:projectId', async (req, res) => {
   }
 });
 
-
-
 // Update full project
 app.put('/api/projects/:projectId', async (req, res) => {
   try {
     console.log('Updating project:', req.params.projectId, req.body);
-    
+   
     // First update the project details
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.projectId,
@@ -295,7 +284,7 @@ app.put('/api/projects/:projectId', async (req, res) => {
     // First remove old entries if requested
     if (req.body.replaceEntries) {
       await TimeEntry.deleteMany({ projectId: req.params.projectId });
-      
+     
       // Create new time entries
       if (req.body.timeEntries && req.body.timeEntries.length > 0) {
         const entryPromises = req.body.timeEntries.map(entry => {
@@ -309,12 +298,12 @@ app.put('/api/projects/:projectId', async (req, res) => {
         });
 
         const savedEntries = await Promise.all(entryPromises);
-        
+       
         // Recalculate total hours
         updatedProject.projectTotalHours = savedEntries.reduce(
           (total, entry) => total + parseFloat(entry.employeeHours), 0
         );
-        
+       
         // Update project with new entry IDs
         updatedProject.employeeTimes = savedEntries.map(entry => entry._id);
         await updatedProject.save();
@@ -327,9 +316,6 @@ app.put('/api/projects/:projectId', async (req, res) => {
     res.status(500).json({ error: error.message || 'Failed to update project' });
   }
 });
-
-
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));

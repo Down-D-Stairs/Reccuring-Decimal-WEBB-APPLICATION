@@ -15,11 +15,10 @@ function ExpenseManager({ onBack, user }) {
     searchTerm: '',
     sortOrder: 'none'
   });
-  
+ 
   const [tripDetails, setTripDetails] = useState({
     tripName: '',
-    dateRange: { start: '', end: '' },
-    userEmail: user.email
+    dateRange: { start: '', end: '' }
   });
 
   const [expenseDetails, setExpenseDetails] = useState({
@@ -40,19 +39,18 @@ function ExpenseManager({ onBack, user }) {
     'sn@recurringdecimal.com'
   ], []);
 
-
   useEffect(() => {
     fetchTrips();
   }, [user]);
-  
-  const API_URL = process.env.REACT_APP_API_URL;
+ 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   const fetchTrips = async () => {
     try {
       console.log('Current user:', user.username);
       console.log('Is admin?', ADMIN_EMAILS.includes(user.username));
        
-      const response = await fetch(`${API_URL}/api/trips?userEmail=${user.username}`);
+      const response = await fetch(`${API_URL}/api/trips?email=${user.username}`);
       if (!response.ok) {
         throw new Error('Failed to fetch trips');
       }
@@ -61,7 +59,7 @@ function ExpenseManager({ onBack, user }) {
        
       const filteredTrips = ADMIN_EMAILS.includes(user.username)
         ? data
-        : data.filter(trip => trip.userEmail === user.username);
+        : data.filter(trip => trip.email === user.username);
        
       console.log('Filtered trips:', filteredTrips);
       setTrips(filteredTrips); // Keep only this setTrips call
@@ -69,22 +67,21 @@ function ExpenseManager({ onBack, user }) {
       console.error('Failed to fetch trips:', error);
     }
   };
-  
-  
+ 
   const applyFilters = (trips) => {
     let filteredTrips = trips.filter(trip => {
       const matchesDate = (!filters.dateStart || new Date(trip.dateRange.start) >= new Date(filters.dateStart)) &&
         (!filters.dateEnd || new Date(trip.dateRange.end) <= new Date(filters.dateEnd));
-      
+     
       const matchesStatus = filters.status === 'all' || trip.status === filters.status;
-      
+     
       const matchesSearch = !filters.searchTerm ||
         trip.tripName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        trip.userEmail.toLowerCase().includes(filters.searchTerm.toLowerCase());
-      
+        trip.email.toLowerCase().includes(filters.searchTerm.toLowerCase());
+     
       return matchesDate && matchesStatus && matchesSearch;
     });
-  
+
     if (filters.sortOrder !== 'none') {
       filteredTrips.sort((a, b) => {
         if (filters.sortOrder === 'asc') {
@@ -94,16 +91,14 @@ function ExpenseManager({ onBack, user }) {
         }
       });
     }
-  
+
     return filteredTrips;
   };  
-  
-  
 
   const handleReceiptUpload = async (file) => {
     const formData = new FormData();
     formData.append('document', file);
-  
+ 
     try {
       const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
         method: 'POST',
@@ -112,20 +107,20 @@ function ExpenseManager({ onBack, user }) {
         },
         body: formData
       });
-  
+
       const result = await response.json();
-      
+     
       if (result.document) {
         const { total_amount, date, supplier_name } = result.document.inference.prediction;
-        
+       
         const base64Promise = new Promise((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result);
           reader.readAsDataURL(file);
         });
-  
+
         const base64Receipt = await base64Promise;
-        
+       
         setExpenseDetails({
           ...expenseDetails,
           amount: total_amount.value,
@@ -138,11 +133,11 @@ function ExpenseManager({ onBack, user }) {
       console.error('Error processing receipt:', error);
     }
   };
-  
+
   const handleExpenseSubmit = (addAnother = false) => {
     setReceipts(prev => [...prev, expenseDetails]);
     setTotalAmount(prev => prev + Number(expenseDetails.amount));
-    
+   
     if (addAnother) {
       setExpenseDetails({
         vendor: '',
@@ -156,23 +151,22 @@ function ExpenseManager({ onBack, user }) {
       setExpenseView('new');
     }
   };
-  
 
   const handleStatusChange = async (tripId, newStatus) => {
-    setTrips(trips.map(trip => 
+    setTrips(trips.map(trip =>
       trip._id === tripId ? { ...trip, status: newStatus } : trip
     ));
     try {
       const response = await fetch(`${API_URL}/api/trips/${tripId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: newStatus,
           reason: trips.find(t => t._id === tripId)?.reason || ''
         })
       });
       const updatedTrip = await response.json();
-      setTrips(trips.map(trip => 
+      setTrips(trips.map(trip =>
         trip._id === tripId ? updatedTrip : trip
       ));
     } catch (error) {
@@ -181,7 +175,7 @@ function ExpenseManager({ onBack, user }) {
   };
 
   const handleReasonChange = (tripId, reason) => {
-    setTrips(trips.map(trip => 
+    setTrips(trips.map(trip =>
       trip._id === tripId ? { ...trip, reason } : trip
     ));
   };
@@ -198,13 +192,13 @@ function ExpenseManager({ onBack, user }) {
         })
       });
       const updatedTrip = await response.json();
-      setTrips(trips.map(t => 
+      setTrips(trips.map(t =>
         t._id === tripId ? updatedTrip : t
       ));
     } catch (error) {
       console.error('Failed to submit decision:', error);
     }
-  }; 
+  };
 
   const handleSubmitBatchDecisions = async () => {
     try {
@@ -220,13 +214,13 @@ function ExpenseManager({ onBack, user }) {
           })
         });
       });
-      
+     
       // Wait for all promises to resolve
       await Promise.all(updatePromises);
-      
+     
       // Fetch updated trips
       await fetchTrips();
-      
+     
       // Clear selections and return to list view
       setSelectedTrips([]);
       setExpenseView('list');
@@ -234,98 +228,91 @@ function ExpenseManager({ onBack, user }) {
       console.error('Failed to submit decisions:', error);
     }
   };
-  
+
   const handleNewTripSubmit = async () => {
     try {
-        // First create the trip
-        const tripResponse = await fetch(`${API_URL}/api/trips`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tripName: tripDetails.tripName,
-                dateRange: tripDetails.dateRange,
-                email: user.username,
-                totalAmount
-            })
+      // First create the trip
+      const tripResponse = await fetch(`${API_URL}/api/trips`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tripName: tripDetails.tripName,
+          dateRange: tripDetails.dateRange,
+          email: user.username,
+          totalAmount
+        })
+      });
+
+      const newTrip = await tripResponse.text();
+      const trip = JSON.parse(newTrip);
+
+      // Now add each expense
+      for (const receipt of receipts) {
+        await fetch(`${API_URL}/api/trips/${trip._id}/expenses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: receipt.amount,
+            date: receipt.date,
+            vendor: receipt.vendor,
+            receipt: receipt.receipt
+          })
         });
+      }
 
-        const newTrip = await tripResponse.text();
-        const trip = JSON.parse(newTrip);
-
-        // Now add each expense
-        for (const receipt of receipts) {
-            await fetch(`${API_URL}/api/trips/${trip._id}/expenses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: receipt.amount,
-                    date: receipt.date,
-                    vendor: receipt.vendor,
-                    receipt: receipt.receipt
-                })
-            });
-        }
-
-        setExpenseView('list');
-        fetchTrips();
+      setExpenseView('list');
+      fetchTrips();
     } catch (error) {
-        console.error('Error:', error);
+      console.error('Error:', error);
     }
-};
+  };
 
+  const handleSubmit = () => {
+    handleNewTripSubmit();
+  };
 
+  const handleEditSubmit = async (tripId) => {
+    setIsSubmitting(true);
+    try {
+      const updateData = {
+        tripName: tripDetails.tripName,
+        dateRange: tripDetails.dateRange,
+        email: user.username,
+        totalAmount,
+        expenses: receipts.map(receipt => ({
+          vendor: receipt.vendor,
+          amount: Number(receipt.amount),
+          date: receipt.date,
+          comments: receipt.comments || '',
+          receipt: receipt.receipt,
+          tripId: tripId
+        }))
+      };
+     
+      console.log('Sending exact data:', JSON.stringify(updateData, null, 2));
 
+      const response = await fetch(`${API_URL}/api/trips/${tripId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Update failed');
+      }
 
-
-const handleSubmit = () => {
-      handleNewTripSubmit();
-  
-};
-
-const handleEditSubmit = async (tripId) => {
-  setIsSubmitting(true);
-  try {
-    const updateData = {
-      tripName: tripDetails.tripName,
-      dateRange: tripDetails.dateRange,
-      userEmail: user.username,
-      totalAmount,
-      expenses: receipts.map(receipt => ({
-        vendor: receipt.vendor,
-        amount: Number(receipt.amount),
-        date: receipt.date,
-        comments: receipt.comments || '',
-        receipt: receipt.receipt,
-        tripId: tripId
-      }))
-    };
-    
-    console.log('Sending exact data:', JSON.stringify(updateData, null, 2));
-
-    const response = await fetch(`${API_URL}/api/trips/${tripId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updateData)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Update failed');
+      const updatedTrip = await response.json();
+      console.log('Success! Updated trip:', updatedTrip);
+     
+      fetchTrips();
+      setExpenseView('list');
+    } catch (error) {
+      console.error('Detailed error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const updatedTrip = await response.json();
-    console.log('Success! Updated trip:', updatedTrip);
-    
-    fetchTrips();
-    setExpenseView('list');
-  } catch (error) {
-    console.error('Detailed error:', error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   return (
     <div className="expense-manager">
@@ -381,9 +368,9 @@ const handleEditSubmit = async (tripId) => {
             </div>
 
             <div className="filter-group">
-              <button 
+              <button
                 onClick={() => setFilters({
-                  ...filters, 
+                  ...filters,
                   sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc'
                 })}
                 className={`sort-button ${filters.sortOrder}`}
@@ -410,11 +397,11 @@ const handleEditSubmit = async (tripId) => {
 
             <input
               type="text"
-              placeholder="Search by trip or employee name"
+              placeholder="Search by trip name or email"
               value={filters.searchTerm}
               onChange={(e) => setFilters({...filters, searchTerm: e.target.value})}
             />
-              <button 
+              <button
                 className="clear-filters-btn"
                 onClick={() => setFilters({
                   dateStart: '',
@@ -429,37 +416,37 @@ const handleEditSubmit = async (tripId) => {
           </div>
           {applyFilters(trips).map(trip => (
             <div key={trip._id} className="trip-card">
-                      <div className="trip-header">
-                        <h3>{trip.tripName}</h3>
-                        <button 
-                          className="edit-button"
-                          onClick={() => {
-                            // Load trip data into state
-                            setTripDetails({
-                              _id: trip._id,
-                              tripName: trip.tripName,
-                              dateRange: trip.dateRange,
-                              userEmail: user.username
-                            });
-                            // Load expenses
-                            setReceipts(trip.expenses);
-                            // Set total amount
-                            setTotalAmount(trip.totalAmount);
-                            setExpenseDetails({
-                              vendor: '',
-                              amount: '',
-                              date: '',
-                              comments: '',
-                              receipt: null
-                            });
-                            // Switch to edit view
-                            setExpenseView('edit');
-                          }}
-                        >
-                          Edit Report
-                        </button>
-                      </div>
-              <p>Employee: {trip.userEmail}</p>
+              <div className="trip-header">
+                <h3>{trip.tripName}</h3>
+                <button
+                  className="edit-button"
+                  onClick={() => {
+                    // Load trip data into state
+                    setTripDetails({
+                      _id: trip._id,
+                      tripName: trip.tripName,
+                      dateRange: trip.dateRange
+                    });
+                    // Load expenses
+                    setReceipts(trip.expenses);
+                    // Set total amount
+                    setTotalAmount(trip.totalAmount);
+                    setExpenseDetails({
+                      vendor: '',
+                      amount: '',
+                      date: '',
+                      comments: '',
+                      receipt: null
+                    });
+                    // Switch to edit view
+                    // Switch to edit view
+                    setExpenseView('edit');
+                  }}
+                >
+                  Edit Report
+                </button>
+              </div>
+              <p>Email: {trip.email || user.username}</p>
               <p>${trip.totalAmount.toFixed(2)}</p>
               <p>Date Range: {
                 new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })
@@ -489,7 +476,7 @@ const handleEditSubmit = async (tripId) => {
             </div>
           ))}
         </div>
-        
+       
       ) : expenseView === 'add-expense' ? (
         <div className="add-expense-container">
           <div className="expense-form">
@@ -527,15 +514,15 @@ const handleEditSubmit = async (tripId) => {
             </div>
             <div className="button-group">
               <button onClick={() => handleExpenseSubmit(false)}
-                disabled={!expenseDetails.vendor || 
-                  !expenseDetails.amount || 
-                  !expenseDetails.date || 
+                disabled={!expenseDetails.vendor ||
+                  !expenseDetails.amount ||
+                  !expenseDetails.date ||
                   !expenseDetails.receipt}
                 >Submit</button>
               <button onClick={() => handleExpenseSubmit(true)}
-                disabled={!expenseDetails.vendor || 
-                  !expenseDetails.amount || 
-                  !expenseDetails.date || 
+                disabled={!expenseDetails.vendor ||
+                  !expenseDetails.amount ||
+                  !expenseDetails.date ||
                   !expenseDetails.receipt}
                 >Submit & Add Another Expense</button>
               <button onClick={() => setExpenseView('new')} style={{background: '#ff4444'}}>Cancel</button>
@@ -543,196 +530,194 @@ const handleEditSubmit = async (tripId) => {
           </div>
         </div>
 
-) : expenseView === 'approve' ? (
-  <div className="approval-screen">
-    {applyFilters(trips).map(trip => (
-      <div key={trip._id} className="approval-card">
-        <div className="approval-header">
-          <input 
-            type="checkbox"
-            checked={selectedTrips.includes(trip._id)}
-            onChange={() => {
-              if (selectedTrips.includes(trip._id)) {
-                setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
-              } else {
-                setSelectedTrips([...selectedTrips, trip._id]);
-              }
-            }}
-          />
-          <h3>{trip.tripName}</h3>
+      ) : expenseView === 'approve' ? (
+        <div className="approval-screen">
+          {applyFilters(trips).map(trip => (
+            <div key={trip._id} className="approval-card">
+              <div className="approval-header">
+                <input
+                  type="checkbox"
+                  checked={selectedTrips.includes(trip._id)}
+                  onChange={() => {
+                    if (selectedTrips.includes(trip._id)) {
+                      setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
+                    } else {
+                      setSelectedTrips([...selectedTrips, trip._id]);
+                    }
+                  }}
+                />
+                <h3>{trip.tripName}</h3>
+              </div>
+              <p>Email: {trip.email || user.username}</p>
+              <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
+              <p>${trip.totalAmount.toFixed(2)}</p>
+             
+              <div className="approval-actions">
+                <select
+                  value={trip.status}
+                  onChange={(e) => handleStatusChange(trip._id, e.target.value)}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="denied">Denied</option>
+                </select>
+                <textarea
+                  placeholder="Reason for decision (required)..."
+                  value={trip.reason || ''}
+                  onChange={(e) => handleReasonChange(trip._id, e.target.value)}
+                />
+               
+                <button
+                  className="submit-decision"
+                  disabled={trip.status === 'pending' || !trip.reason}
+                  onClick={() => handleSubmitDecision(trip._id)}
+                >
+                  Submit Decision
+                </button>
+              </div>
+            </div>
+          ))}
+          <div className="batch-approval-actions">
+            <button
+              className="submit-all-decisions"
+              disabled={selectedTrips.length === 0 ||
+                selectedTrips.some(id => {
+                  const trip = trips.find(t => t._id === id);
+                  return trip.status === 'pending' || !trip.reason;
+                })}
+              onClick={handleSubmitBatchDecisions}
+            >
+              Submit Selected Decisions ({selectedTrips.length})
+            </button>
+          </div>
         </div>
-        <p>Employee: {trip.userEmail}</p>
-        <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
-        <p>${trip.totalAmount.toFixed(2)}</p>
-        
-        <div className="approval-actions">
-          <select
-            value={trip.status}
-            onChange={(e) => handleStatusChange(trip._id, e.target.value)}
-          >
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="denied">Denied</option>
-          </select>
-          <textarea
-            placeholder="Reason for decision (required)..."
-            value={trip.reason || ''}
-            onChange={(e) => handleReasonChange(trip._id, e.target.value)}
-          />
-          
-          <button
-            className="submit-decision"
-            disabled={trip.status === 'pending' || !trip.reason}
-            onClick={() => handleSubmitDecision(trip._id)}
-          >
-            Submit Decision
-          </button>
-        </div>
-      </div>
-    ))}
-    <div className="batch-approval-actions">
-      <button
-        className="submit-all-decisions"
-        disabled={selectedTrips.length === 0 ||
-          selectedTrips.some(id => {
-            const trip = trips.find(t => t._id === id);
-            return trip.status === 'pending' || !trip.reason;
-          })}
-        onClick={handleSubmitBatchDecisions}
-      >
-        Submit Selected Decisions ({selectedTrips.length})
-      </button>
-    </div>
-  </div>
 
+      ) : expenseView === 'edit' ? (
+        <div className="edit-trip-container">
+          <div className="fixed-section">
+            <input
+              type="text"
+              placeholder="Trip Name"
+              value={tripDetails.tripName}
+              onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
+            />
+            <p>Email: {user.username}</p>
+            <div className="date-inputs">
+              <input
+                type="date"
+                value={tripDetails.dateRange.start.split('T')[0]}
+                onChange={(e) => setTripDetails({
+                  ...tripDetails,
+                  dateRange: {...tripDetails.dateRange, start: e.target.value}
+                })}
+              />
+              <input
+                type="date"
+                value={tripDetails.dateRange.end.split('T')[0]}
+                onChange={(e) => setTripDetails({
+                  ...tripDetails,
+                  dateRange: {...tripDetails.dateRange, end: e.target.value}
+                })}
+              />
+            </div>
+           
+            <div className="receipt-section">
+              <div className="expense-form">
+                <input
+                  type="text"
+                  placeholder="Vendor Name"
+                  value={expenseDetails.vendor}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={expenseDetails.amount}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
+                />
+                <input
+                  type="date"
+                  value={expenseDetails.date}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
+                />
+                <textarea
+                  placeholder="Comments"
+                  value={expenseDetails.comments}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
+                />
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={(e) => handleReceiptUpload(e.target.files[0])}
+                  className="receipt-input"
+                />
+                {expenseDetails.receipt && (
+                  <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
+                )}
+                <button
+                  onClick={() => {
+                    setReceipts([...receipts, expenseDetails]);
+                    setTotalAmount(prev => prev + Number(expenseDetails.amount));
+                    setExpenseDetails({
+                      vendor: '',
+                      amount: '',
+                      date: '',
+                      comments: '',
+                      receipt: null
+                    });
+                    const fileInput = document.querySelector('.receipt-input');
+                    if (fileInput) {
+                      fileInput.value = '';
+                    }
+                  }}
+                >
+                  Add Expense
+                </button>
+              </div>
+            </div>
 
-) : expenseView === 'edit' ? (
-  <div className="edit-trip-container">
-    <div className="fixed-section">
-      <input
-        type="text"
-        placeholder="Trip Name"
-        value={tripDetails.tripName}
-        onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
-      />
-      
-      <div className="date-inputs">
-        <input
-          type="date"
-          value={tripDetails.dateRange.start.split('T')[0]}
-          onChange={(e) => setTripDetails({
-            ...tripDetails,
-            dateRange: {...tripDetails.dateRange, start: e.target.value}
-          })}
-        />
-        <input
-          type="date"
-          value={tripDetails.dateRange.end.split('T')[0]}
-          onChange={(e) => setTripDetails({
-            ...tripDetails,
-            dateRange: {...tripDetails.dateRange, end: e.target.value}
-          })}
-        />
-      </div>
-      
-      <div className="receipt-section">
-        <div className="expense-form">
-          <input
-            type="text"
-            placeholder="Vendor Name"
-            value={expenseDetails.vendor}
-            onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
-          />
-          <input
-            type="number"
-            placeholder="Amount"
-            value={expenseDetails.amount}
-            onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
-          />
-          <input
-            type="date"
-            value={expenseDetails.date}
-            onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
-          />
-          <textarea
-            placeholder="Comments"
-            value={expenseDetails.comments}
-            onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
-          />
-          <input
-            type="file"
-            accept=".jpg,.jpeg,.png,.pdf"
-            onChange={(e) => handleReceiptUpload(e.target.files[0])}
-            className="receipt-input"
-          />
-          {expenseDetails.receipt && (
-            <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
-          )}
-          <button 
-            onClick={() => {
-              setReceipts([...receipts, expenseDetails]);
-              setTotalAmount(prev => prev + Number(expenseDetails.amount));
-              setExpenseDetails({
-                vendor: '',
-                amount: '',
-                date: '',
-                comments: '',
-                receipt: null
-              });
-              const fileInput = document.querySelector('.receipt-input');
-              if (fileInput) {
-                fileInput.value = '';
-              }
-            }}
-          >
-            Add Expense
-          </button>
-        </div>
-      </div>
+            <div className="receipts-grid">
+              {receipts.map((receipt, index) => (
+                <div key={index} className="receipt-card">
+                  <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
+                  <div className="receipt-details">
+                    <p>Amount: ${receipt.amount}</p>
+                    <p>Date: {new Date(receipt.date).toLocaleDateString()}</p>
+                    <p>Vendor: {receipt.vendor}</p>
+                    <button
+                      onClick={() => {
+                        setTotalAmount(prev => prev - receipts[index].amount);
+                        setReceipts(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      className="remove-receipt"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-      <div className="receipts-grid">
-        {receipts.map((receipt, index) => (
-          <div key={index} className="receipt-card">
-            <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
-            <div className="receipt-details">
-              <p>Amount: ${receipt.amount}</p>
-              <p>Date: {new Date(receipt.date).toLocaleDateString()}</p>
-              <p>Vendor: {receipt.vendor}</p>
-              <button 
-                onClick={() => {
-                  setTotalAmount(prev => prev - receipts[index].amount);
-                  setReceipts(prev => prev.filter((_, i) => i !== index));
-                }}
-                className="remove-receipt"
+            <p className="total">Total: ${totalAmount.toFixed(2)}</p>
+
+            <div className="edit-actions">
+              <button
+                className="cancel-edit"
+                onClick={() => setExpenseView('list')}
               >
-                Remove
+                Cancel
+              </button>
+              <button
+                className="save-changes"
+                onClick={() => handleEditSubmit(tripDetails._id)}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
               </button>
             </div>
           </div>
-        ))}
-      </div>
-
-      <p className="total">Total: ${totalAmount.toFixed(2)}</p>
-
-      <div className="edit-actions">
-        <button 
-          className="cancel-edit"
-          onClick={() => setExpenseView('list')}
-        >
-          Cancel
-        </button>
-        <button
-          className="save-changes"
-          onClick={() => handleEditSubmit(tripDetails._id)}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-        </button>
-      </div>
-    </div>
-  </div>
-
-        
+        </div>
+       
       ) : (
         <div className="create-trip-container">
           <div className="fixed-section">
@@ -742,12 +727,7 @@ const handleEditSubmit = async (tripId) => {
               value={tripDetails.tripName}
               onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
             />
-            <input
-              type="text"
-              placeholder="Employee Name"
-              value={tripDetails.userEmail}
-              onChange={(e) => setTripDetails({...tripDetails, userEmail: e.target.value})}
-            />
+            <p>Email: {user.username}</p>
             <div className="date-inputs">
               <input
                 type="date"
@@ -822,7 +802,6 @@ const handleEditSubmit = async (tripId) => {
               onClick={handleSubmit}
               disabled={
                   !tripDetails.tripName ||
-                  !tripDetails.userEmail ||
                   !tripDetails.dateRange.start ||
                   !tripDetails.dateRange.end ||
                   receipts.length === 0 ||
@@ -830,13 +809,11 @@ const handleEditSubmit = async (tripId) => {
               }
               style={{
                   backgroundColor: (!tripDetails.tripName ||
-                      !tripDetails.userEmail ||
                       !tripDetails.dateRange.start ||
                       !tripDetails.dateRange.end ||
                       receipts.length === 0 ||
                       isSubmitting) ? '#cccccc' : '#0066cc',
                   cursor: (!tripDetails.tripName ||
-                      !tripDetails.userEmail ||
                       !tripDetails.dateRange.start ||
                       !tripDetails.dateRange.end ||
                       receipts.length === 0 ||
@@ -845,7 +822,6 @@ const handleEditSubmit = async (tripId) => {
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
-
         </div>
       )}
     </div>
