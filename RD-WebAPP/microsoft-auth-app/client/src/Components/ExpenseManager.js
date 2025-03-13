@@ -721,30 +721,46 @@ function ExpenseManager({ onBack, user }) {
       ) : (
         <div className="create-trip-container">
           <div className="fixed-section">
-            <input
-              type="text"
-              placeholder="Trip Name"
-              value={tripDetails.tripName}
-              onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
-            />
+            <div className="form-field">
+              <label className="field-label">Report Name</label>
+              <input
+                type="text"
+                placeholder="Enter Trip Name"
+                value={tripDetails.tripName}
+                onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
+                className="trip-name-input"
+              />
+            </div>
+
             <p>Email: {user.username}</p>
-            <div className="date-inputs">
-              <input
-                type="date"
-                value={tripDetails.dateRange.start}
-                onChange={(e) => setTripDetails({
-                  ...tripDetails,
-                  dateRange: {...tripDetails.dateRange, start: e.target.value}
-                })}
-              />
-              <input
-                type="date"
-                value={tripDetails.dateRange.end}
-                onChange={(e) => setTripDetails({
-                  ...tripDetails,
-                  dateRange: {...tripDetails.dateRange, end: e.target.value}
-                })}
-              />
+            
+            <div className="form-field">
+              <label className="field-label">Date Range</label>
+              <div className="date-inputs">
+                <div className="date-field">
+                  <label className="date-label">Start</label>
+                  <input
+                    type="date"
+                    value={tripDetails.dateRange.start}
+                    onChange={(e) => setTripDetails({
+                      ...tripDetails,
+                      dateRange: {...tripDetails.dateRange, start: e.target.value}
+                    })}
+                  />
+                </div>
+                
+                <div className="date-field">
+                  <label className="date-label">End</label>
+                  <input
+                    type="date"
+                    value={tripDetails.dateRange.end}
+                    onChange={(e) => setTripDetails({
+                      ...tripDetails,
+                      dateRange: {...tripDetails.dateRange, end: e.target.value}
+                    })}
+                  />
+                </div>
+              </div>
             </div>
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
           </div>

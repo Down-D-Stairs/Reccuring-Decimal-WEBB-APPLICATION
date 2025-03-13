@@ -523,3 +523,34 @@
 .submit-all-decisions:hover {
   background-color: #45a049; /* Slightly darker green on hover */
 }
+
+/* Form field labels styling */
+.form-field {
+  margin-bottom: 15px;
+}
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 1rem;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 15px;
+}
+
+.date-field {
+  flex: 1;
+}
+
+.date-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #555;
+  font-size: 0.9rem;
+}
+
