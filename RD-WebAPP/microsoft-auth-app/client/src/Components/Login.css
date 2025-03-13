@@ -1,246 +1,23 @@
-/* Base container styles */
 .expense-manager {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  height: 100vh;
   padding: 20px;
 }
 
-/* Header styles */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
 }
 
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.actions button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  color: white;
-}
-
-.actions button:first-child {
-  background-color: #ff4444; /* Back button */
-}
-
-.actions button:nth-child(2) {
-  background-color: #0066cc; /* New/View Report button */
-}
-
-.approve-deny-btn {
-  background-color: #ff8c00; /* Approve/Deny button */
-}
-
-/* Filters container */
-.filters-container {
-  background-color: #f5f5f5;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.filter-group {
-  display: flex;
-  gap: 10px;
-}
-
-.sort-button {
-  padding: 8px 12px;
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.sort-button.asc, .sort-button.desc {
-  background-color: #0066cc;
-  color: white;
-}
-
-.clear-filters-btn {
-  padding: 8px 12px;
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Trip card styles */
-.trips-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.trip-card {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.trip-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.trip-header h3 {
-  margin: 0;
-}
-
-.edit-button {
-  padding: 5px 10px;
-  background-color: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-weight: bold;
-  margin: 5px 0;
-}
-
-.status-badge.pending {
-  background-color: #ffd700;
-  color: #000;
-}
-
-.status-badge.approved {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.status-badge.denied {
-  background-color: #ff4444;
-  color: white;
-}
-
-.status-reason {
-  font-style: italic;
-  color: #666;
-}
-
-.trip-details {
-  margin-top: 10px;
-  border-top: 1px solid #eee;
-  padding-top: 10px;
-}
-
-/* Expense item styles */
-.expense-item {
-  display: flex;
-  gap: 15px;
-  border-bottom: 1px solid #eee;
-  padding: 10px 0;
-}
-
-.expense-item img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.expense-details {
-  flex: 1;
-}
-
-/* Add expense form styles */
-.add-expense-container {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.expense-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.expense-form input,
-.expense-form textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.receipt-upload {
-  border: 2px dashed #0066cc;
-  padding: 15px;
-  border-radius: 4px;
-  text-align: center;
-  margin: 15px 0;
-}
-
-.receipt-preview {
-  max-width: 100%;
-  max-height: 200px;
-  margin-top: 10px;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.button-group button {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: white;
-  font-weight: bold;
-}
-
-.button-group button:first-child {
-  background-color: #4CAF50;
-}
-
-.button-group button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-/* Create/Edit Trip styles */
-.create-trip-container,
-.edit-trip-container {
-  display: flex;
-  flex-direction: column;
+.create-trip-container {
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+  height: calc(100vh - 80px);
   gap: 20px;
+  overflow: hidden;
 }
 
 .fixed-section {
-  background-color: white;
+  background: white;
   padding: 20px;
-  border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -258,180 +35,469 @@
   margin-bottom: 10px;
 }
 
-.date-inputs input {
-  flex: 1;
-  margin-bottom: 0;
-}
-
 .total {
-  font-size: 18px;
-  font-weight: bold;
   text-align: right;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
 .scrollable-section {
-  max-height: 400px;
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
-  padding: 15px;
-  background-color: white;
+  border: 2px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin: 20px 0;
+  background: white;
+}
+
+.add-expense-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.expense-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.expense-form input,
+.expense-form textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.receipt-upload {
+  border: 2px dashed #0066cc;
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.receipt-preview {
+  max-width: 100px !important;
+  max-height: 100px !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: scale-down !important;
+  border-radius: 4px;
+  margin: 10px auto;
+  display: block;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.button-group button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: white;
+}
+
+.button-group button:first-child {
+  background: #0066cc;
+}
+
+.button-group button:nth-child(2) {
+  background: #4CAF50 !important;
+}
+
+.button-group button:last-child {
+  background: #ff4444;
+}
+
+.button-group button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.button-group button:disabled:hover {
+  background-color: #cccccc;
+}
+
+.expenses-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expense-item {
+  display: flex;
+  gap: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.expense-item img {
+  max-width: 100px !important;
+  max-height: 100px !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: scale-down !important;
+  flex-shrink: 0;
+}
+
+.expense-details {
+  flex: 1;
 }
 
 .add-expense-btn {
   width: 100%;
-  padding: 10px;
-  background-color: #0066cc;
+  padding: 15px;
+  background: #0066cc;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 15px;
+  font-size: 1.1rem;
 }
 
-.expenses-box {
-  border: 1px solid #eee;
-  border-radius: 4px;
-  padding: 10px;
+.add-expense-btn:hover {
+  background: #0052a3;
 }
 
 .submit-trip {
-  padding: 15px;
-  font-size: 16px;
-  font-weight: bold;
+  margin: 0 auto;
+  background: #0066cc;
   color: white;
   border: none;
   border-radius: 4px;
+  padding: 12px 24px;
   cursor: pointer;
+  font-size: 1.1rem;
 }
 
-.receipt-section {
-  margin: 20px 0;
+.submit-trip:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
 }
 
-.receipts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+/* Trip list styles */
+.trips-list {
+  display: flex;
+  flex-direction: column;
   gap: 15px;
-  margin: 20px 0;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  margin-top: 20px;
 }
 
-.receipt-card {
-  border: 1px solid #ddd;
+.trip-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.status-select {
+  padding: 8px;
   border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+}
+
+.status-select.pending { background: #fff3cd; }
+.status-select.approved { background: #d4edda; }
+.status-select.denied { background: #f8d7da; }
+
+/* Action Buttons */
+.actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+  background: #0066cc;
+  color: white;
+}
+
+.actions button:first-child {
+  background: #ff4444;
+}
+
+.approval-screen {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+}
+  .approval-card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .approval-actions {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .approval-actions select {
+    width: 200px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+  }
+
+  .approval-actions textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 1rem;
+  }
+
+  .submit-decision {
+    padding: 12px 24px;
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    width: fit-content;
+  }
+
+  .submit-decision:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+  }
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 15px;
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.status-badge.pending {
+  background: #ffd700;
+  color: #000;
+}
+
+.status-badge.approved {
+  background: #4CAF50;
+  color: white;
+}
+
+.status-badge.denied {
+  background: #ff4444;
+  color: white;
+}
+
+.status-reason {
+  margin: 10px 0;
   padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-style: italic;
+}
+
+.filters-container {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+.filter-group {
   display: flex;
   gap: 10px;
 }
 
+.filters-container input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filters-container input[type="number"] {
+  width: 120px;
+}
+
+.filters-container input[type="text"] {
+  width: 200px;
+}
+
+.filters-container select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.filters-container input:focus,
+.filters-container select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0,102,204,0.2);
+}
+
+.sort-button {
+  padding: 8px 16px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.sort-button.asc {
+  background: #4CAF50;
+}
+
+.sort-button.desc {
+  background: #ff4444;
+}
+
+.sort-button:hover {
+  opacity: 0.9;
+}
+
+.clear-filters-btn {
+  padding: 8px 16px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.clear-filters-btn:hover {
+  background: #ff2222;
+}
+
+
+.edit-button {
+  background: #ff8c00;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.edit-button:hover {
+  background: #ff7000;
+}
+
+
+.edit-trip-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.expense-edit-item {
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
 .receipt-thumbnail {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   border-radius: 4px;
 }
 
-.remove-receipt {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  padding: 5px 10px;
+.expense-edit-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.expense-edit-fields input {
+  padding: 8px;
+  border: 1px solid #ddd;
   border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
 }
 
 .edit-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px;
   margin-top: 20px;
 }
 
-.cancel-edit {
-  padding: 10px 15px;
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 .save-changes {
-  padding: 10px 15px;
-  background-color: #4CAF50;
+  background: #0066cc;
   color: white;
+  padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.save-changes:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.cancel-edit {
+  background: #ff4444;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-/* Approval screen styles */
 .approval-screen {
   display: flex;
   flex-direction: column;
   gap: 15px;
   position: relative; /* Add this to allow absolute positioning of children */
   padding-right: 200px; /* Make space for the fixed button on the right */
-}
-
-.approval-card {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.approval-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.approval-header input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-}
-
-.approval-actions {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.approval-actions select {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.approval-actions textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  min-height: 80px;
-}
-
-.submit-decision {
-  padding: 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submit-decision:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
 }
 
 .batch-approval-actions {
@@ -456,9 +522,4 @@
 
 .submit-all-decisions:hover {
   background-color: #45a049; /* Slightly darker green on hover */
-}
-
-.submit-all-decisions:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
 }
