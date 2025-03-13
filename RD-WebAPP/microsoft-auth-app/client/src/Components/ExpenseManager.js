@@ -18,7 +18,6 @@ function ExpenseManager({ onBack, user }) {
   
   const [tripDetails, setTripDetails] = useState({
     tripName: '',
-    employeeName: '',
     dateRange: { start: '', end: '' },
     userEmail: user.email
   });
@@ -81,7 +80,7 @@ function ExpenseManager({ onBack, user }) {
       
       const matchesSearch = !filters.searchTerm ||
         trip.tripName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        trip.employeeName.toLowerCase().includes(filters.searchTerm.toLowerCase());
+        trip.userEmail.toLowerCase().includes(filters.searchTerm.toLowerCase());
       
       return matchesDate && matchesStatus && matchesSearch;
     });
@@ -244,7 +243,6 @@ function ExpenseManager({ onBack, user }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 tripName: tripDetails.tripName,
-                employeeName: tripDetails.employeeName,
                 dateRange: tripDetails.dateRange,
                 email: user.username,
                 totalAmount
@@ -290,7 +288,6 @@ const handleEditSubmit = async (tripId) => {
   try {
     const updateData = {
       tripName: tripDetails.tripName,
-      employeeName: tripDetails.employeeName,
       dateRange: tripDetails.dateRange,
       userEmail: user.username,
       totalAmount,
@@ -340,7 +337,6 @@ const handleEditSubmit = async (tripId) => {
             setExpenseView(expenseView === 'list' ? 'new' : 'list');
             setTripDetails({
               tripName: '',
-              employeeName: '',
               dateRange: { start: '', end: '' }
             });
             setExpenseDetails({
@@ -442,7 +438,6 @@ const handleEditSubmit = async (tripId) => {
                             setTripDetails({
                               _id: trip._id,
                               tripName: trip.tripName,
-                              employeeName: trip.employeeName,
                               dateRange: trip.dateRange,
                               userEmail: user.username
                             });
@@ -464,7 +459,7 @@ const handleEditSubmit = async (tripId) => {
                           Edit Report
                         </button>
                       </div>
-              <p>Employee: {trip.employeeName}</p>
+              <p>Employee: {trip.userEmail}</p>
               <p>${trip.totalAmount.toFixed(2)}</p>
               <p>Date Range: {
                 new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })
@@ -566,7 +561,7 @@ const handleEditSubmit = async (tripId) => {
           />
           <h3>{trip.tripName}</h3>
         </div>
-        <p>Employee: {trip.employeeName}</p>
+        <p>Employee: {trip.userEmail}</p>
         <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
         <p>${trip.totalAmount.toFixed(2)}</p>
         
@@ -620,12 +615,7 @@ const handleEditSubmit = async (tripId) => {
         value={tripDetails.tripName}
         onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
       />
-      <input
-        type="text"
-        placeholder="Employee Name"
-        value={tripDetails.employeeName}
-        onChange={(e) => setTripDetails({...tripDetails, employeeName: e.target.value})}
-      />
+      
       <div className="date-inputs">
         <input
           type="date"
@@ -755,8 +745,8 @@ const handleEditSubmit = async (tripId) => {
             <input
               type="text"
               placeholder="Employee Name"
-              value={tripDetails.employeeName}
-              onChange={(e) => setTripDetails({...tripDetails, employeeName: e.target.value})}
+              value={tripDetails.userEmail}
+              onChange={(e) => setTripDetails({...tripDetails, userEmail: e.target.value})}
             />
             <div className="date-inputs">
               <input
@@ -832,7 +822,7 @@ const handleEditSubmit = async (tripId) => {
               onClick={handleSubmit}
               disabled={
                   !tripDetails.tripName ||
-                  !tripDetails.employeeName ||
+                  !tripDetails.userEmail ||
                   !tripDetails.dateRange.start ||
                   !tripDetails.dateRange.end ||
                   receipts.length === 0 ||
@@ -840,13 +830,13 @@ const handleEditSubmit = async (tripId) => {
               }
               style={{
                   backgroundColor: (!tripDetails.tripName ||
-                      !tripDetails.employeeName ||
+                      !tripDetails.userEmail ||
                       !tripDetails.dateRange.start ||
                       !tripDetails.dateRange.end ||
                       receipts.length === 0 ||
                       isSubmitting) ? '#cccccc' : '#0066cc',
                   cursor: (!tripDetails.tripName ||
-                      !tripDetails.employeeName ||
+                      !tripDetails.userEmail ||
                       !tripDetails.dateRange.start ||
                       !tripDetails.dateRange.end ||
                       receipts.length === 0 ||
