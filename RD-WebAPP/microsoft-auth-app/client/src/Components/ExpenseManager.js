@@ -5,6 +5,7 @@ function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
   const [expenseView, setExpenseView] = useState('list');  // Only 'list', 'new', 'add-expense', 'approve'
   const [expandedTrip, setExpandedTrip] = useState(null);
+  const [selectedTrips, setSelectedTrips] = useState([]);
   const [filters, setFilters] = useState({
     dateStart: '',
     dateEnd: '',
@@ -51,26 +52,25 @@ function ExpenseManager({ onBack, user }) {
     try {
       console.log('Current user:', user.username);
       console.log('Is admin?', ADMIN_EMAILS.includes(user.username));
-      
+       
       const response = await fetch(`${API_URL}/api/trips?userEmail=${user.username}`);
       if (!response.ok) {
         throw new Error('Failed to fetch trips');
       }
       const data = await response.json();
       console.log('All trips from server:', data);
-      
+       
       const filteredTrips = ADMIN_EMAILS.includes(user.username)
         ? data
         : data.filter(trip => trip.userEmail === user.username);
-      
+       
       console.log('Filtered trips:', filteredTrips);
-      setTrips(filteredTrips);
-      console.log('Trip data from server:', data); // Add this line
-      setTrips(data);
+      setTrips(filteredTrips); // Keep only this setTrips call
     } catch (error) {
       console.error('Failed to fetch trips:', error);
     }
   };
+  
   
   const applyFilters = (trips) => {
     let filteredTrips = trips.filter(trip => {
@@ -205,8 +205,37 @@ function ExpenseManager({ onBack, user }) {
     } catch (error) {
       console.error('Failed to submit decision:', error);
     }
-  };  
+  }; 
 
+  const handleSubmitBatchDecisions = async () => {
+    try {
+      // Create an array of promises for each selected trip
+      const updatePromises = selectedTrips.map(tripId => {
+        const trip = trips.find(t => t._id === tripId);
+        return fetch(`${API_URL}/api/trips/${tripId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: trip.status,
+            reason: trip.reason
+          })
+        });
+      });
+      
+      // Wait for all promises to resolve
+      await Promise.all(updatePromises);
+      
+      // Fetch updated trips
+      await fetchTrips();
+      
+      // Clear selections and return to list view
+      setSelectedTrips([]);
+      setExpenseView('list');
+    } catch (error) {
+      console.error('Failed to submit decisions:', error);
+    }
+  };
+  
   const handleNewTripSubmit = async () => {
     try {
         // First create the trip
@@ -519,41 +548,68 @@ const handleEditSubmit = async (tripId) => {
           </div>
         </div>
 
-      ) : expenseView === 'approve' ? (
-        <div className="approval-screen">
-          {applyFilters(trips).map(trip => (
-            <div key={trip._id} className="approval-card">
-              <h3>{trip.tripName}</h3>
-              <p>Employee: {trip.employeeName}</p>
-              <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
-              <p>${trip.totalAmount.toFixed(2)}</p>
-              
-              <div className="approval-actions">
-                <select
-                  value={trip.status}
-                  onChange={(e) => handleStatusChange(trip._id, e.target.value)}
-                >
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="denied">Denied</option>
-                </select>
-                <textarea
-                  placeholder="Reason for decision (required)..."
-                  value={trip.reason || ''}
-                  onChange={(e) => handleReasonChange(trip._id, e.target.value)}
-                />
-                
-                <button 
-                  className="submit-decision"
-                  disabled={trip.status === 'pending' || !trip.reason}
-                  onClick={() => handleSubmitDecision(trip._id)}
-                >
-                  Submit Decision
-                </button>
-              </div>
-            </div>
-          ))}
+) : expenseView === 'approve' ? (
+  <div className="approval-screen">
+    {applyFilters(trips).map(trip => (
+      <div key={trip._id} className="approval-card">
+        <div className="approval-header">
+          <input 
+            type="checkbox"
+            checked={selectedTrips.includes(trip._id)}
+            onChange={() => {
+              if (selectedTrips.includes(trip._id)) {
+                setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
+              } else {
+                setSelectedTrips([...selectedTrips, trip._id]);
+              }
+            }}
+          />
+          <h3>{trip.tripName}</h3>
         </div>
+        <p>Employee: {trip.employeeName}</p>
+        <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
+        <p>${trip.totalAmount.toFixed(2)}</p>
+        
+        <div className="approval-actions">
+          <select
+            value={trip.status}
+            onChange={(e) => handleStatusChange(trip._id, e.target.value)}
+          >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="denied">Denied</option>
+          </select>
+          <textarea
+            placeholder="Reason for decision (required)..."
+            value={trip.reason || ''}
+            onChange={(e) => handleReasonChange(trip._id, e.target.value)}
+          />
+          
+          <button
+            className="submit-decision"
+            disabled={trip.status === 'pending' || !trip.reason}
+            onClick={() => handleSubmitDecision(trip._id)}
+          >
+            Submit Decision
+          </button>
+        </div>
+      </div>
+    ))}
+    <div className="batch-approval-actions">
+      <button
+        className="submit-all-decisions"
+        disabled={selectedTrips.length === 0 ||
+          selectedTrips.some(id => {
+            const trip = trips.find(t => t._id === id);
+            return trip.status === 'pending' || !trip.reason;
+          })}
+        onClick={handleSubmitBatchDecisions}
+      >
+        Submit Selected Decisions ({selectedTrips.length})
+      </button>
+    </div>
+  </div>
+
 
 ) : expenseView === 'edit' ? (
   <div className="edit-trip-container">
