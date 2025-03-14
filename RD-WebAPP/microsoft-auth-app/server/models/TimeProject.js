@@ -105,13 +105,14 @@ const projectSchema = new mongoose.Schema({
     required: true
   },
   approvers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: String,  // Email addresses or names
+    required: true
   }],
   projectMembers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: String,  // Email addresses or names
+    required: true
   }],
+  
   location: String,
   isHybrid: {
     type: Boolean,

@@ -100,15 +100,29 @@ function TimeTableManager({ onBack, user }) {
     calculateTotalHours();
   }, [weeklyEntries]);
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/projects`);
-      const data = await response.json();
-      setProjects(data);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
+  // Update the fetchProjects function
+const fetchProjects = async () => {
+  try {
+    // Fetch projects where the current user is a member or all projects if admin
+    const url = isAdmin 
+      ? `${API_URL}/api/projects` 
+      : `${API_URL}/api/projects?projectMember=${user.id}`;
+      
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    // Also include system projects (PTO, Holiday) for all users
+    const systemProjects = data.filter(p => p.isSystemProject);
+    const userProjects = isAdmin 
+      ? data 
+      : data.filter(p => p.projectMembers.includes(user.id) || p.isSystemProject);
+    
+    setProjects(userProjects);
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+  }
+};
+
 
   const fetchTimeEntries = async () => {
     try {
@@ -257,40 +271,59 @@ function TimeTableManager({ onBack, user }) {
 
   const handleSubmitTimesheet = async () => {
     try {
+      setIsSubmitting(true);
+      
       // Convert weekly entries to the format expected by the API
-      const timeEntriesToSubmit = weeklyEntries.map(entry => {
-        const dayEntries = [];
-        const weekStart = new Date(selectedWeek.start);
-        
-        // Create day entries for each day of the week
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(weekStart);
-          date.setDate(weekStart.getDate() + i);
+      const timeEntriesToSubmit = weeklyEntries
+        .filter(entry => {
+          // Only include entries with hours > 0
+          const hasHours = entry.monday > 0 || entry.tuesday > 0 || entry.wednesday > 0 || 
+                          entry.thursday > 0 || entry.friday > 0 || entry.saturday > 0 || 
+                          entry.sunday > 0;
+          return hasHours;
+        })
+        .map(entry => {
+          const dayEntries = [];
+          const weekStart = new Date(selectedWeek.start);
           
-          const dayName = getDayNameFromIndex((i + 1) % 7).toLowerCase(); // +1 because our week starts on Monday
-          const hours = entry[dayName] || 0;
+          // Create day entries for each day of the week with hours > 0
+          const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
           
-          if (hours > 0) {
-            dayEntries.push({
-              date: date.toISOString(),
-              hours: hours,
-              notes: ''
-            });
-          }
-        }
-        
-        return {
-          employeeId: user.id,
-          employeeName: user.name,
-          projectId: entry.projectId,
-          weekStartDate: selectedWeek.start,
-          weekEndDate: selectedWeek.end,
-          isBillable: entry.isBillable,
-          dayEntries,
-          status: 'submitted',
-          submittedDate: new Date().toISOString()
-        };
-      });
+          daysOfWeek.forEach((day, index) => {
+            const hours = Number(entry[day] || 0);
+            if (hours > 0) {
+              const date = new Date(weekStart);
+              date.setDate(weekStart.getDate() + index);
+              
+              dayEntries.push({
+                date: date.toISOString(),
+                hours: hours,
+                notes: ''
+              });
+            }
+          });
+          
+          return {
+            employeeId: user.id,
+            employeeName: user.name,
+            projectId: entry.projectId,
+            weekStartDate: selectedWeek.start,
+            weekEndDate: selectedWeek.end,
+            isBillable: entry.isBillable,
+            dayEntries,
+            totalHours: dayEntries.reduce((sum, day) => sum + day.hours, 0),
+            status: 'submitted',
+            submittedDate: new Date().toISOString()
+          };
+        });
+      
+      console.log('Submitting timesheet entries:', timeEntriesToSubmit);
+      
+      if (timeEntriesToSubmit.length === 0) {
+        alert('No hours to submit. Please add hours to at least one project.');
+        setIsSubmitting(false);
+        return;
+      }
       
       // Submit all time entries
       const response = await fetch(`${API_URL}/api/timeentries/batch`, {
@@ -301,6 +334,11 @@ function TimeTableManager({ onBack, user }) {
         body: JSON.stringify(timeEntriesToSubmit)
       });
       
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit timesheet');
+      }
+      
       await response.json();
       alert('Timesheet submitted successfully!');
       
@@ -308,9 +346,12 @@ function TimeTableManager({ onBack, user }) {
       fetchTimeEntries();
     } catch (error) {
       console.error('Error submitting timesheet:', error);
-      alert('Failed to submit timesheet. Please try again.');
+      alert(`Failed to submit timesheet: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+  
 
   const handleDeleteEntry = (entryId) => {
     setWeeklyEntries(weeklyEntries.filter(entry => entry.id !== entryId));
