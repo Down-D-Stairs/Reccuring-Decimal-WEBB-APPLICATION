@@ -95,14 +95,30 @@
 }
 
 /* Project and time form styles */
-.project-form-container,
+.project-form-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 100;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.project-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+
 .time-form-container {
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
 }
 
-.project-form,
 .time-form {
   display: flex;
   flex-direction: column;
