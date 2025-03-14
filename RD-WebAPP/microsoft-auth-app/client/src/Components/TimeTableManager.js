@@ -44,8 +44,8 @@ function TimeTableManager({ onBack, user }) {
     },
     maxHours: '',
     maxBudget: '',
-    approvers: [],
-    projectMembers: [],
+    approvers: '',
+    projectMembers: '',
     location: '',
     isHybrid: false
   });
@@ -229,8 +229,8 @@ const fetchProjects = async () => {
       },
       maxHours: '',
       maxBudget: '',
-      approvers: [],
-      projectMembers: [],
+      approvers: '',
+      projectMembers: '',
       location: '',
       isHybrid: false
     });

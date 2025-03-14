@@ -104,14 +104,14 @@ const projectSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  approvers: [{
+  approvers: {
     type: String,  // Email addresses or names
     required: true
-  }],
-  projectMembers: [{
+  },
+  projectMembers: {
     type: String,  // Email addresses or names
     required: true
-  }],
+  },
   
   location: String,
   isHybrid: {
