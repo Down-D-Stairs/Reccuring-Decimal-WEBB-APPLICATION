@@ -671,7 +671,29 @@ const fetchProjects = async () => {
                 />
               </div>
             </div>
-            
+
+            <div className="form-group">
+              <label>Approvers (comma-separated emails)</label>
+              <input
+                type="text"
+                value={newProject.approvers}
+                onChange={(e) => setNewProject({...newProject, approvers: e.target.value})}
+                placeholder="e.g. approver1@example.com, approver2@example.com"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Project Members (comma-separated emails)</label>
+              <input
+                type="text"
+                value={newProject.projectMembers}
+                onChange={(e) => setNewProject({...newProject, projectMembers: e.target.value})}
+                placeholder="e.g. member1@example.com, member2@example.com"
+                required
+              />
+            </div>
+
             <div className="form-group">
               <label>Location</label>
               <input
@@ -694,11 +716,12 @@ const fetchProjects = async () => {
             
             <div className="form-buttons">
               <button onClick={() => setView('list')}>Cancel</button>
-              <button 
+              <button
                 onClick={handleCreateProject}
-                disabled={!newProject.projectName || !newProject.clientName || 
-                         !newProject.dateRange.start || !newProject.dateRange.end ||
-                         !newProject.maxHours || !newProject.maxBudget}
+                disabled={!newProject.projectName || !newProject.clientName ||
+                        !newProject.dateRange.start || !newProject.dateRange.end ||
+                        !newProject.maxHours || !newProject.maxBudget ||
+                        !newProject.approvers || !newProject.projectMembers}
               >
                 Create Project
               </button>
