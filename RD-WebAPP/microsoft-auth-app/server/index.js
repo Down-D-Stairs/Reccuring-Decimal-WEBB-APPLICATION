@@ -161,155 +161,138 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
-// Get all projects
+// Get all projects with optional filtering
 app.get('/api/projects', async (req, res) => {
   try {
     console.log('Incoming project request query:', req.query);
-   
-    // Let's try fetching ALL projects first to see what's in the database
-    const allProjects = await Project.find({}).populate('employeeTimes');
-    console.log('All projects in database:', allProjects);
-   
-    res.json(allProjects);
+    
+    let query = {};
+    
+    // Filter by creator if specified
+    if (req.query.createdBy) {
+      query.createdBy = req.query.createdBy;
+    }
+    
+    // Filter by project member if specified
+    if (req.query.projectMember) {
+      query.projectMembers = req.query.projectMember;
+    }
+    
+    // Filter by active status
+    if (req.query.isActive) {
+      query.isActive = req.query.isActive === 'true';
+    }
+    
+    const projects = await Project.find(query)
+      .populate('approvers', 'name email')
+      .populate('projectMembers', 'name email')
+      .populate('createdBy', 'name email');
+      
+    console.log(`Found ${projects.length} projects`);
+    res.json(projects);
   } catch (error) {
     console.error('Database query error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Create new project
+// Create new project with all fields
 app.post('/api/projects', async (req, res) => {
   try {
     console.log('POST /api/projects - Request body:', req.body);
-   
+    
     const project = new Project({
       projectName: req.body.projectName,
       clientName: req.body.clientName,
-      projectTotalHours: 0
-     
+      projectType: req.body.projectType,
+      poNumber: req.body.poNumber,
+      contractNumber: req.body.contractNumber,
+      dateRange: req.body.dateRange,
+      maxHours: req.body.maxHours,
+      maxBudget: req.body.maxBudget,
+      approvers: req.body.approvers || [],
+      projectMembers: req.body.projectMembers || [],
+      location: req.body.location,
+      isHybrid: req.body.isHybrid || false,
+      isActive: true,
+      isSystemProject: req.body.isSystemProject || false,
+      projectTotalHours: 0,
+      projectTotalBilledHours: 0,
+      createdBy: req.body.createdBy
     });
-   
+    
     console.log('Created project object:', project);
     const savedProject = await project.save();
     console.log('Saved project:', savedProject);
-   
-    res.status(200).json(savedProject);
+    
+    res.status(201).json(savedProject);
   } catch (error) {
     console.error('Error creating project:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Add time entry to project - FIXED VERSION
-app.post('/api/projects/:projectId/time', async (req, res) => {
-  try {
-    console.log('Received time entry data:', req.body);
-    console.log('Project ID:', req.params.projectId);
-
-    // First, check if project exists
-    const projectExists = await Project.findById(req.params.projectId);
-    if (!projectExists) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-
-    // Create the time entry
-    const timeEntry = new TimeEntry({
-      employeeName: req.body.employeeName,
-      dateRange: req.body.dateRange,
-      employeeHours: req.body.employeeHours,
-      projectId: req.params.projectId
-    });
-    await timeEntry.save();
-    console.log('Saved time entry:', timeEntry);
-
-    // Update the project - make sure we don't overwrite any fields
-    const updatedProject = await Project.findByIdAndUpdate(
-      req.params.projectId,
-      {
-        $push: { employeeTimes: timeEntry._id },
-        $inc: { projectTotalHours: parseFloat(req.body.employeeHours) }
-      },
-      { new: true }
-    ).populate('employeeTimes');
-
-    console.log('Updated project:', updatedProject);
-   
-    // Return the full project with time entry
-    res.json({
-      timeEntry,
-      project: updatedProject
-    });
-  } catch (error) {
-    console.error('Error adding time entry:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get a single project by ID
+// Get a single project by ID with time entries
 app.get('/api/projects/:projectId', async (req, res) => {
   try {
     console.log('Fetching project by ID:', req.params.projectId);
-   
-    const project = await Project.findById(req.params.projectId).populate('employeeTimes');
-   
+    
+    const project = await Project.findById(req.params.projectId)
+      .populate('approvers', 'name email')
+      .populate('projectMembers', 'name email')
+      .populate('createdBy', 'name email');
+    
     if (!project) {
       console.log('Project not found:', req.params.projectId);
       return res.status(404).json({ error: 'Project not found' });
     }
-   
-    console.log('Found project:', project);
-    res.json(project);
+    
+    // Get time entries for this project
+    const timeEntries = await TimeEntry.find({ projectId: req.params.projectId })
+      .populate('employeeId', 'name email')
+      .populate('approvedBy', 'name email');
+    
+    console.log('Found project with time entries');
+    res.json({
+      ...project.toObject(),
+      timeEntries
+    });
   } catch (error) {
     console.error('Error fetching project:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update full project
+// Update project
 app.put('/api/projects/:projectId', async (req, res) => {
   try {
     console.log('Updating project:', req.params.projectId, req.body);
-   
-    // First update the project details
+    
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.projectId,
       {
         projectName: req.body.projectName,
-        clientName: req.body.clientName
+        clientName: req.body.clientName,
+        projectType: req.body.projectType,
+        poNumber: req.body.poNumber,
+        contractNumber: req.body.contractNumber,
+        dateRange: req.body.dateRange,
+        maxHours: req.body.maxHours,
+        maxBudget: req.body.maxBudget,
+        approvers: req.body.approvers,
+        projectMembers: req.body.projectMembers,
+        location: req.body.location,
+        isHybrid: req.body.isHybrid,
+        isActive: req.body.isActive,
+        updatedAt: Date.now()
       },
       { new: true }
     );
-
-    // Then handle time entries separately
-    // First remove old entries if requested
-    if (req.body.replaceEntries) {
-      await TimeEntry.deleteMany({ projectId: req.params.projectId });
-     
-      // Create new time entries
-      if (req.body.timeEntries && req.body.timeEntries.length > 0) {
-        const entryPromises = req.body.timeEntries.map(entry => {
-          const newEntry = new TimeEntry({
-            employeeName: entry.employeeName,
-            dateRange: entry.dateRange,
-            employeeHours: entry.employeeHours,
-            projectId: req.params.projectId
-          });
-          return newEntry.save();
-        });
-
-        const savedEntries = await Promise.all(entryPromises);
-       
-        // Recalculate total hours
-        updatedProject.projectTotalHours = savedEntries.reduce(
-          (total, entry) => total + parseFloat(entry.employeeHours), 0
-        );
-       
-        // Update project with new entry IDs
-        updatedProject.employeeTimes = savedEntries.map(entry => entry._id);
-        await updatedProject.save();
-      }
+    
+    if (!updatedProject) {
+      return res.status(404).json({ error: 'Project not found' });
     }
-
+    
     res.json(updatedProject);
   } catch (error) {
     console.error('Server error:', error);
@@ -317,5 +300,437 @@ app.put('/api/projects/:projectId', async (req, res) => {
   }
 });
 
+// Get time entries for a specific week and employee
+app.get('/api/timeentries', async (req, res) => {
+  try {
+    const { employeeId, weekStart, weekEnd } = req.query;
+    console.log(`Fetching time entries for employee ${employeeId} from ${weekStart} to ${weekEnd}`);
+    
+    if (!employeeId || !weekStart || !weekEnd) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+    
+    const timeEntries = await TimeEntry.find({
+      employeeId,
+      weekStartDate: weekStart,
+      weekEndDate: weekEnd
+    }).populate('projectId');
+    
+    console.log(`Found ${timeEntries.length} time entries`);
+    res.json(timeEntries);
+  } catch (error) {
+    console.error('Error fetching time entries:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new time entry
+app.post('/api/timeentries', async (req, res) => {
+  try {
+    console.log('Creating time entry:', req.body);
+    
+    // Create day entries first
+    const dayEntries = req.body.dayEntries.map(day => ({
+      date: day.date,
+      hours: day.hours,
+      notes: day.notes || ''
+    }));
+    
+    // Calculate total hours
+    const totalHours = dayEntries.reduce((sum, day) => sum + day.hours, 0);
+    
+    const timeEntry = new TimeEntry({
+      employeeId: req.body.employeeId,
+      employeeName: req.body.employeeName,
+      projectId: req.body.projectId,
+      weekStartDate: req.body.weekStartDate,
+      weekEndDate: req.body.weekEndDate,
+      isBillable: req.body.isBillable,
+      dayEntries,
+      totalHours,
+      status: req.body.status || 'draft',
+      submittedDate: req.body.status === 'submitted' ? new Date() : null,
+      comments: req.body.comments || ''
+    });
+    
+    const savedTimeEntry = await timeEntry.save();
+    
+    // Update project total hours
+    await Project.findByIdAndUpdate(
+      req.body.projectId,
+      {
+        $inc: { 
+          projectTotalHours: totalHours,
+          projectTotalBilledHours: req.body.isBillable ? totalHours : 0
+        }
+      }
+    );
+    
+    res.status(201).json(savedTimeEntry);
+  } catch (error) {
+    console.error('Error creating time entry:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Batch create multiple time entries (for weekly timesheet submission)
+app.post('/api/timeentries/batch', async (req, res) => {
+  try {
+    console.log('Batch creating time entries:', req.body.length);
+    
+    if (!Array.isArray(req.body) || req.body.length === 0) {
+      return res.status(400).json({ error: 'Invalid request format' });
+    }
+    
+    const savedEntries = [];
+    const projectUpdates = {};
+    
+    // Process each time entry
+    for (const entry of req.body) {
+      // Create day entries
+      const dayEntries = entry.dayEntries.map(day => ({
+        date: day.date,
+        hours: day.hours,
+        notes: day.notes || ''
+      }));
+      
+      // Calculate total hours
+      const totalHours = dayEntries.reduce((sum, day) => sum + Number(day.hours), 0);
+      
+      const timeEntry = new TimeEntry({
+        employeeId: entry.employeeId,
+        employeeName: entry.employeeName,
+        projectId: entry.projectId,
+        weekStartDate: entry.weekStartDate,
+        weekEndDate: entry.weekEndDate,
+        isBillable: entry.isBillable,
+        dayEntries,
+        totalHours,
+        status: entry.status || 'draft',
+        submittedDate: entry.status === 'submitted' ? new Date() : null,
+        comments: entry.comments || ''
+      });
+      
+      const savedEntry = await timeEntry.save();
+      savedEntries.push(savedEntry);
+      
+      // Track hours by project for batch update
+      if (!projectUpdates[entry.projectId]) {
+        projectUpdates[entry.projectId] = {
+          totalHours: 0,
+          billedHours: 0
+        };
+      }
+      
+      projectUpdates[entry.projectId].totalHours += totalHours;
+      if (entry.isBillable) {
+        projectUpdates[entry.projectId].billedHours += totalHours;
+      }
+    }
+    
+    // Update all affected projects in batch
+    const projectUpdatePromises = Object.keys(projectUpdates).map(projectId => {
+      return Project.findByIdAndUpdate(
+        projectId,
+        {
+          $inc: {
+            projectTotalHours: projectUpdates[projectId].totalHours,
+            projectTotalBilledHours: projectUpdates[projectId].billedHours
+          }
+        }
+      );
+    });
+    
+    await Promise.all(projectUpdatePromises);
+    
+    res.status(201).json(savedEntries);
+  } catch (error) {
+    console.error('Error in batch time entry creation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update time entry status (for approval workflow)
+app.put('/api/timeentries/:timeEntryId/status', async (req, res) => {
+  try {
+    const { status, approvedBy, comments } = req.body;
+    console.log(`Updating time entry ${req.params.timeEntryId} status to ${status}`);
+    
+    if (!['draft', 'submitted', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    
+    const updateData = {
+      status,
+      comments: comments || ''
+    };
+    
+    // Add approval details if approved
+    if (status === 'approved') {
+      updateData.approvedBy = approvedBy;
+      updateData.approvedDate = new Date();
+    }
+    
+    const updatedEntry = await TimeEntry.findByIdAndUpdate(
+      req.params.timeEntryId,
+      updateData,
+      { new: true }
+    );
+    
+    if (!updatedEntry) {
+      return res.status(404).json({ error: 'Time entry not found' });
+    }
+    
+    res.json(updatedEntry);
+  } catch (error) {
+    console.error('Error updating time entry status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create system projects (PTO, Holiday)
+app.post('/api/system-projects', async (req, res) => {
+  try {
+    // Create PTO project
+    const ptoProject = new Project({
+      projectName: 'PTO',
+      clientName: 'Internal',
+      projectType: 'Time Off',
+      dateRange: {
+        start: new Date(new Date().getFullYear(), 0, 1), // Jan 1 current year
+        end: new Date(new Date().getFullYear() + 10, 11, 31) // Dec 31 ten years from now
+      },
+      maxHours: 0, // Unlimited
+      maxBudget: 0,
+      isActive: true,
+      isSystemProject: true,
+      projectTotalHours: 0
+    });
+    
+    // Create Holiday project
+    const holidayProject = new Project({
+      projectName: 'Holiday',
+      clientName: 'Internal',
+      projectType: 'Time Off',
+      dateRange: {
+        start: new Date(new Date().getFullYear(), 0, 1), // Jan 1 current year
+        end: new Date(new Date().getFullYear() + 10, 11, 31) // Dec 31 ten years from now
+      },
+      maxHours: 0, // Unlimited
+      maxBudget: 0,
+      isActive: true,
+      isSystemProject: true,
+      projectTotalHours: 0
+    });
+    
+    await ptoProject.save();
+    await holidayProject.save();
+    
+    res.status(201).json({ ptoProject, holidayProject });
+  } catch (error) {
+    console.error('Error creating system projects:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get reports for projects
+app.get('/api/reports/projects', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    // Validate date parameters
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    // Find all projects
+    const projects = await Project.find({
+      'dateRange.start': { $lte: new Date(endDate) },
+      'dateRange.end': { $gte: new Date(startDate) }
+    });
+    
+    // Get time entries for these projects in the date range
+    const timeEntries = await TimeEntry.find({
+      projectId: { $in: projects.map(p => p._id) },
+      'dayEntries.date': {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    }).populate('projectId', 'projectName clientName');
+    
+    // Aggregate data for report
+    const projectReports = projects.map(project => {
+      const projectEntries = timeEntries.filter(entry => 
+        entry.projectId && entry.projectId._id.toString() === project._id.toString()
+      );
+      
+      const totalHours = projectEntries.reduce((sum, entry) => {
+        // Only count hours within the date range
+        const filteredDayEntries = entry.dayEntries.filter(day => 
+          new Date(day.date) >= new Date(startDate) && 
+          new Date(day.date) <= new Date(endDate)
+        );
+        
+        return sum + filteredDayEntries.reduce((daySum, day) => daySum + day.hours, 0);
+      }, 0);
+      
+      const billedHours = projectEntries
+        .filter(entry => entry.isBillable)
+        .reduce((sum, entry) => {
+          const filteredDayEntries = entry.dayEntries.filter(day => 
+            new Date(day.date) >= new Date(startDate) && 
+            new Date(day.date) <= new Date(endDate)
+          );
+          
+          return sum + filteredDayEntries.reduce((daySum, day) => daySum + day.hours, 0);
+        }, 0);
+      
+      return {
+        projectId: project._id,
+        projectName: project.projectName,
+        clientName: project.clientName,
+        totalHours,
+        billedHours,
+        percentUtilized: project.maxHours > 0 ? (totalHours / project.maxHours) * 100 : null,
+        percentBilled: totalHours > 0 ? (billedHours / totalHours) * 100 : 0
+      };
+    });
+    
+    res.json(projectReports);
+  } catch (error) {
+    console.error('Error generating project report:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get reports for employees
+app.get('/api/reports/employees', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    // Validate date parameters
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    // Get all time entries in the date range
+    const timeEntries = await TimeEntry.find({
+      'dayEntries.date': {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    }).populate('projectId', 'projectName clientName isSystemProject');
+    
+    // Get all employees who have time entries
+    const employeeIds = [...new Set(timeEntries.map(entry => entry.employeeId.toString()))];
+    const employees = await User.find({ _id: { $in: employeeIds } });
+    
+    // Aggregate data for report
+    const employeeReports = employees.map(employee => {
+      const employeeEntries = timeEntries.filter(entry => 
+        entry.employeeId.toString() === employee._id.toString()
+      );
+      
+      // Calculate total hours
+      const totalHours = employeeEntries.reduce((sum, entry) => {
+        const filteredDayEntries = entry.dayEntries.filter(day => 
+          new Date(day.date) >= new Date(startDate) && 
+          new Date(day.date) <= new Date(endDate)
+        );
+        
+        return sum + filteredDayEntries.reduce((daySum, day) => daySum + day.hours, 0);
+      }, 0);
+      
+      // Calculate billable hours
+      const billedHours = employeeEntries
+        .filter(entry => entry.isBillable)
+        .reduce((sum, entry) => {
+          const filteredDayEntries = entry.dayEntries.filter(day => 
+            new Date(day.date) >= new Date(startDate) && 
+            new Date(day.date) <= new Date(endDate)
+          );
+          
+          return sum + filteredDayEntries.reduce((daySum, day) => daySum + day.hours, 0);
+        }, 0);
+      
+      // Calculate PTO hours
+      const ptoHours = employeeEntries
+        .filter(entry => entry.projectId && entry.projectId.projectName === 'PTO')
+        .reduce((sum, entry) => {
+          const filteredDayEntries = entry.dayEntries.filter(day => 
+            new Date(day.date) >= new Date(startDate) && 
+            new Date(day.date) <= new Date(endDate)
+          );
+          
+          return sum + filteredDayEntries.reduce((daySum, day) => daySum + day.hours, 0);
+        }, 0);
+      
+      // Calculate holiday hours
+      const holidayHours = employeeEntries
+        .filter(entry => entry.projectId && entry.projectId.projectName === 'Holiday')
+        .reduce((sum, entry) => {
+          const filteredDayEntries = entry.dayEntries.filter(day => 
+            new Date(day.date) >= new Date(startDate) && 
+            new Date(day.date) <= new Date(endDate)
+          );
+          
+          return sum + filteredDayEntries.reduce((daySum, day) => daySum + day.hours, 0);
+        }, 0);
+      
+      return {
+        employeeId: employee._id,
+        employeeName: employee.name,
+        email: employee.email,
+        totalHours,
+        billedHours,
+        ptoHours,
+        holidayHours,
+        utilization: totalHours > 0 ? (billedHours / totalHours) * 100 : 0
+      };
+    });
+    
+    res.json(employeeReports);
+  } catch (error) {
+    console.error('Error generating employee report:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// User routes
+app.post('/api/users', async (req, res) => {
+  try {
+    const { name, email, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+    
+    const user = new User({
+      name,
+      email,
+      role: role || 'employee'
+    });
+    
+    const savedUser = await user.save();
+    res.status(201).json(savedUser);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await User.find({}, '-password');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
