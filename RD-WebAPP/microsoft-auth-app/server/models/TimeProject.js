@@ -20,7 +20,7 @@ const timeEntrySchema = new mongoose.Schema({
   employeeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   },
   employeeName: {
     type: String,
