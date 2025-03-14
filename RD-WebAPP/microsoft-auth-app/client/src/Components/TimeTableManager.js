@@ -7,6 +7,7 @@ function TimeTableManager({ onBack, user }) {
   const [projects, setProjects] = useState([]);
   const [selectedWeek, setSelectedWeek] = useState(getDefaultWeek());
   const [timeEntries, setTimeEntries] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [isBillable, setIsBillable] = useState(true);
   const [dayHours, setDayHours] = useState({
