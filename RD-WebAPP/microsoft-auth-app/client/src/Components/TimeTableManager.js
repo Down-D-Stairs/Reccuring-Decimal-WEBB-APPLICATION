@@ -125,22 +125,48 @@ const fetchProjects = async () => {
 };
 
 
-  const fetchTimeEntries = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/timeentries?employeeId=${user.id}&weekStart=${selectedWeek.start}&weekEnd=${selectedWeek.end}`
-      );
-      const data = await response.json();
-      setTimeEntries(data);
-      
-      // Format entries for weekly view
-      formatWeeklyEntries(data);
-    } catch (error) {
-      console.error('Error fetching time entries:', error);
+const fetchTimeEntries = async () => {
+  try {
+    // Check if user.id exists before making the request
+    if (!user || !user.username) {
+      console.error('User ID is missing');
+      return;
     }
-  };
+
+    const response = await fetch(
+      `${API_URL}/api/timeentries?employeeId=${user.username}&weekStart=${selectedWeek.start}&weekEnd=${selectedWeek.end}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}: ${await response.text()}`);
+    }
+
+    const data = await response.json();
+    
+    // Verify data is an array
+    if (!Array.isArray(data)) {
+      console.error('Expected array response, got:', data);
+      setTimeEntries([]);
+      return;
+    }
+    
+    setTimeEntries(data);
+    formatWeeklyEntries(data);
+  } catch (error) {
+    console.error('Error fetching time entries:', error);
+    setTimeEntries([]);
+    setWeeklyEntries([]);
+  }
+};
+
 
   const formatWeeklyEntries = (entries) => {
+    // Check if entries is an array before trying to map
+    if (!Array.isArray(entries)) {
+      console.error('Expected entries to be an array, got:', entries);
+      setWeeklyEntries([]);
+      return;
+    }
     const formattedEntries = entries.map(entry => {
       const days = {};
       entry.dayEntries.forEach(day => {
