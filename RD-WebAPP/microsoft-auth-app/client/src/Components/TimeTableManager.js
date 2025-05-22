@@ -11,6 +11,10 @@ function TimeTableManager({ onBack, user }) {
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [isBillable, setIsBillable] = useState(true);
   const [selectedProjectTimesheets, setSelectedProjectTimesheets] = useState([]);
+  const [approvalDateRange, setApprovalDateRange] = useState({
+    start: startOfCurrentMonth(),
+    end: endOfCurrentMonth()
+  });
   const [dayHours, setDayHours] = useState({
     monday: 0,
     tuesday: 0,
@@ -89,6 +93,23 @@ function TimeTableManager({ onBack, user }) {
       };
     });
   }
+  
+  // Helper functions for date ranges
+  function startOfCurrentMonth() {
+    const date = new Date();
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+    return date.toISOString().split('T')[0];
+  }
+
+  function endOfCurrentMonth() {
+    const date = new Date();
+    date.setMonth(date.getMonth() + 1);
+    date.setDate(0);
+    date.setHours(23, 59, 59, 999);
+    return date.toISOString().split('T')[0];
+  }
+
 
   useEffect(() => {
     fetchProjects();
@@ -428,7 +449,7 @@ const isUserAnApprover = (user, projects) => {
 const handleViewProjectTimesheets = async (projectId) => {
   try {
     const response = await fetch(
-      `${API_URL}/api/timeentries/project/${projectId}?status=submitted`
+      `${API_URL}/api/timeentries/project/${projectId}?status=submitted&startDate=${approvalDateRange.start}&endDate=${approvalDateRange.end}`
     );
     
     if (!response.ok) {
@@ -443,6 +464,7 @@ const handleViewProjectTimesheets = async (projectId) => {
     setSelectedProjectTimesheets([]);
   }
 };
+
 
 // Add these component functions
 const ApprovalsView = () => {
@@ -823,13 +845,125 @@ const ProjectTimesheetsView = () => {
       </div>
     ) : view === 'approvals' ? (
       selectedProjectId ? (
-        <ProjectTimesheetsView />
+        <div className="project-timesheets-container">
+          <h2>Timesheets for {projects.find(p => p._id === selectedProjectId)?.projectName}</h2>
+          
+          <button 
+            className="back-button"
+            onClick={() => setSelectedProjectId(null)}
+          >
+            Back to Projects
+          </button>
+          
+          {selectedProjectTimesheets.length === 0 ? (
+            <p>No submitted timesheets found for this project.</p>
+          ) : (
+            <div>
+              {/* Group timesheets by employee */}
+              {Object.entries(
+                selectedProjectTimesheets.reduce((acc, timesheet) => {
+                  if (!acc[timesheet.employeeName]) {
+                    acc[timesheet.employeeName] = [];
+                  }
+                  acc[timesheet.employeeName].push(timesheet);
+                  return acc;
+                }, {})
+              ).map(([employeeName, timesheets]) => (
+                <div key={employeeName} className="employee-timesheets">
+                  <h3>{employeeName}</h3>
+                  
+                  {timesheets.map(timesheet => (
+                    <div key={timesheet._id} className="timesheet-card">
+                      <p>Week: {new Date(timesheet.weekStartDate).toLocaleDateString()} - 
+                         {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
+                      <p>Total Hours: {timesheet.totalHours}</p>
+                      <p>Status: {timesheet.status}</p>
+                      
+                      <div className="day-entries">
+                        {timesheet.dayEntries.map((day, index) => (
+                          <div key={index} className="day-entry">
+                            <p>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</p>
+                            {day.notes && <p>Notes: {day.notes}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
-        <ApprovalsView />
+        <div className="approvals-container">
+          <h2>Timesheets Pending Your Approval</h2>
+          
+          <button 
+            className="back-button"
+            onClick={() => setView('list')}
+          >
+            Back to Timesheet
+          </button>
+          
+          {/* Add date range selectors */}
+          <div className="date-range-selector">
+            <label>Start Date:</label>
+            <input 
+              type="date" 
+              value={approvalDateRange.start}
+              onChange={(e) => setApprovalDateRange({
+                ...approvalDateRange,
+                start: e.target.value
+              })}
+            />
+            
+            <label>End Date:</label>
+            <input 
+              type="date" 
+              value={approvalDateRange.end}
+              onChange={(e) => setApprovalDateRange({
+                ...approvalDateRange,
+                end: e.target.value
+              })}
+            />
+          </div>
+          
+          {/* Get projects where user is an approver */}
+          {(() => {
+            const approverProjects = projects.filter(project => {
+              if (!project.approvers) return false;
+              const approversList = project.approvers.split(',').map(email => email.trim());
+              return approversList.includes(user.username);
+            });
+            
+            return approverProjects.length === 0 ? (
+              <p>You are not assigned as an approver for any projects.</p>
+            ) : (
+              <div className="projects-for-approval">
+                {approverProjects.map(project => (
+                  <div key={project._id} className="approval-project-card">
+                    <h3>{project.projectName}</h3>
+                    <p>Client: {project.clientName}</p>
+                    <p>Date Range: {new Date(project.dateRange.start).toLocaleDateString()} - 
+                       {new Date(project.dateRange.end).toLocaleDateString()}</p>
+                    
+                    <button 
+                      className="view-timesheets-button"
+                      onClick={() => handleViewProjectTimesheets(project._id)}
+                    >
+                      View Submitted Timesheets
+                    </button>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
       )
     ) : null}
   </div>
 );
+
 
 }
 

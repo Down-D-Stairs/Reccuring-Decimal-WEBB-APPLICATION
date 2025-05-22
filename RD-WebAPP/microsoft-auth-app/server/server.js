@@ -735,23 +735,36 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/timeentries/project/:projectId', async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { status } = req.query;
+    const { status, startDate, endDate } = req.query;
+    
+    // Validate required parameters
+    if (!projectId) {
+      return res.status(400).json({ error: "Missing required parameters" });
+    }
     
     let query = { projectId };
+    
+    // Add optional filters
     if (status) {
       query.status = status;
     }
     
+    if (startDate && endDate) {
+      query.weekStartDate = { $gte: new Date(startDate) };
+      query.weekEndDate = { $lte: new Date(endDate) };
+    }
+    
     const timeEntries = await TimeEntry.find(query)
-      .sort({ weekStartDate: -1 })
-      .populate('projectId');
+      .sort({ submittedDate: -1 })
+      .populate('employeeId', 'name email');
       
     res.json(timeEntries);
   } catch (error) {
     console.error('Error fetching project time entries:', error);
-    res.status(500).json({ error: 'Failed to fetch time entries' });
+    res.status(500).json({ error: error.message });
   }
 });
+
 
 
 // Start the server
