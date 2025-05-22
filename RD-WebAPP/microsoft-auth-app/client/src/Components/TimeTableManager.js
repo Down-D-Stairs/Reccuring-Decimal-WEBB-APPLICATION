@@ -135,7 +135,7 @@ const fetchTimeEntries = async () => {
     }
 
     const response = await fetch(
-      `${API_URL}/api/timeentries?employeeId=${user.username}&weekStart=${selectedWeek.start}&weekEnd=${selectedWeek.end}`
+      `${API_URL}/api/timeentries?employeeEmail=${user.username}&weekStart=${selectedWeek.start}&weekEnd=${selectedWeek.end}`
     );
 
     if (!response.ok) {
