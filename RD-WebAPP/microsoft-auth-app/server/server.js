@@ -731,6 +731,29 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+// Get time entries for a specific project
+app.get('/api/timeentries/project/:projectId', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { status } = req.query;
+    
+    let query = { projectId };
+    if (status) {
+      query.status = status;
+    }
+    
+    const timeEntries = await TimeEntry.find(query)
+      .sort({ weekStartDate: -1 })
+      .populate('projectId');
+      
+    res.json(timeEntries);
+  } catch (error) {
+    console.error('Error fetching project time entries:', error);
+    res.status(500).json({ error: 'Failed to fetch time entries' });
+  }
+});
+
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));

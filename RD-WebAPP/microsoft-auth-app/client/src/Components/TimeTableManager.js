@@ -10,6 +10,7 @@ function TimeTableManager({ onBack, user }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [isBillable, setIsBillable] = useState(true);
+  const [selectedProjectTimesheets, setSelectedProjectTimesheets] = useState([]);
   const [dayHours, setDayHours] = useState({
     monday: 0,
     tuesday: 0,
@@ -397,6 +398,7 @@ const fetchTimeEntries = async () => {
     });
   };
 
+  
   const handleNextWeek = () => {
     const startDate = new Date(selectedWeek.start);
     startDate.setDate(startDate.getDate() + 7);
@@ -410,353 +412,425 @@ const fetchTimeEntries = async () => {
     });
   };
 
+
+// Add this function to check if user is an approver
+const isUserAnApprover = (user, projects) => {
+  if (!user || !user.username) return false;
+  
+  return projects.some(project => {
+    if (!project.approvers) return false;
+    const approversList = project.approvers.split(',').map(email => email.trim());
+    return approversList.includes(user.username);
+  });
+};
+
+// Add this function to fetch timesheets for a project
+const handleViewProjectTimesheets = async (projectId) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/api/timeentries/project/${projectId}?status=submitted`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
+    const data = await response.json();
+    setSelectedProjectTimesheets(data);
+    setSelectedProjectId(projectId);
+  } catch (error) {
+    console.error('Error fetching project timesheets:', error);
+    setSelectedProjectTimesheets([]);
+  }
+};
+
+// Add these component functions
+const ApprovalsView = () => {
+  // Get projects where user is an approver
+  const approverProjects = projects.filter(project => {
+    if (!project.approvers) return false;
+    const approversList = project.approvers.split(',').map(email => email.trim());
+    return approversList.includes(user.username);
+  });
+};
+
+const ProjectTimesheetsView = () => {
+  const project = projects.find(p => p._id === selectedProjectId);
+  
+  if (!project) return <p>Project not found</p>;
+  
+  // Group timesheets by employee
+  const timesheetsByEmployee = {};
+  selectedProjectTimesheets.forEach(timesheet => {
+    if (!timesheetsByEmployee[timesheet.employeeName]) {
+      timesheetsByEmployee[timesheet.employeeName] = [];
+    }
+    timesheetsByEmployee[timesheet.employeeName].push(timesheet);
+  });
+};
+
   const weekDays = getWeekDayNames();
 
   return (
-    <div className="timetable-container">
-      {view === 'list' ? (
-        <div className="timesheet-view">
-          <div className="header-buttons">
+  <div className="timetable-container">
+    {view === 'list' ? (
+      <div className="timesheet-view">
+        <div className="header-buttons">
+          <button
+            className="home-button"
+            onClick={onBack}
+          >
+            Home
+          </button>
+          {isAdmin && (
             <button
-              className="home-button"
-              onClick={onBack}
+              className="create-project-button"
+              onClick={() => setView('new-project')}
             >
-              Home
+              Create New Project
             </button>
-            {isAdmin && (
-              <button
-                className="create-project-button"
-                onClick={() => setView('new-project')}
-              >
-                Create New Project
-              </button>
-            )}
-          </div>
-
-          <div className="week-selector">
-            <button onClick={handlePreviousWeek}>Previous Week</button>
-            <h3>Week of {new Date(selectedWeek.start).toLocaleDateString()} - {new Date(selectedWeek.end).toLocaleDateString()}</h3>
-            <button onClick={handleNextWeek}>Next Week</button>
-          </div>
-
-          <div className="timesheet-table-container">
-            <table className="timesheet-table">
-              <thead>
-                <tr>
-                  <th>Project</th>
-                  <th>Billable</th>
-                  {weekDays.map((day, index) => (
-                    <th key={index}>{day.name}<br/>{day.date}</th>
-                  ))}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {weeklyEntries.map((entry, index) => (
-                  <tr key={index}>
-                    <td>{entry.projectName}</td>
-                    <td>{entry.isBillable ? 'Yes' : 'No'}</td>
-                    <td><input type="number" min="0" max="24" value={entry.monday || 0} readOnly /></td>
-                    <td><input type="number" min="0" max="24" value={entry.tuesday || 0} readOnly /></td>
-                    <td><input type="number" min="0" max="24" value={entry.wednesday || 0} readOnly /></td>
-                    <td><input type="number" min="0" max="24" value={entry.thursday || 0} readOnly /></td>
-                    <td><input type="number" min="0" max="24" value={entry.friday || 0} readOnly /></td>
-                    <td><input type="number" min="0" max="24" value={entry.saturday || 0} readOnly /></td>
-                    <td><input type="number" min="0" max="24" value={entry.sunday || 0} readOnly /></td>
-                    <td>
-                      <button onClick={() => handleDeleteEntry(entry.id)}>Delete</button>
-                    </td>
-                  </tr>
-                ))}
-                
-                {/* New entry form row */}
-                <tr className="new-entry-row">
-                  <td>
-                    <select 
-                      value={selectedProjectId} 
-                      onChange={(e) => setSelectedProjectId(e.target.value)}
-                    >
-                      <option value="">Select Project</option>
-                      {projects.map(project => (
-                        <option key={project._id} value={project._id}>
-                          {project.projectName}
-                        </option>
-                      ))}
-                      <option value="holiday">Holiday</option>
-                      <option value="pto">PTO</option>
-                    </select>
-                  </td>
-                  <td>
-                    <select 
-                      value={isBillable ? 'yes' : 'no'} 
-                      onChange={(e) => setIsBillable(e.target.value === 'yes')}
-                    >
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.monday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, monday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.tuesday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, tuesday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.wednesday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, wednesday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.thursday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, thursday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.friday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, friday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.saturday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, saturday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      min="0" 
-                      max="24" 
-                      value={dayHours.sunday || ''} 
-                      onChange={(e) => setDayHours({...dayHours, sunday: e.target.value})}
-                    />
-                  </td>
-                  <td>
-                    <button 
-                      onClick={handleAddTimeEntry}
-                      disabled={!selectedProjectId}
-                    >
-                      Add
-                    </button>
-                  </td>
-                </tr>
-                
-                {/* Totals row */}
-                <tr className="totals-row">
-                  <td colSpan="2">Daily Totals</td>
-                  <td>{totalHours.monday}</td>
-                  <td>{totalHours.tuesday}</td>
-                  <td>{totalHours.wednesday}</td>
-                  <td>{totalHours.thursday}</td>
-                  <td>{totalHours.friday}</td>
-                  <td>{totalHours.saturday}</td>
-                  <td>{totalHours.sunday}</td>
-                  <td>Total: {totalHours.total}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="timesheet-actions">
+          )}
+          {isUserAnApprover(user, projects) && (
             <button 
-              className="submit-timesheet-button"
-              onClick={handleSubmitTimesheet}
-              disabled={weeklyEntries.length === 0}
+              className="approvals-button"
+              onClick={() => setView('approvals')}
             >
-              Submit Timesheet
+              View Timesheets for Approval
+            </button>
+          )}
+        </div>
+
+        <div className="week-selector">
+          <button onClick={handlePreviousWeek}>Previous Week</button>
+          <h3>Week of {new Date(selectedWeek.start).toLocaleDateString()} - {new Date(selectedWeek.end).toLocaleDateString()}</h3>
+          <button onClick={handleNextWeek}>Next Week</button>
+        </div>
+
+        <div className="timesheet-table-container">
+          <table className="timesheet-table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Billable</th>
+                {weekDays.map((day, index) => (
+                  <th key={index}>{day.name}<br/>{day.date}</th>
+                ))}
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {weeklyEntries.map((entry, index) => (
+                <tr key={index}>
+                  <td>{entry.projectName}</td>
+                  <td>{entry.isBillable ? 'Yes' : 'No'}</td>
+                  <td><input type="number" min="0" max="24" value={entry.monday || 0} readOnly /></td>
+                  <td><input type="number" min="0" max="24" value={entry.tuesday || 0} readOnly /></td>
+                  <td><input type="number" min="0" max="24" value={entry.wednesday || 0} readOnly /></td>
+                  <td><input type="number" min="0" max="24" value={entry.thursday || 0} readOnly /></td>
+                  <td><input type="number" min="0" max="24" value={entry.friday || 0} readOnly /></td>
+                  <td><input type="number" min="0" max="24" value={entry.saturday || 0} readOnly /></td>
+                  <td><input type="number" min="0" max="24" value={entry.sunday || 0} readOnly /></td>
+                  <td>
+                    <button onClick={() => handleDeleteEntry(entry.id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+              
+              {/* New entry form row */}
+              <tr className="new-entry-row">
+                <td>
+                  <select 
+                    value={selectedProjectId} 
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                  >
+                    <option value="">Select Project</option>
+                    {projects.map(project => (
+                      <option key={project._id} value={project._id}>
+                        {project.projectName}
+                      </option>
+                    ))}
+                    <option value="holiday">Holiday</option>
+                    <option value="pto">PTO</option>
+                  </select>
+                </td>
+                <td>
+                  <select 
+                    value={isBillable ? 'yes' : 'no'} 
+                    onChange={(e) => setIsBillable(e.target.value === 'yes')}
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.monday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, monday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.tuesday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, tuesday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.wednesday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, wednesday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.thursday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, thursday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.friday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, friday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.saturday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, saturday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.sunday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, sunday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <button 
+                    onClick={handleAddTimeEntry}
+                    disabled={!selectedProjectId}
+                  >
+                    Add
+                  </button>
+                </td>
+              </tr>
+              
+              {/* Totals row */}
+              <tr className="totals-row">
+                <td colSpan="2">Daily Totals</td>
+                <td>{totalHours.monday}</td>
+                <td>{totalHours.tuesday}</td>
+                <td>{totalHours.wednesday}</td>
+                <td>{totalHours.thursday}</td>
+                <td>{totalHours.friday}</td>
+                <td>{totalHours.saturday}</td>
+                <td>{totalHours.sunday}</td>
+                <td>Total: {totalHours.total}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="timesheet-actions">
+          <button 
+            className="submit-timesheet-button"
+            onClick={handleSubmitTimesheet}
+            disabled={weeklyEntries.length === 0}
+          >
+            Submit Timesheet
+          </button>
+        </div>
+      </div>
+    ) : view === 'new-project' ? (
+      <div className="project-form-container">
+        <h2>Create New Project</h2>
+        <div className="project-form">
+          <div className="form-group">
+            <label>Project Name</label>
+            <input
+              type="text"
+              value={newProject.projectName}
+              onChange={(e) => setNewProject({...newProject, projectName: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Client Name</label>
+            <input
+              type="text"
+              value={newProject.clientName}
+              onChange={(e) => setNewProject({...newProject, clientName: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Project Type</label>
+            <input
+              type="text"
+              value={newProject.projectType}
+              onChange={(e) => setNewProject({...newProject, projectType: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label>PO Number</label>
+              <input
+                type="text"
+                value={newProject.poNumber}
+                onChange={(e) => setNewProject({...newProject, poNumber: e.target.value})}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Contract Number</label>
+              <input
+                type="text"
+                value={newProject.contractNumber}
+                onChange={(e) => setNewProject({...newProject, contractNumber: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label>Start Date</label>
+              <input
+                type="date"
+                value={newProject.dateRange.start}
+                onChange={(e) => setNewProject({
+                  ...newProject, 
+                  dateRange: {...newProject.dateRange, start: e.target.value}
+                })}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>End Date</label>
+              <input
+                type="date"
+                value={newProject.dateRange.end}
+                onChange={(e) => setNewProject({
+                  ...newProject, 
+                  dateRange: {...newProject.dateRange, end: e.target.value}
+                })}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label>Max Hours</label>
+              <input
+                type="number"
+                value={newProject.maxHours}
+                onChange={(e) => setNewProject({...newProject, maxHours: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Max Budget</label>
+              <input
+                type="number"
+                value={newProject.maxBudget}
+                onChange={(e) => setNewProject({...newProject, maxBudget: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Approvers (comma-separated emails)</label>
+            <input
+              type="text"
+              value={newProject.approvers}
+              onChange={(e) => setNewProject({...newProject, approvers: e.target.value})}
+              placeholder="e.g. approver1@example.com, approver2@example.com"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Project Members (comma-separated emails)</label>
+            <input
+              type="text"
+              value={newProject.projectMembers}
+              onChange={(e) => setNewProject({...newProject, projectMembers: e.target.value})}
+              placeholder="e.g. member1@example.com, member2@example.com"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Location</label>
+            <input
+              type="text"
+              value={newProject.location}
+              onChange={(e) => setNewProject({...newProject, location: e.target.value})}
+            />
+          </div>
+          
+          <div className="form-group checkbox">
+            <label>
+              <input
+                type="checkbox"
+                checked={newProject.isHybrid}
+                onChange={(e) => setNewProject({...newProject, isHybrid: e.target.checked})}
+              />
+              Hybrid Project
+            </label>
+          </div>
+          
+          <div className="form-buttons">
+            <button onClick={() => setView('list')}>Cancel</button>
+            <button
+              onClick={handleCreateProject}
+              disabled={!newProject.projectName || !newProject.clientName ||
+                      !newProject.dateRange.start || !newProject.dateRange.end ||
+                      !newProject.maxHours || !newProject.maxBudget ||
+                      !newProject.approvers || !newProject.projectMembers}
+            >
+              Create Project
             </button>
           </div>
         </div>
-      ) : view === 'new-project' ? (
-        <div className="project-form-container">
-          <h2>Create New Project</h2>
-          <div className="project-form">
-            <div className="form-group">
-              <label>Project Name</label>
-              <input
-                type="text"
-                value={newProject.projectName}
-                onChange={(e) => setNewProject({...newProject, projectName: e.target.value})}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Client Name</label>
-              <input
-                type="text"
-                value={newProject.clientName}
-                onChange={(e) => setNewProject({...newProject, clientName: e.target.value})}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Project Type</label>
-              <input
-                type="text"
-                value={newProject.projectType}
-                onChange={(e) => setNewProject({...newProject, projectType: e.target.value})}
-                required
-              />
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>PO Number</label>
-                <input
-                  type="text"
-                  value={newProject.poNumber}
-                  onChange={(e) => setNewProject({...newProject, poNumber: e.target.value})}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Contract Number</label>
-                <input
-                  type="text"
-                  value={newProject.contractNumber}
-                  onChange={(e) => setNewProject({...newProject, contractNumber: e.target.value})}
-                />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Start Date</label>
-                <input
-                  type="date"
-                  value={newProject.dateRange.start}
-                  onChange={(e) => setNewProject({
-                    ...newProject, 
-                    dateRange: {...newProject.dateRange, start: e.target.value}
-                  })}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>End Date</label>
-                <input
-                  type="date"
-                  value={newProject.dateRange.end}
-                  onChange={(e) => setNewProject({
-                    ...newProject, 
-                    dateRange: {...newProject.dateRange, end: e.target.value}
-                  })}
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Max Hours</label>
-                <input
-                  type="number"
-                  value={newProject.maxHours}
-                  onChange={(e) => setNewProject({...newProject, maxHours: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Max Budget</label>
-                <input
-                  type="number"
-                  value={newProject.maxBudget}
-                  onChange={(e) => setNewProject({...newProject, maxBudget: e.target.value})}
-                  required
-                />
-              </div>
-            </div>
+      </div>
+    ) : view === 'approvals' ? (
+      selectedProjectId ? (
+        <ProjectTimesheetsView />
+      ) : (
+        <ApprovalsView />
+      )
+    ) : null}
+  </div>
+);
 
-            <div className="form-group">
-              <label>Approvers (comma-separated emails)</label>
-              <input
-                type="text"
-                value={newProject.approvers}
-                onChange={(e) => setNewProject({...newProject, approvers: e.target.value})}
-                placeholder="e.g. approver1@example.com, approver2@example.com"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Project Members (comma-separated emails)</label>
-              <input
-                type="text"
-                value={newProject.projectMembers}
-                onChange={(e) => setNewProject({...newProject, projectMembers: e.target.value})}
-                placeholder="e.g. member1@example.com, member2@example.com"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Location</label>
-              <input
-                type="text"
-                value={newProject.location}
-                onChange={(e) => setNewProject({...newProject, location: e.target.value})}
-              />
-            </div>
-            
-            <div className="form-group checkbox">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={newProject.isHybrid}
-                  onChange={(e) => setNewProject({...newProject, isHybrid: e.target.checked})}
-                />
-                Hybrid Project
-              </label>
-            </div>
-            
-            <div className="form-buttons">
-              <button onClick={() => setView('list')}>Cancel</button>
-              <button
-                onClick={handleCreateProject}
-                disabled={!newProject.projectName || !newProject.clientName ||
-                        !newProject.dateRange.start || !newProject.dateRange.end ||
-                        !newProject.maxHours || !newProject.maxBudget ||
-                        !newProject.approvers || !newProject.projectMembers}
-              >
-                Create Project
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
 }
 
 export default TimeTableManager;
