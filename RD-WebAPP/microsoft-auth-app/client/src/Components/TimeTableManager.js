@@ -448,9 +448,8 @@ const isUserAnApprover = (user, projects) => {
 // Add this function to fetch timesheets for a project
 const handleViewProjectTimesheets = async (projectId) => {
   try {
-    const response = await fetch(
-      `${API_URL}/api/timeentries/project/${projectId}?status=submitted&startDate=${approvalDateRange.start}&endDate=${approvalDateRange.end}`
-    );
+    // Simplify the request - don't use date parameters if they're causing issues
+    const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}`);
     
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}`);
@@ -464,6 +463,7 @@ const handleViewProjectTimesheets = async (projectId) => {
     setSelectedProjectTimesheets([]);
   }
 };
+
 
 
 // Add these component functions
@@ -496,15 +496,22 @@ const ProjectTimesheetsView = () => {
   // First, add this function before your return statement
 const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
   try {
-    const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}/status`, {
+    // Add a reason prompt if denying
+    let reason = '';
+    if (newStatus === 'denied') {
+      reason = prompt('Please provide a reason for denial:');
+      if (!reason) return; // Cancel if no reason provided
+    }
+
+    const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         status: newStatus,
-        approvedBy: user.username,
-        approvedDate: new Date().toISOString()
+        reason: reason,
+        approverEmail: user.username
       })
     });
 
@@ -520,11 +527,14 @@ const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
         timesheet._id === timesheetId ? updatedTimesheet : timesheet
       )
     );
+    
+    alert(`Timesheet ${newStatus === 'approved' ? 'approved' : 'denied'} successfully!`);
   } catch (error) {
     console.error('Error updating timesheet status:', error);
     alert('Failed to update timesheet status');
   }
 };
+
 
 // Now update the return statement
 return (
@@ -909,7 +919,7 @@ return (
                   {timesheets.map(timesheet => (
                     <div key={timesheet._id} className="timesheet-card">
                       <p>Week: {new Date(timesheet.weekStartDate).toLocaleDateString()} - 
-                         {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
+                        {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
                       <p>Total Hours: {timesheet.totalHours}</p>
                       <p>Status: <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></p>
                       
@@ -922,7 +932,7 @@ return (
                         ))}
                       </div>
                       
-                      {/* Add approve/deny buttons */}
+                      {/* Only show approval buttons for submitted timesheets */}
                       {timesheet.status === 'submitted' && (
                         <div className="approval-actions">
                           <button 
@@ -940,20 +950,12 @@ return (
                         </div>
                       )}
                       
-                      {/* Show approval info if approved */}
-                      {timesheet.status === 'approved' && timesheet.approvedBy && (
-                        <p className="approval-info">
-                          Approved by {timesheet.approvedBy} on {new Date(timesheet.approvedDate).toLocaleDateString()}
-                        </p>
-                      )}
-                      
-                      {/* Show denial info if denied */}
-                      {timesheet.status === 'denied' && timesheet.approvedBy && (
-                        <p className="denial-info">
-                          Denied by {timesheet.approvedBy} on {new Date(timesheet.approvedDate).toLocaleDateString()}
-                        </p>
+                      {/* Show reason if denied */}
+                      {timesheet.status === 'denied' && timesheet.reason && (
+                        <p className="denial-reason">Reason: {timesheet.reason}</p>
                       )}
                     </div>
+
                   ))}
                 </div>
               ))}
