@@ -510,7 +510,8 @@ const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
       },
       body: JSON.stringify({
         status: newStatus,
-        reason: reason,
+        comments: reason, // Save reason in the comments field
+        reason: reason,   // Also keep the original reason field for compatibility
         approverEmail: user.username
       })
     });
@@ -932,29 +933,39 @@ return (
                         ))}
                       </div>
                       
-                      {/* Only show approval buttons for submitted timesheets */}
-                      {timesheet.status === 'submitted' && (
-                        <div className="approval-actions">
-                          <button 
-                            className="approve-button"
-                            onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'approved')}
-                          >
-                            Approve
-                          </button>
-                          <button 
-                            className="deny-button"
-                            onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'denied')}
-                          >
-                            Deny
-                          </button>
-                        </div>
+                      {/* Always show approval buttons */}
+                      <div className="approval-actions">
+                        <button 
+                          className="approve-button"
+                          onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'approved')}
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          className="deny-button"
+                          onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'denied')}
+                        >
+                          Deny
+                        </button>
+                      </div>
+                      
+                      {/* Show comments/reason if denied */}
+                      {timesheet.status === 'denied' && (timesheet.comments || timesheet.reason) && (
+                        <p className="denial-reason">
+                          Reason: {timesheet.comments || timesheet.reason}
+                        </p>
                       )}
                       
-                      {/* Show reason if denied */}
-                      {timesheet.status === 'denied' && timesheet.reason && (
-                        <p className="denial-reason">Reason: {timesheet.reason}</p>
+                      {/* Show who approved/denied and when */}
+                      {(timesheet.status === 'approved' || timesheet.status === 'denied') && 
+                      timesheet.approverEmail && timesheet.approvedDate && (
+                        <p className="approval-info">
+                          {timesheet.status === 'approved' ? 'Approved' : 'Denied'} by {timesheet.approverEmail} 
+                          on {new Date(timesheet.approvedDate).toLocaleDateString()}
+                        </p>
                       )}
                     </div>
+
 
                   ))}
                 </div>
