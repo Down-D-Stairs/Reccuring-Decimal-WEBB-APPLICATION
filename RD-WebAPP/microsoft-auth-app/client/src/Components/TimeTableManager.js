@@ -493,7 +493,41 @@ const ProjectTimesheetsView = () => {
 
   const weekDays = getWeekDayNames();
 
-  return (
+  // First, add this function before your return statement
+const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
+  try {
+    const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: newStatus,
+        approvedBy: user.username,
+        approvedDate: new Date().toISOString()
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+
+    const updatedTimesheet = await response.json();
+    
+    // Update the local state with the updated timesheet
+    setSelectedProjectTimesheets(
+      selectedProjectTimesheets.map(timesheet => 
+        timesheet._id === timesheetId ? updatedTimesheet : timesheet
+      )
+    );
+  } catch (error) {
+    console.error('Error updating timesheet status:', error);
+    alert('Failed to update timesheet status');
+  }
+};
+
+// Now update the return statement
+return (
   <div className="timetable-container">
     {view === 'list' ? (
       <div className="timesheet-view">
@@ -877,7 +911,7 @@ const ProjectTimesheetsView = () => {
                       <p>Week: {new Date(timesheet.weekStartDate).toLocaleDateString()} - 
                          {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
                       <p>Total Hours: {timesheet.totalHours}</p>
-                      <p>Status: {timesheet.status}</p>
+                      <p>Status: <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></p>
                       
                       <div className="day-entries">
                         {timesheet.dayEntries.map((day, index) => (
@@ -887,6 +921,38 @@ const ProjectTimesheetsView = () => {
                           </div>
                         ))}
                       </div>
+                      
+                      {/* Add approve/deny buttons */}
+                      {timesheet.status === 'submitted' && (
+                        <div className="approval-actions">
+                          <button 
+                            className="approve-button"
+                            onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'approved')}
+                          >
+                            Approve
+                          </button>
+                          <button 
+                            className="deny-button"
+                            onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'denied')}
+                          >
+                            Deny
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Show approval info if approved */}
+                      {timesheet.status === 'approved' && timesheet.approvedBy && (
+                        <p className="approval-info">
+                          Approved by {timesheet.approvedBy} on {new Date(timesheet.approvedDate).toLocaleDateString()}
+                        </p>
+                      )}
+                      
+                      {/* Show denial info if denied */}
+                      {timesheet.status === 'denied' && timesheet.approvedBy && (
+                        <p className="denial-info">
+                          Denied by {timesheet.approvedBy} on {new Date(timesheet.approvedDate).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -904,29 +970,6 @@ const ProjectTimesheetsView = () => {
           >
             Back to Timesheet
           </button>
-          
-          {/* Add date range selectors */}
-          <div className="date-range-selector">
-            <label>Start Date:</label>
-            <input 
-              type="date" 
-              value={approvalDateRange.start}
-              onChange={(e) => setApprovalDateRange({
-                ...approvalDateRange,
-                start: e.target.value
-              })}
-            />
-            
-            <label>End Date:</label>
-            <input 
-              type="date" 
-              value={approvalDateRange.end}
-              onChange={(e) => setApprovalDateRange({
-                ...approvalDateRange,
-                end: e.target.value
-              })}
-            />
-          </div>
           
           {/* Get projects where user is an approver */}
           {(() => {
@@ -963,6 +1006,7 @@ const ProjectTimesheetsView = () => {
     ) : null}
   </div>
 );
+
 
 
 }

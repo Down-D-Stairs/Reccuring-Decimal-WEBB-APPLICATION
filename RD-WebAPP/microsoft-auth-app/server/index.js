@@ -765,6 +765,28 @@ app.get('/api/timeentries/project/:projectId', async (req, res) => {
   }
 });
 
+// On your server
+app.put('/api/timeentries/:timesheetId/status', async (req, res) => {
+  try {
+    const { timesheetId } = req.params;
+    const { status, approvedBy, approvedDate } = req.body;
+    
+    const updatedTimesheet = await TimeEntry.findByIdAndUpdate(
+      timesheetId,
+      { 
+        status,
+        approvedBy,
+        approvedDate
+      },
+      { new: true }
+    );
+    
+    res.json(updatedTimesheet);
+  } catch (error) {
+    console.error('Error updating timesheet status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 // Start the server
