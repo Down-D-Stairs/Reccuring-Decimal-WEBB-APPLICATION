@@ -11,6 +11,7 @@ function TimeTableManager({ onBack, user }) {
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [isBillable, setIsBillable] = useState(true);
   const [selectedProjectTimesheets, setSelectedProjectTimesheets] = useState([]);
+  const [timesheetStatusUpdates, setTimesheetStatusUpdates] = useState({});
   const [approvalDateRange, setApprovalDateRange] = useState({
     start: startOfCurrentMonth(),
     end: endOfCurrentMonth()
@@ -458,11 +459,15 @@ const handleViewProjectTimesheets = async (projectId) => {
     const data = await response.json();
     setSelectedProjectTimesheets(data);
     setSelectedProjectId(projectId);
+    
+    // Reset status updates when viewing a new project
+    setTimesheetStatusUpdates({});
   } catch (error) {
     console.error('Error fetching project timesheets:', error);
     setSelectedProjectTimesheets([]);
   }
 };
+
 
 
 
@@ -535,6 +540,57 @@ const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
     alert('Failed to update timesheet status');
   }
 };
+
+
+const handleSubmitTimesheetDecision = async (timesheetId) => {
+  try {
+    const update = timesheetStatusUpdates[timesheetId];
+    if (!update) return;
+    
+    // Don't allow empty comments for approval/denial
+    if (update.status !== 'submitted' && !update.comments) {
+      alert('Please provide comments for your decision.');
+      return;
+    }
+    
+    const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: update.status,
+        comments: update.comments,
+        approverEmail: user.username,
+        approvedDate: new Date().toISOString()
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+
+    const updatedTimesheet = await response.json();
+    
+    // Update the local state with the updated timesheet
+    setSelectedProjectTimesheets(
+      selectedProjectTimesheets.map(timesheet => 
+        timesheet._id === timesheetId ? updatedTimesheet : timesheet
+      )
+    );
+    
+    // Clear the status update for this timesheet
+    const newStatusUpdates = { ...timesheetStatusUpdates };
+    delete newStatusUpdates[timesheetId];
+    setTimesheetStatusUpdates(newStatusUpdates);
+    
+    alert(`Timesheet ${update.status === 'approved' ? 'approved' : 'denied'} successfully!`);
+  } catch (error) {
+    console.error('Error updating timesheet status:', error);
+    alert('Failed to update timesheet status');
+  }
+};
+
 
 
 // Now update the return statement
@@ -920,7 +976,7 @@ return (
                   {timesheets.map(timesheet => (
                     <div key={timesheet._id} className="timesheet-card">
                       <p>Week: {new Date(timesheet.weekStartDate).toLocaleDateString()} - 
-                        {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
+                         {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
                       <p>Total Hours: {timesheet.totalHours}</p>
                       <p>Status: <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></p>
                       
@@ -933,40 +989,67 @@ return (
                         ))}
                       </div>
                       
-                      {/* Always show approval buttons */}
-                      <div className="approval-actions">
-                        <button 
-                          className="approve-button"
-                          onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'approved')}
+                      {/* ExpenseManager-style approval UI */}
+                      <div className="timesheet-approval-section">
+                        <select
+                          value={timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}
+                          onChange={(e) => setTimesheetStatusUpdates({
+                            ...timesheetStatusUpdates,
+                            [timesheet._id]: {
+                              ...timesheetStatusUpdates[timesheet._id],
+                              status: e.target.value
+                            }
+                          })}
+                          className={`status-select ${timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}`}
                         >
-                          Approve
-                        </button>
+                          <option value="submitted">Submitted</option>
+                          <option value="approved">Approved</option>
+                          <option value="denied">Denied</option>
+                        </select>
+                        
+                        <textarea
+                          placeholder="Comments (required for approval/denial)"
+                          value={timesheetStatusUpdates[timesheet._id]?.comments || ''}
+                          onChange={(e) => setTimesheetStatusUpdates({
+                            ...timesheetStatusUpdates,
+                            [timesheet._id]: {
+                              ...timesheetStatusUpdates[timesheet._id],
+                              comments: e.target.value
+                            }
+                          })}
+                          className="approval-comments"
+                        />
+                        
                         <button 
-                          className="deny-button"
-                          onClick={() => handleTimesheetStatusUpdate(timesheet._id, 'denied')}
+                          className="submit-decision-button"
+                          onClick={() => handleSubmitTimesheetDecision(timesheet._id)}
+                          disabled={
+                            !timesheetStatusUpdates[timesheet._id] ||
+                            timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
+                            (timesheetStatusUpdates[timesheet._id]?.status !== 'submitted' && 
+                             !timesheetStatusUpdates[timesheet._id]?.comments)
+                          }
                         >
-                          Deny
+                          Submit Decision
                         </button>
                       </div>
                       
-                      {/* Show comments/reason if denied */}
-                      {timesheet.status === 'denied' && (timesheet.comments || timesheet.reason) && (
-                        <p className="denial-reason">
-                          Reason: {timesheet.comments || timesheet.reason}
-                        </p>
+                      {/* Show comments if available */}
+                      {timesheet.comments && (
+                        <div className="timesheet-comments">
+                          <p><strong>Comments:</strong> {timesheet.comments}</p>
+                        </div>
                       )}
                       
-                      {/* Show who approved/denied and when */}
+                      {/* Show approval info */}
                       {(timesheet.status === 'approved' || timesheet.status === 'denied') && 
-                      timesheet.approverEmail && timesheet.approvedDate && (
+                       timesheet.approverEmail && timesheet.approvedDate && (
                         <p className="approval-info">
                           {timesheet.status === 'approved' ? 'Approved' : 'Denied'} by {timesheet.approverEmail} 
                           on {new Date(timesheet.approvedDate).toLocaleDateString()}
                         </p>
                       )}
                     </div>
-
-
                   ))}
                 </div>
               ))}
@@ -1019,6 +1102,7 @@ return (
     ) : null}
   </div>
 );
+
 
 
 

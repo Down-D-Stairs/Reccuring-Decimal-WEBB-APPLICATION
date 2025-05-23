@@ -527,3 +527,70 @@
   color: #d9534f;
   font-style: italic;
 }
+
+
+.timesheet-approval-section {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.status-select {
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.status-select.submitted {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.status-select.approved {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.status-select.denied {
+  background-color: #d9534f;
+  color: white;
+}
+
+.approval-comments {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+}
+
+.submit-decision-button {
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-decision-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.timesheet-comments {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-left: 3px solid #0078d4;
+}
+
+.approval-info {
+  margin-top: 10px;
+  font-style: italic;
+  color: #6c757d;
+}
