@@ -156,6 +156,13 @@ const fetchTimeEntries = async () => {
       return;
     }
 
+    // Log what we're sending to help debug
+    console.log('Fetching time entries with params:', {
+      employeeEmail: user.username,
+      weekStart: selectedWeek.start,
+      weekEnd: selectedWeek.end
+    });
+
     const response = await fetch(
       `${API_URL}/api/timeentries?employeeEmail=${user.username}&weekStart=${selectedWeek.start}&weekEnd=${selectedWeek.end}`
     );
@@ -453,15 +460,25 @@ const handleViewProjectTimesheets = async (projectId) => {
     const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}`);
     
     if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Server returned ${response.status}: ${errorText}`);
     }
     
     const data = await response.json();
+    console.log('Fetched project timesheets:', data);
+    
+    // Initialize the status updates with existing data
+    const initialStatusUpdates = {};
+    data.forEach(timesheet => {
+      initialStatusUpdates[timesheet._id] = {
+        status: timesheet.status,
+        comments: timesheet.comments || timesheet.reason || ''
+      };
+    });
+    
+    setTimesheetStatusUpdates(initialStatusUpdates);
     setSelectedProjectTimesheets(data);
     setSelectedProjectId(projectId);
-    
-    // Reset status updates when viewing a new project
-    setTimesheetStatusUpdates({});
   } catch (error) {
     console.error('Error fetching project timesheets:', error);
     setSelectedProjectTimesheets([]);
@@ -553,6 +570,13 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
       return;
     }
     
+    console.log('Submitting timesheet decision:', {
+      timesheetId,
+      status: update.status,
+      comments: update.comments,
+      approverEmail: user.username
+    });
+
     const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
       method: 'PUT',
       headers: {
@@ -561,6 +585,7 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
       body: JSON.stringify({
         status: update.status,
         comments: update.comments,
+        reason: update.comments,
         approverEmail: user.username,
         approvedDate: new Date().toISOString()
       })
@@ -1035,11 +1060,12 @@ return (
                       </div>
                       
                       {/* Show comments if available */}
-                      {timesheet.comments && (
+                      {(timesheet.comments || timesheetStatusUpdates[timesheet._id]?.comments) && (
                         <div className="timesheet-comments">
-                          <p><strong>Comments:</strong> {timesheet.comments}</p>
+                          <p><strong>Comments:</strong> {timesheetStatusUpdates[timesheet._id]?.comments || timesheet.comments}</p>
                         </div>
                       )}
+
                       
                       {/* Show approval info */}
                       {(timesheet.status === 'approved' || timesheet.status === 'denied') && 

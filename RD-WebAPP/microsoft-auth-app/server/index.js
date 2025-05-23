@@ -770,18 +770,32 @@ app.get('/api/timeentries/project/:projectId', async (req, res) => {
 app.put('/api/timeentries/:timesheetId', async (req, res) => {
   try {
     const { timesheetId } = req.params;
-    const { status, reason, approverEmail } = req.body;
+    const { status, comments, reason, approverEmail, approvedDate } = req.body;
+    
+    console.log('Updating timesheet:', {
+      timesheetId,
+      status,
+      comments,
+      reason,
+      approverEmail,
+      approvedDate
+    });
     
     const timesheet = await TimeEntry.findByIdAndUpdate(
       timesheetId,
       { 
         status,
-        reason,
+        comments, // Make sure this field exists in your schema
+        reason,   // For compatibility
         approverEmail,
-        approvedDate: new Date()
+        approvedDate
       },
       { new: true }
     );
+    
+    if (!timesheet) {
+      return res.status(404).json({ error: 'Timesheet not found' });
+    }
     
     res.json(timesheet);
   } catch (error) {
@@ -789,6 +803,7 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 
