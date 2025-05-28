@@ -6,6 +6,21 @@ function ExpenseManager({ onBack, user }) {
   const [expenseView, setExpenseView] = useState('list');  // Only 'list', 'new', 'add-expense', 'approve'
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
+  // Add these state variables at the top with your other state variables
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reportsPerPage] = useState(4); // You can adjust this number
+  // Add this function with your other functions
+  const getPaginatedReports = (filteredReports) => {
+    const indexOfLastReport = currentPage * reportsPerPage;
+    const indexOfFirstReport = indexOfLastReport - reportsPerPage;
+    return filteredReports.slice(indexOfFirstReport, indexOfLastReport);
+  };
+  const totalPages = Math.ceil(applyFilters(trips).length / reportsPerPage);
+  // Update your filter handlers to reset to page 1 when filters change
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
   const [filters, setFilters] = useState({
     dateStart: '',
     dateEnd: '',
@@ -350,7 +365,7 @@ function ExpenseManager({ onBack, user }) {
       </div>
 
       {expenseView === 'list' ? (
-        <div className="trips-list">
+        <div className="trips-list-table">
           <div className="filters-container">
             <div className="filter-group">
               <input
@@ -368,9 +383,9 @@ function ExpenseManager({ onBack, user }) {
             </div>
 
             <div className="filter-group">
-              <button
+              <button 
                 onClick={() => setFilters({
-                  ...filters,
+                  ...filters, 
                   sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc'
                 })}
                 className={`sort-button ${filters.sortOrder}`}
@@ -397,102 +412,106 @@ function ExpenseManager({ onBack, user }) {
 
             <input
               type="text"
-              placeholder="Search by trip name or email"
+              placeholder="Search by trip or employee name"
               value={filters.searchTerm}
               onChange={(e) => setFilters({...filters, searchTerm: e.target.value})}
             />
-            <button
+            
+            <button 
               className="clear-filters-btn"
-              onClick={() => setFilters({
-                dateStart: '',
-                dateEnd: '',
-                status: 'all',
-                searchTerm: '',
-                sortOrder: 'none'
-              })}
+              onClick={() => {
+                setFilters({
+                  dateStart: '',
+                  dateEnd: '',
+                  status: 'all',
+                  searchTerm: '',
+                  sortOrder: 'none'
+                });
+                setCurrentPage(1);
+              }}
             >
               Clear All Filters
             </button>
           </div>
-          
-          <div className="trips-table-container">
+
+          <div className="reports-table-container">
             <table className="reports-table">
               <thead>
                 <tr>
                   <th>Report Name</th>
-                  <th>Email</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
+                  <th>Employee Name</th>
                   <th>Total Amount</th>
+                  <th>Date Range</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {applyFilters(trips).map(trip => (
+                {getPaginatedReports(applyFilters(trips)).map(trip => (
                   <React.Fragment key={trip._id}>
-                    <tr className={`report-row ${expandedTrip === trip._id ? 'expanded' : ''}`}>
-                      <td>{trip.tripName}</td>
-                      <td>{trip.email || user.username}</td>
-                      <td>{new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
-                      <td>{new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
-                      <td className="amount-cell">${trip.totalAmount.toFixed(2)}</td>
+                    <tr className="report-row">
+                      <td className="report-name">{trip.tripName}</td>
+                      <td>{trip.employeeName}</td>
+                      <td className="amount">${trip.totalAmount.toFixed(2)}</td>
+                      <td className="date-range">
+                        {new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                      </td>
                       <td>
                         <span className={`status-badge ${trip.status}`}>{trip.status}</span>
-                        {trip.reason && <p className="status-reason">Reason: {trip.reason}</p>}
+                        {trip.reason && <div className="status-reason">Reason: {trip.reason}</div>}
                       </td>
-                      <td>
-                        <div className="action-buttons">
-                          <button 
-                            className="details-toggle"
-                            onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}
-                          >
-                            {expandedTrip === trip._id ? 'Hide Details' : 'Show Details'}
-                          </button>
-                          <button
-                            className="edit-button"
-                            onClick={() => {
-                              // Load trip data into state
-                              setTripDetails({
-                                _id: trip._id,
-                                tripName: trip.tripName,
-                                dateRange: trip.dateRange
-                              });
-                              // Load expenses
-                              setReceipts(trip.expenses);
-                              // Set total amount
-                              setTotalAmount(trip.totalAmount);
-                              setExpenseDetails({
-                                vendor: '',
-                                amount: '',
-                                date: '',
-                                comments: '',
-                                receipt: null
-                              });
-                              // Switch to edit view
-                              setExpenseView('edit');
-                            }}
-                          >
-                            Edit Report
-                          </button>
-                        </div>
+                      <td className="actions-cell">
+                        <button 
+                          className="edit-button"
+                          onClick={() => {
+                            setTripDetails({
+                              _id: trip._id,
+                              tripName: trip.tripName,
+                              employeeName: trip.employeeName,
+                              dateRange: trip.dateRange,
+                              userEmail: user.username
+                            });
+                            setReceipts(trip.expenses);
+                            setTotalAmount(trip.totalAmount);
+                            setExpenseDetails({
+                              vendor: '',
+                              amount: '',
+                              date: '',
+                              comments: '',
+                              receipt: null
+                            });
+                            setExpenseView('edit');
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          className="details-button"
+                          onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}
+                        >
+                          {expandedTrip === trip._id ? 'Hide' : 'Details'}
+                        </button>
                       </td>
                     </tr>
+                    
                     {expandedTrip === trip._id && (
-                      <tr className="expense-details-row">
-                        <td colSpan="7">
-                          <div className="trip-details">
-                            {trip.expenses?.map((expense, index) => (
-                              <div key={index} className="expense-item">
-                                <img src={expense.receipt} alt="Receipt" />
-                                <div>
-                                  <p>Vendor: {expense.vendor}</p>
-                                  <p>Amount: ${expense.amount.toFixed(2)}</p>
-                                  <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
-                                  <p>Comments: {expense.comments}</p>
+                      <tr className="expanded-row">
+                        <td colSpan="6">
+                          <div className="trip-details-expanded">
+                            <h4>Expense Details</h4>
+                            <div className="expenses-grid">
+                              {trip.expenses?.map((expense, index) => (
+                                <div key={index} className="expense-detail-card">
+                                  <img src={expense.receipt} alt="Receipt" className="receipt-image" />
+                                  <div className="expense-info">
+                                    <p><strong>Vendor:</strong> {expense.vendor}</p>
+                                    <p><strong>Amount:</strong> ${expense.amount.toFixed(2)}</p>
+                                    <p><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</p>
+                                    {expense.comments && <p><strong>Comments:</strong> {expense.comments}</p>}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -501,8 +520,60 @@ function ExpenseManager({ onBack, user }) {
                 ))}
               </tbody>
             </table>
+            
+            {applyFilters(trips).length === 0 && (
+              <div className="no-reports">
+                <p>No reports found matching your criteria.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="pagination-container">
+            <div className="pagination-info">
+              Showing {Math.min((currentPage - 1) * reportsPerPage + 1, applyFilters(trips).length)} to {Math.min(currentPage * reportsPerPage, applyFilters(trips).length)} of {applyFilters(trips).length} reports
+            </div>
+            
+            <div className="pagination-controls">
+              <button 
+                className="pagination-btn"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </button>
+              
+              <button 
+                className="pagination-btn"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              
+              <span className="page-info">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <button 
+                className="pagination-btn"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+              
+              <button 
+                className="pagination-btn"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </button>
+            </div>
           </div>
         </div>
+
 
        
       ) : expenseView === 'add-expense' ? (

@@ -301,332 +301,262 @@
     background: #cccccc;
     cursor: not-allowed;
   }
-.status-badge {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 15px;
-  margin: 10px 0;
-  font-weight: 500;
-}
-
-.status-badge.pending {
-  background: #ffd700;
-  color: #000;
-}
-
-.status-badge.approved {
-  background: #4CAF50;
-  color: white;
-}
-
-.status-badge.denied {
-  background: #ff4444;
-  color: white;
-}
-
-.status-reason {
-  margin: 10px 0;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 4px;
-  font-style: italic;
-}
-
-.filters-container {
-  background: #f8f9fa;
+/* Table Container */
+.trips-list-table {
   padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: center;
-}
-
-.filter-group {
-  display: flex;
-  gap: 10px;
-}
-
-.filters-container input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.filters-container input[type="number"] {
-  width: 120px;
-}
-
-.filters-container input[type="text"] {
-  width: 200px;
-}
-
-.filters-container select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.filters-container input:focus,
-.filters-container select:focus {
-  outline: none;
-  border-color: #0066cc;
-  box-shadow: 0 0 0 2px rgba(0,102,204,0.2);
-}
-
-.sort-button {
-  padding: 8px 16px;
-  background: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.sort-button.asc {
-  background: #4CAF50;
-}
-
-.sort-button.desc {
-  background: #ff4444;
-}
-
-.sort-button:hover {
-  opacity: 0.9;
-}
-
-.clear-filters-btn {
-  padding: 8px 16px;
-  background: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  margin-left: auto;
-}
-
-.clear-filters-btn:hover {
-  background: #ff2222;
-}
-
-
-.edit-button {
-  background: #ff8c00;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.edit-button:hover {
-  background: #ff7000;
-}
-
-
-.edit-trip-container {
-  padding: 2rem;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
-.expense-edit-item {
-  display: flex;
-  gap: 20px;
-  padding: 15px;
-  background: #f8f9fa;
+/* Reports Table */
+.reports-table-container {
+  background: white;
   border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.receipt-thumbnail {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.expense-edit-fields {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-}
-
-.expense-edit-fields input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.save-changes {
-  background: #0066cc;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.cancel-edit {
-  background: #ff4444;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.approval-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  position: relative; /* Add this to allow absolute positioning of children */
-  padding-right: 200px; /* Make space for the fixed button on the right */
-}
-
-.batch-approval-actions {
-  position: fixed; /* Change from relative to fixed positioning */
-  right: 30px; /* Position from right edge of screen */
-  top: 200px; /* Adjust as needed for vertical positioning */
-  width: 180px; /* Set a fixed width */
-}
-
-.submit-all-decisions {
-  width: 100%;
-  padding: 15px 20px;
-  background-color: #4CAF50; /* Already green */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Add shadow for better visibility */
-}
-
-.submit-all-decisions:hover {
-  background-color: #45a049; /* Slightly darker green on hover */
-}
-
-/* Form field labels styling */
-.form-field {
-  margin-bottom: 15px;
-}
-
-.field-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 5px;
-  color: #333;
-  font-size: 1rem;
-}
-
-.date-inputs {
-  display: flex;
-  gap: 15px;
-}
-
-.date-field {
-  flex: 1;
-}
-
-.date-label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #555;
-  font-size: 0.9rem;
-}
-
-
-/* Table styling for reports */
-.trips-table-container {
-  overflow-x: auto;
-  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .reports-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 20px 0;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border-radius: 8px;
-  overflow: hidden;
+  font-size: 14px;
 }
 
-.reports-table th {
-  background-color: #f8f9fa;
-  color: #333;
-  font-weight: 600;
-  text-align: left;
-  padding: 12px 15px;
+.reports-table thead {
+  background: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
 }
 
-.reports-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #e9ecef;
-  vertical-align: middle;
-}
-
-.reports-table tr:last-child td {
-  border-bottom: none;
-}
-
-.reports-table .amount-cell {
+.reports-table th {
+  padding: 15px 12px;
+  text-align: left;
   font-weight: 600;
-  color: #2c3e50;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.report-row {
-  transition: background-color 0.2s;
+.reports-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #f1f3f4;
+  vertical-align: middle;
 }
 
 .report-row:hover {
   background-color: #f8f9fa;
 }
 
-.report-row.expanded {
-  background-color: #f0f4f8;
+/* Status Badge */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
-.expense-details-row td {
-  padding: 0;
-  background-color: #f8f9fa;
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
 }
 
-.action-buttons {
+.status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-badge.denied {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-reason {
+  font-size: 11px;
+  color: #6c757d;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Amount Column */
+.amount {
+  font-weight: 600;
+  color: #28a745;
+  font-size: 15px;
+}
+
+/* Date Range */
+.date-range {
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* Actions */
+.actions-cell {
+  white-space: nowrap;
+}
+
+.edit-button, .details-button {
+  padding: 6px 12px;
+  margin: 0 2px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-button {
+  background: #007bff;
+  color: white;
+}
+
+.edit-button:hover {
+  background: #0056b3;
+}
+
+.details-button {
+  background: #6c757d;
+  color: white;
+}
+
+.details-button:hover {
+  background: #545b62;
+}
+
+/* Expanded Row */
+.expanded-row {
+  background: #f8f9fa;
+}
+
+.trip-details-expanded {
+  padding: 20px;
+}
+
+.trip-details-expanded h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+}
+
+.expenses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.expense-detail-card {
   display: flex;
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+}
+
+.receipt-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.expense-info {
+  flex: 1;
+}
+
+.expense-info p {
+  margin: 2px 0;
+  font-size: 13px;
+}
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.details-toggle {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 6px 12px;
+.pagination-btn {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #495057;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 13px;
+  transition: all 0.2s;
 }
 
-.details-toggle:hover {
-  background-color: #5a6268;
+.pagination-btn:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  margin: 0 10px;
+}
+
+/* No Reports Message */
+.no-reports {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .reports-table {
+    font-size: 12px;
+  }
+  
+  .reports-table th,
+  .reports-table td {
+    padding: 10px 8px;
+  }
+  
+  .expenses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .actions-cell {
+    white-space: normal;
+  }
+  
+  .edit-button, .details-button {
+    display: block;
+    width: 100%;
+    margin: 2px 0;
+  }
 }

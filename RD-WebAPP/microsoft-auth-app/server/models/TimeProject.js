@@ -76,7 +76,7 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  clientName: {
+  clientName: { // Split Project and Client Sepperately, another const variable
     type: String,
     required: true
   },
@@ -84,7 +84,7 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  poNumber: String,
+  poNumber: String, 
   contractNumber: String,
   dateRange: {
     start: {
@@ -108,7 +108,7 @@ const projectSchema = new mongoose.Schema({
     type: String,  // Email addresses or names
     required: true
   },
-  projectMembers: {
+  projectMembers: { // Tie Project ID with Employee instead of this
     type: String,  // Email addresses or names
     required: true
   },
