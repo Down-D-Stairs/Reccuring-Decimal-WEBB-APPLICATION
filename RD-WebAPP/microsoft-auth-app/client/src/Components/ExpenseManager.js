@@ -9,7 +9,7 @@ function ExpenseManager({ onBack, user }) {
   
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
-  const [reportsPerPage] = useState(4); // You can adjust this number
+  const [reportsPerPage] = useState(2); // You can adjust this number
   
   const [filters, setFilters] = useState({
     dateStart: '',
@@ -115,7 +115,50 @@ function ExpenseManager({ onBack, user }) {
   // Update your filter handlers to reset to page 1 when filters change
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when filters change
+    
+    // If it's a search, try to find the first matching result
+    if (newFilters.searchTerm && newFilters.searchTerm !== filters.searchTerm) {
+      // Apply the new filters to get filtered results
+      const filteredResults = applyFiltersWithParams(trips, newFilters);
+      
+      if (filteredResults.length > 0) {
+        // Calculate which page the first result would be on
+        const firstResultPage = Math.ceil(1 / reportsPerPage);
+        setCurrentPage(firstResultPage);
+      } else {
+        setCurrentPage(1);
+      }
+    } else {
+      setCurrentPage(1); // Reset to page 1 for other filter changes
+    }
+  };
+
+  // Helper function to apply filters with custom parameters
+  const applyFiltersWithParams = (trips, filterParams) => {
+    let filteredTrips = trips.filter(trip => {
+      const matchesDate = (!filterParams.dateStart || new Date(trip.dateRange.start) >= new Date(filterParams.dateStart)) &&
+        (!filterParams.dateEnd || new Date(trip.dateRange.end) <= new Date(filterParams.dateEnd));
+     
+      const matchesStatus = filterParams.status === 'all' || trip.status === filterParams.status;
+     
+      const matchesSearch = !filterParams.searchTerm ||
+        trip.tripName.toLowerCase().includes(filterParams.searchTerm.toLowerCase()) ||
+        (trip.employeeName && trip.employeeName.toLowerCase().includes(filterParams.searchTerm.toLowerCase()));
+     
+      return matchesDate && matchesStatus && matchesSearch;
+    });
+
+    if (filterParams.sortOrder !== 'none') {
+      filteredTrips.sort((a, b) => {
+        if (filterParams.sortOrder === 'asc') {
+          return a.totalAmount - b.totalAmount;
+        } else {
+          return b.totalAmount - a.totalAmount;
+        }
+      });
+    }
+
+    return filteredTrips;
   };
 
   const handleReceiptUpload = async (file) => {
