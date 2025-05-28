@@ -3,24 +3,14 @@ import './Login.css';
 
 function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
-  const [expenseView, setExpenseView] = useState('list');  // Only 'list', 'new', 'add-expense', 'approve'
+  const [expenseView, setExpenseView] = useState('list');
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
+  
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(4); // You can adjust this number
-  // Add this function with your other functions
-  const getPaginatedReports = (filteredReports) => {
-    const indexOfLastReport = currentPage * reportsPerPage;
-    const indexOfFirstReport = indexOfLastReport - reportsPerPage;
-    return filteredReports.slice(indexOfFirstReport, indexOfLastReport);
-  };
-  const totalPages = Math.ceil(applyFilters(trips).length / reportsPerPage);
-  // Update your filter handlers to reset to page 1 when filters change
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
+  
   const [filters, setFilters] = useState({
     dateStart: '',
     dateEnd: '',
@@ -110,10 +100,28 @@ function ExpenseManager({ onBack, user }) {
     return filteredTrips;
   };  
 
+  // Add this function with your other functions
+  const getPaginatedReports = (filteredReports) => {
+    const indexOfLastReport = currentPage * reportsPerPage;
+    const indexOfFirstReport = indexOfLastReport - reportsPerPage;
+    return filteredReports.slice(indexOfFirstReport, indexOfLastReport);
+  };
+
+  // Calculate total pages using useMemo to avoid initialization issues
+  const totalPages = useMemo(() => {
+    return Math.ceil(applyFilters(trips).length / reportsPerPage);
+  }, [trips, filters, reportsPerPage]);
+
+  // Update your filter handlers to reset to page 1 when filters change
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
   const handleReceiptUpload = async (file) => {
     const formData = new FormData();
     formData.append('document', file);
- 
+
     try {
       const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
         method: 'POST',
@@ -372,19 +380,19 @@ function ExpenseManager({ onBack, user }) {
                 type="date"
                 placeholder="Start Date"
                 value={filters.dateStart}
-                onChange={(e) => setFilters({...filters, dateStart: e.target.value})}
+                onChange={(e) => handleFilterChange({...filters, dateStart: e.target.value})}
               />
               <input
                 type="date"
                 placeholder="End Date"
                 value={filters.dateEnd}
-                onChange={(e) => setFilters({...filters, dateEnd: e.target.value})}
+                onChange={(e) => handleFilterChange({...filters, dateEnd: e.target.value})}
               />
             </div>
 
             <div className="filter-group">
               <button 
-                onClick={() => setFilters({
+                onClick={() => handleFilterChange({
                   ...filters, 
                   sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc'
                 })}
@@ -393,7 +401,7 @@ function ExpenseManager({ onBack, user }) {
                 Amount {filters.sortOrder === 'asc' ? '↑' : '↓'}
               </button>
               <button
-                onClick={() => setFilters({...filters, sortOrder: 'none'})}
+                onClick={() => handleFilterChange({...filters, sortOrder: 'none'})}
                 className="sort-button"
               >
                 Clear Sort
@@ -402,7 +410,7 @@ function ExpenseManager({ onBack, user }) {
 
             <select
               value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
+              onChange={(e) => handleFilterChange({...filters, status: e.target.value})}
             >
               <option value="all">All Statuses</option>
               <option value="pending">Pending</option>
@@ -414,20 +422,19 @@ function ExpenseManager({ onBack, user }) {
               type="text"
               placeholder="Search by trip or employee name"
               value={filters.searchTerm}
-              onChange={(e) => setFilters({...filters, searchTerm: e.target.value})}
+              onChange={(e) => handleFilterChange({...filters, searchTerm: e.target.value})}
             />
             
             <button 
               className="clear-filters-btn"
               onClick={() => {
-                setFilters({
+                handleFilterChange({
                   dateStart: '',
                   dateEnd: '',
                   status: 'all',
                   searchTerm: '',
                   sortOrder: 'none'
                 });
-                setCurrentPage(1);
               }}
             >
               Clear All Filters
