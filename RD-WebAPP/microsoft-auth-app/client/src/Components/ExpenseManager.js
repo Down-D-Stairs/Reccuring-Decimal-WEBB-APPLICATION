@@ -699,52 +699,243 @@ function ExpenseManager({ onBack, user }) {
         </div>
 
       ) : expenseView === 'approve' ? (
-        <div className="approval-screen">
-          {applyFilters(trips).map(trip => (
-            <div key={trip._id} className="approval-card">
-              <div className="approval-header">
-                <input
-                  type="checkbox"
-                  checked={selectedTrips.includes(trip._id)}
-                  onChange={() => {
-                    if (selectedTrips.includes(trip._id)) {
-                      setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
-                    } else {
-                      setSelectedTrips([...selectedTrips, trip._id]);
-                    }
-                  }}
-                />
-                <h3>{trip.tripName}</h3>
-              </div>
-              <p>Email: {trip.email || user.username}</p>
-              <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
-              <p>${trip.totalAmount.toFixed(2)}</p>
-             
-              <div className="approval-actions">
-                <select
-                  value={trip.status}
-                  onChange={(e) => handleStatusChange(trip._id, e.target.value)}
-                >
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="denied">Denied</option>
-                </select>
-                <textarea
-                  placeholder="Reason for decision (required)..."
-                  value={trip.reason || ''}
-                  onChange={(e) => handleReasonChange(trip._id, e.target.value)}
-                />
-               
-                <button
-                  className="submit-decision"
-                  disabled={trip.status === 'pending' || !trip.reason}
-                  onClick={() => handleSubmitDecision(trip._id)}
-                >
-                  Submit Decision
-                </button>
-              </div>
+        <div className="approval-table-view">
+          {/* Filters Section */}
+          <div className="filters-container">
+            <div className="filter-group">
+              <input
+                type="date"
+                placeholder="Start Date"
+                value={filters.dateStart}
+                onChange={(e) => handleFilterChange({...filters, dateStart: e.target.value})}
+              />
+              <input
+                type="date"
+                placeholder="End Date"
+                value={filters.dateEnd}
+                onChange={(e) => handleFilterChange({...filters, dateEnd: e.target.value})}
+              />
             </div>
-          ))}
+            <div className="filter-group">
+              <button
+                onClick={() => handleFilterChange({
+                  ...filters,
+                  sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc'
+                })}
+                className={`sort-button ${filters.sortOrder}`}
+              >
+                Amount {filters.sortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+              <button
+                onClick={() => handleFilterChange({...filters, sortOrder: 'none'})}
+                className="sort-button"
+              >
+                Clear Sort
+              </button>
+            </div>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange({...filters, status: e.target.value})}
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="denied">Denied</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Search by report name or employee"
+              value={filters.searchTerm}
+              onChange={(e) => handleFilterChange({...filters, searchTerm: e.target.value})}
+            />
+            <button
+              className="clear-filters-btn"
+              onClick={() => {
+                handleFilterChange({
+                  dateStart: '',
+                  dateEnd: '',
+                  status: 'all',
+                  searchTerm: '',
+                  sortOrder: 'none'
+                });
+              }}
+            >
+              Clear All Filters
+            </button>
+          </div>
+
+          {/* Approval Table */}
+          <div className="approval-table-container">
+            <table className="reports-table">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTrips(getPaginatedReports(applyFilters(trips)).map(trip => trip._id));
+                        } else {
+                          setSelectedTrips([]);
+                        }
+                      }}
+                      checked={selectedTrips.length === getPaginatedReports(applyFilters(trips)).length && getPaginatedReports(applyFilters(trips)).length > 0}
+                    />
+                  </th>
+                  <th>Report Name</th>
+                  <th>Employee Email</th>
+                  <th>Total Amount</th>
+                  <th>Date Range</th>
+                  <th>Current Status</th>
+                  <th>Decision</th>
+                  <th>Reason</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {getPaginatedReports(applyFilters(trips)).map(trip => (
+                  <React.Fragment key={trip._id}>
+                    <tr className="approval-row">
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedTrips.includes(trip._id)}
+                          onChange={() => {
+                            if (selectedTrips.includes(trip._id)) {
+                              setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
+                            } else {
+                              setSelectedTrips([...selectedTrips, trip._id]);
+                            }
+                          }}
+                        />
+                      </td>
+                      <td className="report-name">{trip.tripName}</td>
+                      <td>{trip.email}</td>
+                      <td className="amount">${trip.totalAmount.toFixed(2)}</td>
+                      <td className="date-range">
+                        {new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                      </td>
+                      <td>
+                        <span className={`status-badge ${trip.status}`}>{trip.status}</span>
+                      </td>
+                      <td>
+                        <select
+                          value={trip.status}
+                          onChange={(e) => handleStatusChange(trip._id, e.target.value)}
+                          className="decision-select"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                          <option value="denied">Denied</option>
+                        </select>
+                      </td>
+                      <td>
+                        <textarea
+                          placeholder="Reason for decision..."
+                          value={trip.reason || ''}
+                          onChange={(e) => handleReasonChange(trip._id, e.target.value)}
+                          className="reason-textarea"
+                          rows="2"
+                        />
+                      </td>
+                      <td className="actions-cell">
+                        <button
+                          className="submit-decision-btn"
+                          disabled={trip.status === 'pending' || !trip.reason}
+                          onClick={() => handleSubmitDecision(trip._id)}
+                        >
+                          Submit
+                        </button>
+                        <button
+                          className="details-button"
+                          onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}
+                        >
+                          {expandedTrip === trip._id ? 'Hide' : 'Details'}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Expandable Details Row */}
+                    {expandedTrip === trip._id && (
+                      <tr className="expanded-row">
+                        <td colSpan="9">
+                          <div className="trip-details-expanded">
+                            <h4>Expense Details</h4>
+                            <div className="expenses-grid">
+                              {trip.expenses?.map((expense, index) => (
+                                <div key={index} className="expense-detail-card">
+                                  <img src={expense.receipt} alt="Receipt" className="receipt-image" />
+                                  <div className="expense-info">
+                                    <p><strong>Vendor:</strong> {expense.vendor}</p>
+                                    <p><strong>Amount:</strong> ${expense.amount.toFixed(2)}</p>
+                                    <p><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</p>
+                                    {expense.comments && <p><strong>Comments:</strong> {expense.comments}</p>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+
+            {applyFilters(trips).length === 0 && (
+              <div className="no-reports">
+                <p>No reports found matching your criteria.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="pagination-container">
+            <div className="pagination-info">
+              Showing {Math.min((currentPage - 1) * reportsPerPage + 1, applyFilters(trips).length)} to {Math.min(currentPage * reportsPerPage, applyFilters(trips).length)} of {applyFilters(trips).length} reports
+            </div>
+            
+            <div className="pagination-controls">
+              <button
+                className="pagination-btn"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </button>
+              
+              <button
+                className="pagination-btn"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              
+              <span className="page-info">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <button
+                className="pagination-btn"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+              
+              <button
+                className="pagination-btn"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </button>
+            </div>
+          </div>
+
+          {/* Batch Actions */}
           <div className="batch-approval-actions">
             <button
               className="submit-all-decisions"
@@ -759,7 +950,6 @@ function ExpenseManager({ onBack, user }) {
             </button>
           </div>
         </div>
-
       ) : expenseView === 'edit' ? (
         <div className="edit-trip-container">
           <div className="fixed-section">
