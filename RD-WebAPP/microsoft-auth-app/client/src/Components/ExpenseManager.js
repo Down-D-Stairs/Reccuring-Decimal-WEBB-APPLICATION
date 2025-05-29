@@ -248,6 +248,14 @@ function ExpenseManager({ onBack, user }) {
 
   const handleSubmitDecision = async (tripId) => {
     const trip = trips.find(t => t._id === tripId);
+    
+    // Simple confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to ${trip.status} this report?`
+    );
+    
+    if (!confirmed) return;
+    
     try {
       const response = await fetch(`${API_URL}/api/trips/${tripId}/status`, {
         method: 'PUT',
@@ -261,12 +269,23 @@ function ExpenseManager({ onBack, user }) {
       setTrips(trips.map(t =>
         t._id === tripId ? updatedTrip : t
       ));
+      
+      // Redirect to view reports
+      setExpenseView('list');
+      
     } catch (error) {
       console.error('Failed to submit decision:', error);
     }
   };
 
   const handleSubmitBatchDecisions = async () => {
+    // Simple confirmation dialog for batch decisions
+    const confirmed = window.confirm(
+      `Are you sure you want to submit decisions for ${selectedTrips.length} selected reports?`
+    );
+    
+    if (!confirmed) return;
+    
     try {
       // Create an array of promises for each selected trip
       const updatePromises = selectedTrips.map(tripId => {
@@ -280,21 +299,21 @@ function ExpenseManager({ onBack, user }) {
           })
         });
       });
-     
+      
       // Wait for all promises to resolve
       await Promise.all(updatePromises);
-     
+      
       // Fetch updated trips
       await fetchTrips();
-     
-      // Clear selections and return to list view
+      
+      // Clear selections and redirect to list view
       setSelectedTrips([]);
       setExpenseView('list');
+      
     } catch (error) {
       console.error('Failed to submit decisions:', error);
     }
   };
-
   const handleNewTripSubmit = async () => {
     try {
       // First create the trip
