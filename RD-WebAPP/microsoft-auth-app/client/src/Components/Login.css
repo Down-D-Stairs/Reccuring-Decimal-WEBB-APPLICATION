@@ -853,3 +853,201 @@
   70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
   100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
+/* Edit Report Styles */
+.edit-report-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.edit-form-header {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  flex-wrap: wrap;
+}
+
+.edit-report-name {
+  flex: 2;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  min-width: 200px;
+}
+
+.edit-date-input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.add-receipt-btn {
+  padding: 12px 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.add-receipt-btn:hover {
+  background: #45a049;
+}
+
+.edit-receipts-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.edit-receipts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.edit-receipts-table th,
+.edit-receipts-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.edit-receipts-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+.edit-receipt-row {
+  height: 120px;
+}
+
+.receipt-image-cell {
+  width: 150px;
+}
+
+.edit-receipt-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.edit-vendor-input,
+.edit-amount-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.edit-comments-textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.remove-receipt-btn {
+  padding: 8px 16px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.remove-receipt-btn:hover {
+  background: #d32f2f;
+}
+
+.edit-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.pagination-info {
+  font-weight: 600;
+  color: #333;
+}
+
+.edit-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.edit-total {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.cancel-edit-btn {
+  padding: 12px 24px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancel-edit-btn:hover {
+  background: #5a6268;
+}
+
+.save-changes-btn {
+  padding: 12px 24px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.save-changes-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.save-changes-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.no-receipts {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}

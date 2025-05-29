@@ -951,130 +951,203 @@ function ExpenseManager({ onBack, user }) {
           </div>
         </div>
       ) : expenseView === 'edit' ? (
-        <div className="edit-trip-container">
-          <div className="fixed-section">
-            <input
-              type="text"
-              placeholder="Trip Name"
-              value={tripDetails.tripName}
-              onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
-            />
-            <p>Email: {user.username}</p>
-            <div className="date-inputs">
-              <input
-                type="date"
-                value={tripDetails.dateRange.start.split('T')[0]}
-                onChange={(e) => setTripDetails({
-                  ...tripDetails,
-                  dateRange: {...tripDetails.dateRange, start: e.target.value}
-                })}
-              />
-              <input
-                type="date"
-                value={tripDetails.dateRange.end.split('T')[0]}
-                onChange={(e) => setTripDetails({
-                  ...tripDetails,
-                  dateRange: {...tripDetails.dateRange, end: e.target.value}
-                })}
-              />
-            </div>
-           
-            <div className="receipt-section">
-              <div className="expense-form">
-                <input
-                  type="text"
-                  placeholder="Vendor Name"
-                  value={expenseDetails.vendor}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
-                />
-                <input
-                  type="number"
-                  placeholder="Amount"
-                  value={expenseDetails.amount}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
-                />
-                <input
-                  type="date"
-                  value={expenseDetails.date}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
-                />
-                <textarea
-                  placeholder="Comments"
-                  value={expenseDetails.comments}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
-                />
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  onChange={(e) => handleReceiptUpload(e.target.files[0])}
-                  className="receipt-input"
-                />
-                {expenseDetails.receipt && (
-                  <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
-                )}
-                <button
-                  onClick={() => {
-                    setReceipts([...receipts, expenseDetails]);
-                    setTotalAmount(prev => prev + Number(expenseDetails.amount));
-                    setExpenseDetails({
-                      vendor: '',
-                      amount: '',
-                      date: '',
-                      comments: '',
-                      receipt: null
-                    });
-                    const fileInput = document.querySelector('.receipt-input');
-                    if (fileInput) {
-                      fileInput.value = '';
-                    }
-                  }}
-                >
-                  Add Expense
-                </button>
-              </div>
-            </div>
+  <div className="edit-report-container">
+    {/* Horizontal Form Header */}
+    <div className="edit-form-header">
+      <input
+        type="text"
+        placeholder="Report Name"
+        value={editingTrip.tripName}
+        onChange={(e) => setEditingTrip({
+          ...editingTrip,
+          tripName: e.target.value
+        })}
+        className="edit-report-name"
+      />
+      
+      <input
+        type="date"
+        value={editingTrip.dateRange.start}
+        onChange={(e) => setEditingTrip({
+          ...editingTrip,
+          dateRange: { ...editingTrip.dateRange, start: e.target.value }
+        })}
+        className="edit-date-input"
+      />
+      
+      <input
+        type="date"
+        value={editingTrip.dateRange.end}
+        onChange={(e) => setEditingTrip({
+          ...editingTrip,
+          dateRange: { ...editingTrip.dateRange, end: e.target.value }
+        })}
+        className="edit-date-input"
+      />
+      
+      <button 
+        className="add-receipt-btn"
+        onClick={() => setExpenseView('add-expense')}
+      >
+        + Add Receipt
+      </button>
+    </div>
 
-            <div className="receipts-grid">
-              {receipts.map((receipt, index) => (
-                <div key={index} className="receipt-card">
-                  <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
-                  <div className="receipt-details">
-                    <p>Amount: ${receipt.amount}</p>
-                    <p>Date: {new Date(receipt.date).toLocaleDateString()}</p>
-                    <p>Vendor: {receipt.vendor}</p>
-                    <button
-                      onClick={() => {
-                        setTotalAmount(prev => prev - receipts[index].amount);
-                        setReceipts(prev => prev.filter((_, i) => i !== index));
-                      }}
-                      className="remove-receipt"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+    {/* Receipts Table with Pagination */}
+    <div className="edit-receipts-section">
+      {receipts.length > 0 ? (
+        <>
+          <table className="edit-receipts-table">
+            <thead>
+              <tr>
+                <th>Receipt Image</th>
+                <th>Vendor</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Comments</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {getPaginatedEditReceipts().map((receipt, index) => {
+                const actualIndex = (editReceiptPage - 1) * receiptsPerPage + index;
+                return (
+                  <tr key={actualIndex} className="edit-receipt-row">
+                    <td className="receipt-image-cell">
+                      <img 
+                        src={receipt.receipt} 
+                        alt="Receipt" 
+                        className="edit-receipt-image"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={receipt.vendor}
+                        onChange={(e) => {
+                          const updatedReceipts = [...receipts];
+                          updatedReceipts[actualIndex].vendor = e.target.value;
+                          setReceipts(updatedReceipts);
+                        }}
+                        className="edit-vendor-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={receipt.amount}
+                        onChange={(e) => {
+                          const updatedReceipts = [...receipts];
+                          const oldAmount = updatedReceipts[actualIndex].amount;
+                          const newAmount = parseFloat(e.target.value) || 0;
+                          updatedReceipts[actualIndex].amount = newAmount;
+                          setReceipts(updatedReceipts);
+                          setTotalAmount(prev => prev - oldAmount + newAmount);
+                        }}
+                        className="edit-amount-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="date"
+                        value={receipt.date}
+                        onChange={(e) => {
+                          const updatedReceipts = [...receipts];
+                          updatedReceipts[actualIndex].date = e.target.value;
+                          setReceipts(updatedReceipts);
+                        }}
+                        className="edit-date-input"
+                      />
+                    </td>
+                    <td>
+                      <textarea
+                        value={receipt.comments || ''}
+                        onChange={(e) => {
+                          const updatedReceipts = [...receipts];
+                          updatedReceipts[actualIndex].comments = e.target.value;
+                          setReceipts(updatedReceipts);
+                        }}
+                        className="edit-comments-textarea"
+                        rows="2"
+                        placeholder="Add comments..."
+                      />
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => {
+                          setTotalAmount(prev => prev - receipt.amount);
+                          setReceipts(prev => prev.filter((_, i) => i !== actualIndex));
+                          // Adjust page if we removed the last receipt on this page
+                          if (receipts.length <= editReceiptPage * receiptsPerPage - receiptsPerPage + 1 && editReceiptPage > 1) {
+                            setEditReceiptPage(editReceiptPage - 1);
+                          }
+                        }}
+                        className="remove-receipt-btn"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
 
-            <p className="total">Total: ${totalAmount.toFixed(2)}</p>
-
-            <div className="edit-actions">
+          {/* Receipt Pagination */}
+          {receipts.length > receiptsPerPage && (
+            <div className="edit-pagination">
               <button
-                className="cancel-edit"
-                onClick={() => setExpenseView('list')}
+                onClick={() => setEditReceiptPage(prev => Math.max(prev - 1, 1))}
+                disabled={editReceiptPage === 1}
+                className="pagination-btn"
               >
-                Cancel
+                ← Previous
               </button>
+              
+              <span className="pagination-info">
+                Receipt {editReceiptPage} of {receipts.length}
+              </span>
+              
               <button
-                className="save-changes"
-                onClick={() => handleEditSubmit(tripDetails._id)}
-                disabled={isSubmitting}
+                onClick={() => setEditReceiptPage(prev => Math.min(prev + 1, receipts.length))}
+                disabled={editReceiptPage === receipts.length}
+                className="pagination-btn"
               >
-                {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+                Next →
               </button>
             </div>
-          </div>
+          )}
+        </>
+      ) : (
+        <div className="no-receipts">
+          <p>No receipts added yet. Click "Add Receipt" to get started.</p>
         </div>
+      )}
+    </div>
+
+    {/* Total and Actions */}
+    <div className="edit-footer">
+      <div className="edit-total">
+        Total: ${totalAmount.toFixed(2)}
+      </div>
+      
+      <div className="edit-actions">
+        <button 
+          className="cancel-edit-btn"
+          onClick={() => setExpenseView('list')}
+        >
+          Cancel
+        </button>
+        <button 
+          className="save-changes-btn"
+          onClick={handleSaveChanges}
+          disabled={!editingTrip.tripName || receipts.length === 0}
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
        
       ) : (
         <div className="create-trip-container">
