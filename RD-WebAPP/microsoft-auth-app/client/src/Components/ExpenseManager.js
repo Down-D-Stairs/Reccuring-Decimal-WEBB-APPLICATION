@@ -10,6 +10,9 @@ function ExpenseManager({ onBack, user }) {
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(2); // You can adjust this number
+
+  const [editReceiptPage, setEditReceiptPage] = useState(1);
+  const receiptsPerPage = 1;
   
   const [filters, setFilters] = useState({
     dateStart: '',
