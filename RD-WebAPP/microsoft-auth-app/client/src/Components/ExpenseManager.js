@@ -10,9 +10,6 @@ function ExpenseManager({ onBack, user }) {
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(2); // You can adjust this number
-
-  const [editReceiptPage, setEditReceiptPage] = useState(1);
-  const receiptsPerPage = 1;
   
   const [filters, setFilters] = useState({
     dateStart: '',
@@ -702,243 +699,52 @@ function ExpenseManager({ onBack, user }) {
         </div>
 
       ) : expenseView === 'approve' ? (
-        <div className="approval-table-view">
-          {/* Filters Section */}
-          <div className="filters-container">
-            <div className="filter-group">
-              <input
-                type="date"
-                placeholder="Start Date"
-                value={filters.dateStart}
-                onChange={(e) => handleFilterChange({...filters, dateStart: e.target.value})}
-              />
-              <input
-                type="date"
-                placeholder="End Date"
-                value={filters.dateEnd}
-                onChange={(e) => handleFilterChange({...filters, dateEnd: e.target.value})}
-              />
-            </div>
-            <div className="filter-group">
-              <button
-                onClick={() => handleFilterChange({
-                  ...filters,
-                  sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc'
-                })}
-                className={`sort-button ${filters.sortOrder}`}
-              >
-                Amount {filters.sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
-              <button
-                onClick={() => handleFilterChange({...filters, sortOrder: 'none'})}
-                className="sort-button"
-              >
-                Clear Sort
-              </button>
-            </div>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange({...filters, status: e.target.value})}
-            >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="denied">Denied</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Search by report name or employee"
-              value={filters.searchTerm}
-              onChange={(e) => handleFilterChange({...filters, searchTerm: e.target.value})}
-            />
-            <button
-              className="clear-filters-btn"
-              onClick={() => {
-                handleFilterChange({
-                  dateStart: '',
-                  dateEnd: '',
-                  status: 'all',
-                  searchTerm: '',
-                  sortOrder: 'none'
-                });
-              }}
-            >
-              Clear All Filters
-            </button>
-          </div>
-
-          {/* Approval Table */}
-          <div className="approval-table-container">
-            <table className="reports-table">
-              <thead>
-                <tr>
-                  <th>
-                    <input
-                      type="checkbox"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedTrips(getPaginatedReports(applyFilters(trips)).map(trip => trip._id));
-                        } else {
-                          setSelectedTrips([]);
-                        }
-                      }}
-                      checked={selectedTrips.length === getPaginatedReports(applyFilters(trips)).length && getPaginatedReports(applyFilters(trips)).length > 0}
-                    />
-                  </th>
-                  <th>Report Name</th>
-                  <th>Employee Email</th>
-                  <th>Total Amount</th>
-                  <th>Date Range</th>
-                  <th>Current Status</th>
-                  <th>Decision</th>
-                  <th>Reason</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getPaginatedReports(applyFilters(trips)).map(trip => (
-                  <React.Fragment key={trip._id}>
-                    <tr className="approval-row">
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedTrips.includes(trip._id)}
-                          onChange={() => {
-                            if (selectedTrips.includes(trip._id)) {
-                              setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
-                            } else {
-                              setSelectedTrips([...selectedTrips, trip._id]);
-                            }
-                          }}
-                        />
-                      </td>
-                      <td className="report-name">{trip.tripName}</td>
-                      <td>{trip.email}</td>
-                      <td className="amount">${trip.totalAmount.toFixed(2)}</td>
-                      <td className="date-range">
-                        {new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
-                      </td>
-                      <td>
-                        <span className={`status-badge ${trip.status}`}>{trip.status}</span>
-                      </td>
-                      <td>
-                        <select
-                          value={trip.status}
-                          onChange={(e) => handleStatusChange(trip._id, e.target.value)}
-                          className="decision-select"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
-                          <option value="denied">Denied</option>
-                        </select>
-                      </td>
-                      <td>
-                        <textarea
-                          placeholder="Reason for decision..."
-                          value={trip.reason || ''}
-                          onChange={(e) => handleReasonChange(trip._id, e.target.value)}
-                          className="reason-textarea"
-                          rows="2"
-                        />
-                      </td>
-                      <td className="actions-cell">
-                        <button
-                          className="submit-decision-btn"
-                          disabled={trip.status === 'pending' || !trip.reason}
-                          onClick={() => handleSubmitDecision(trip._id)}
-                        >
-                          Submit
-                        </button>
-                        <button
-                          className="details-button"
-                          onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}
-                        >
-                          {expandedTrip === trip._id ? 'Hide' : 'Details'}
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Expandable Details Row */}
-                    {expandedTrip === trip._id && (
-                      <tr className="expanded-row">
-                        <td colSpan="9">
-                          <div className="trip-details-expanded">
-                            <h4>Expense Details</h4>
-                            <div className="expenses-grid">
-                              {trip.expenses?.map((expense, index) => (
-                                <div key={index} className="expense-detail-card">
-                                  <img src={expense.receipt} alt="Receipt" className="receipt-image" />
-                                  <div className="expense-info">
-                                    <p><strong>Vendor:</strong> {expense.vendor}</p>
-                                    <p><strong>Amount:</strong> ${expense.amount.toFixed(2)}</p>
-                                    <p><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</p>
-                                    {expense.comments && <p><strong>Comments:</strong> {expense.comments}</p>}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-
-            {applyFilters(trips).length === 0 && (
-              <div className="no-reports">
-                <p>No reports found matching your criteria.</p>
+        <div className="approval-screen">
+          {applyFilters(trips).map(trip => (
+            <div key={trip._id} className="approval-card">
+              <div className="approval-header">
+                <input
+                  type="checkbox"
+                  checked={selectedTrips.includes(trip._id)}
+                  onChange={() => {
+                    if (selectedTrips.includes(trip._id)) {
+                      setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
+                    } else {
+                      setSelectedTrips([...selectedTrips, trip._id]);
+                    }
+                  }}
+                />
+                <h3>{trip.tripName}</h3>
               </div>
-            )}
-          </div>
-
-          {/* Pagination Controls */}
-          <div className="pagination-container">
-            <div className="pagination-info">
-              Showing {Math.min((currentPage - 1) * reportsPerPage + 1, applyFilters(trips).length)} to {Math.min(currentPage * reportsPerPage, applyFilters(trips).length)} of {applyFilters(trips).length} reports
+              <p>Email: {trip.email || user.username}</p>
+              <p>Date Range: {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
+              <p>${trip.totalAmount.toFixed(2)}</p>
+             
+              <div className="approval-actions">
+                <select
+                  value={trip.status}
+                  onChange={(e) => handleStatusChange(trip._id, e.target.value)}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="denied">Denied</option>
+                </select>
+                <textarea
+                  placeholder="Reason for decision (required)..."
+                  value={trip.reason || ''}
+                  onChange={(e) => handleReasonChange(trip._id, e.target.value)}
+                />
+               
+                <button
+                  className="submit-decision"
+                  disabled={trip.status === 'pending' || !trip.reason}
+                  onClick={() => handleSubmitDecision(trip._id)}
+                >
+                  Submit Decision
+                </button>
+              </div>
             </div>
-            
-            <div className="pagination-controls">
-              <button
-                className="pagination-btn"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-              >
-                First
-              </button>
-              
-              <button
-                className="pagination-btn"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              
-              <span className="page-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              
-              <button
-                className="pagination-btn"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-              
-              <button
-                className="pagination-btn"
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-              >
-                Last
-              </button>
-            </div>
-          </div>
-
-          {/* Batch Actions */}
+          ))}
           <div className="batch-approval-actions">
             <button
               className="submit-all-decisions"
@@ -953,204 +759,132 @@ function ExpenseManager({ onBack, user }) {
             </button>
           </div>
         </div>
+
       ) : expenseView === 'edit' ? (
-  <div className="edit-report-container">
-    {/* Horizontal Form Header */}
-    <div className="edit-form-header">
-      <input
-        type="text"
-        placeholder="Report Name"
-        value={editingTrip.tripName}
-        onChange={(e) => setEditingTrip({
-          ...editingTrip,
-          tripName: e.target.value
-        })}
-        className="edit-report-name"
-      />
-      
-      <input
-        type="date"
-        value={editingTrip.dateRange.start}
-        onChange={(e) => setEditingTrip({
-          ...editingTrip,
-          dateRange: { ...editingTrip.dateRange, start: e.target.value }
-        })}
-        className="edit-date-input"
-      />
-      
-      <input
-        type="date"
-        value={editingTrip.dateRange.end}
-        onChange={(e) => setEditingTrip({
-          ...editingTrip,
-          dateRange: { ...editingTrip.dateRange, end: e.target.value }
-        })}
-        className="edit-date-input"
-      />
-      
-      <button 
-        className="add-receipt-btn"
-        onClick={() => setExpenseView('add-expense')}
-      >
-        + Add Receipt
-      </button>
-    </div>
+        <div className="edit-trip-container">
+          <div className="fixed-section">
+            <input
+              type="text"
+              placeholder="Trip Name"
+              value={tripDetails.tripName}
+              onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
+            />
+            <p>Email: {user.username}</p>
+            <div className="date-inputs">
+              <input
+                type="date"
+                value={tripDetails.dateRange.start.split('T')[0]}
+                onChange={(e) => setTripDetails({
+                  ...tripDetails,
+                  dateRange: {...tripDetails.dateRange, start: e.target.value}
+                })}
+              />
+              <input
+                type="date"
+                value={tripDetails.dateRange.end.split('T')[0]}
+                onChange={(e) => setTripDetails({
+                  ...tripDetails,
+                  dateRange: {...tripDetails.dateRange, end: e.target.value}
+                })}
+              />
+            </div>
+           
+            <div className="receipt-section">
+              <div className="expense-form">
+                <input
+                  type="text"
+                  placeholder="Vendor Name"
+                  value={expenseDetails.vendor}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
+                />
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={expenseDetails.amount}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
+                />
+                <input
+                  type="date"
+                  value={expenseDetails.date}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
+                />
+                <textarea
+                  placeholder="Comments"
+                  value={expenseDetails.comments}
+                  onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
+                />
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={(e) => handleReceiptUpload(e.target.files[0])}
+                  className="receipt-input"
+                />
+                {expenseDetails.receipt && (
+                  <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
+                )}
+                <button
+                  onClick={() => {
+                    setReceipts([...receipts, expenseDetails]);
+                    setTotalAmount(prev => prev + Number(expenseDetails.amount));
+                    setExpenseDetails({
+                      vendor: '',
+                      amount: '',
+                      date: '',
+                      comments: '',
+                      receipt: null
+                    });
+                    const fileInput = document.querySelector('.receipt-input');
+                    if (fileInput) {
+                      fileInput.value = '';
+                    }
+                  }}
+                >
+                  Add Expense
+                </button>
+              </div>
+            </div>
 
-    {/* Receipts Table with Pagination */}
-    <div className="edit-receipts-section">
-      {receipts.length > 0 ? (
-        <>
-          <table className="edit-receipts-table">
-            <thead>
-              <tr>
-                <th>Receipt Image</th>
-                <th>Vendor</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Comments</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {getPaginatedEditReceipts().map((receipt, index) => {
-                const actualIndex = (editReceiptPage - 1) * receiptsPerPage + index;
-                return (
-                  <tr key={actualIndex} className="edit-receipt-row">
-                    <td className="receipt-image-cell">
-                      <img 
-                        src={receipt.receipt} 
-                        alt="Receipt" 
-                        className="edit-receipt-image"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        value={receipt.vendor}
-                        onChange={(e) => {
-                          const updatedReceipts = [...receipts];
-                          updatedReceipts[actualIndex].vendor = e.target.value;
-                          setReceipts(updatedReceipts);
-                        }}
-                        className="edit-vendor-input"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        value={receipt.amount}
-                        onChange={(e) => {
-                          const updatedReceipts = [...receipts];
-                          const oldAmount = updatedReceipts[actualIndex].amount;
-                          const newAmount = parseFloat(e.target.value) || 0;
-                          updatedReceipts[actualIndex].amount = newAmount;
-                          setReceipts(updatedReceipts);
-                          setTotalAmount(prev => prev - oldAmount + newAmount);
-                        }}
-                        className="edit-amount-input"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="date"
-                        value={receipt.date}
-                        onChange={(e) => {
-                          const updatedReceipts = [...receipts];
-                          updatedReceipts[actualIndex].date = e.target.value;
-                          setReceipts(updatedReceipts);
-                        }}
-                        className="edit-date-input"
-                      />
-                    </td>
-                    <td>
-                      <textarea
-                        value={receipt.comments || ''}
-                        onChange={(e) => {
-                          const updatedReceipts = [...receipts];
-                          updatedReceipts[actualIndex].comments = e.target.value;
-                          setReceipts(updatedReceipts);
-                        }}
-                        className="edit-comments-textarea"
-                        rows="2"
-                        placeholder="Add comments..."
-                      />
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => {
-                          setTotalAmount(prev => prev - receipt.amount);
-                          setReceipts(prev => prev.filter((_, i) => i !== actualIndex));
-                          // Adjust page if we removed the last receipt on this page
-                          if (receipts.length <= editReceiptPage * receiptsPerPage - receiptsPerPage + 1 && editReceiptPage > 1) {
-                            setEditReceiptPage(editReceiptPage - 1);
-                          }
-                        }}
-                        className="remove-receipt-btn"
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+            <div className="receipts-grid">
+              {receipts.map((receipt, index) => (
+                <div key={index} className="receipt-card">
+                  <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
+                  <div className="receipt-details">
+                    <p>Amount: ${receipt.amount}</p>
+                    <p>Date: {new Date(receipt.date).toLocaleDateString()}</p>
+                    <p>Vendor: {receipt.vendor}</p>
+                    <button
+                      onClick={() => {
+                        setTotalAmount(prev => prev - receipts[index].amount);
+                        setReceipts(prev => prev.filter((_, i) => i !== index));
+                      }}
+                      className="remove-receipt"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          {/* Receipt Pagination */}
-          {receipts.length > receiptsPerPage && (
-            <div className="edit-pagination">
+            <p className="total">Total: ${totalAmount.toFixed(2)}</p>
+
+            <div className="edit-actions">
               <button
-                onClick={() => setEditReceiptPage(prev => Math.max(prev - 1, 1))}
-                disabled={editReceiptPage === 1}
-                className="pagination-btn"
+                className="cancel-edit"
+                onClick={() => setExpenseView('list')}
               >
-                ← Previous
+                Cancel
               </button>
-              
-              <span className="pagination-info">
-                Receipt {editReceiptPage} of {receipts.length}
-              </span>
-              
               <button
-                onClick={() => setEditReceiptPage(prev => Math.min(prev + 1, receipts.length))}
-                disabled={editReceiptPage === receipts.length}
-                className="pagination-btn"
+                className="save-changes"
+                onClick={() => handleEditSubmit(tripDetails._id)}
+                disabled={isSubmitting}
               >
-                Next →
+                {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
               </button>
             </div>
-          )}
-        </>
-      ) : (
-        <div className="no-receipts">
-          <p>No receipts added yet. Click "Add Receipt" to get started.</p>
+          </div>
         </div>
-      )}
-    </div>
-
-    {/* Total and Actions */}
-    <div className="edit-footer">
-      <div className="edit-total">
-        Total: ${totalAmount.toFixed(2)}
-      </div>
-      
-      <div className="edit-actions">
-        <button 
-          className="cancel-edit-btn"
-          onClick={() => setExpenseView('list')}
-        >
-          Cancel
-        </button>
-        <button 
-          className="save-changes-btn"
-          onClick={handleSaveChanges}
-          disabled={!editingTrip.tripName || receipts.length === 0}
-        >
-          Save Changes
-        </button>
-      </div>
-    </div>
-  </div>
        
       ) : (
         <div className="create-trip-container">
