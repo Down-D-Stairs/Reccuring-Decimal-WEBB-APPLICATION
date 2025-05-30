@@ -13,7 +13,7 @@ function ExpenseManager({ onBack, user }) {
 
   // Add this state for edit mode pagination
   const [editReceiptPage, setEditReceiptPage] = useState(1);
-  const receiptsPerPage = 1; // One receipt per page
+  const [receiptsPerPage] = useState(1); // One receipt per page
 
   // Add this function to get paginated receipts for edit mode
   const getPaginatedEditReceipts = () => {
@@ -375,54 +375,39 @@ function ExpenseManager({ onBack, user }) {
   const handleEditSubmit = async (tripId) => {
     setIsSubmitting(true);
     try {
-      // Make sure you're only sending plain data, not DOM elements
       const updateData = {
         tripName: tripDetails.tripName,
-        dateRange: {
-          start: tripDetails.dateRange.start,
-          end: tripDetails.dateRange.end
-        },
-        totalAmount: totalAmount,
-        // Don't include the entire tripDetails object as it might contain circular refs
+        dateRange: tripDetails.dateRange,
+        email: user.username,
+        totalAmount,
+        expenses: receipts.map(receipt => ({
+          vendor: receipt.vendor,
+          amount: Number(receipt.amount),
+          comments: receipt.comments || '',
+          receipt: receipt.receipt,
+          tripId: tripId
+        }))
       };
 
-      const tripResponse = await fetch(`${API_URL}/api/trips/${tripId}`, {
+      console.log('Sending update data:', updateData);
+      const response = await fetch(`${API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData) // Only stringify clean data
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
       });
 
-      if (!tripResponse.ok) {
-        throw new Error('Failed to update trip');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Update failed');
       }
 
-      // Update expenses separately
-      for (const receipt of receipts) {
-        const expenseData = {
-          amount: receipt.amount,
-          date: receipt.date,
-          vendor: receipt.vendor,
-          receipt: receipt.receipt,
-          comments: receipt.comments || ''
-        };
-        
-        await fetch(`${API_URL}/api/trips/${tripId}/expenses`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(expenseData) // Clean expense data only
-        });
-      }
+      const updatedTrip = await response.json();
+      console.log('Success! Updated trip:', updatedTrip);
 
-      setExpenseView('list');
-      fetchTrips();
+      fetchReports();
+      setCurrentView('list');
     } catch (error) {
-      console.error('Error updating trip:', error);
-      // Don't stringify the error object as it might contain circular refs
-      console.error('Error message:', error.message);
+      console.error('Edit error:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -559,46 +544,32 @@ function ExpenseManager({ onBack, user }) {
                         {trip.reason && <div className="status-reason">Reason: {trip.reason}</div>}
                       </td>
                       <td className="actions-cell">
-                        <button 
+                        <button
                           className="edit-button"
                           onClick={() => {
-                          // Load the existing trip data into state
-                          setTripDetails({
-                            _id: trip._id,
-                            tripName: trip.tripName,
-                            employeeName: trip.employeeName,
-                            dateRange: {
-                              start: trip.dateRange.start,
-                              end: trip.dateRange.end
-                            }
-                          });
-                          
-                          // Load existing receipts/expenses
-                          setReceipts(trip.expenses || []);
-                          
-                          // Set the total amount
-                          setTotalAmount(trip.totalAmount || 0);
-                          
-                          // Reset expense form
-                          setExpenseDetails({
-                            vendor: '',
-                            amount: '',
-                            date: '',
-                            comments: '',
-                            receipt: null
-                          });
-                          
-                          // Now switch to edit view
-                          setExpenseView('edit');
-                        }}
+                            setTripDetails({
+                              _id: report._id,
+                              tripName: report.tripName,
+                              employeeName: report.employeeName,
+                              dateRange: report.dateRange,
+                              userEmail: user.username
+                            });
+                            setReceipts(report.expenses || []);
+                            setTotalAmount(report.totalAmount || 0);
+                            setExpenseDetails({
+                              vendorName: '',
+                              amount: '',
+                              date: '',
+                              comments: '',
+                              receipt: null
+                            });
+                            setCurrentView('edit');
+                          }}
                         >
                           Edit
                         </button>
-                        <button 
-                          className="details-button"
-                          onClick={() => setExpandedTrip(expandedTrip === trip._id ? null : trip._id)}
-                        >
-                          {expandedTrip === trip._id ? 'Hide' : 'Details'}
+                        <button onClick={() => setExpandedRow(expandedRow === report._id ? null : report._id)}>
+                          {expandedRow === report._id ? 'Hide' : 'Details'}
                         </button>
                       </td>
                     </tr>
@@ -817,7 +788,7 @@ function ExpenseManager({ onBack, user }) {
             
             <input
               type="date"
-              value={tripDetails.dateRange.start}
+              value={tripDetails.dateRange.start ? tripDetails.dateRange.start.split('T')[0] : ''}
               onChange={(e) => setTripDetails({
                 ...tripDetails,
                 dateRange: { ...tripDetails.dateRange, start: e.target.value }
@@ -827,7 +798,7 @@ function ExpenseManager({ onBack, user }) {
             
             <input
               type="date"
-              value={tripDetails.dateRange.end}
+              value={tripDetails.dateRange.end ? tripDetails.dateRange.end.split('T')[0] : ''}
               onChange={(e) => setTripDetails({
                 ...tripDetails,
                 dateRange: { ...tripDetails.dateRange, end: e.target.value }
