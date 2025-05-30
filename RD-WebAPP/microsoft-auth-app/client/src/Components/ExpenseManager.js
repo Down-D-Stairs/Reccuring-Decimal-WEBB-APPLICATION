@@ -724,7 +724,7 @@ function ExpenseManager({ onBack, user }) {
                   checked={selectedTrips.includes(trip._id)}
                   onChange={() => {
                     if (selectedTrips.includes(trip._id)) {
-                      setSelectedTrips(selectedTriips.filter(id => id !== trip._id));
+                      setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
                     } else {
                       setSelectedTrips([...selectedTrips, trip._id]);
                     }
