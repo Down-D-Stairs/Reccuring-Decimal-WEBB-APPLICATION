@@ -853,3 +853,75 @@
   70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
   100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
+
+
+.receipts-table-container {
+  margin: 20px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.edit-receipts-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.edit-receipts-table th,
+.edit-receipts-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.edit-receipts-table th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+.receipt-image-cell {
+  width: 100px;
+}
+
+.edit-receipt-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.edit-vendor-input,
+.edit-amount-input,
+.edit-date-input {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.edit-comments-textarea {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  resize: vertical;
+}
+
+.remove-receipt-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.remove-receipt-btn:hover {
+  background: #ff0000;
+}
+
+.no-receipts {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}

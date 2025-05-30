@@ -844,27 +844,102 @@ function ExpenseManager({ onBack, user }) {
               </div>
             </div>
 
-            <div className="receipts-grid">
-              {receipts.map((receipt, index) => (
-                <div key={index} className="receipt-card">
-                  <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
-                  <div className="receipt-details">
-                    <p>Amount: ${receipt.amount}</p>
-                    <p>Date: {new Date(receipt.date).toLocaleDateString()}</p>
-                    <p>Vendor: {receipt.vendor}</p>
-                    <button
-                      onClick={() => {
-                        setTotalAmount(prev => prev - receipts[index].amount);
-                        setReceipts(prev => prev.filter((_, i) => i !== index));
-                      }}
-                      className="remove-receipt"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="receipts-table-container">
+            {receipts.length > 0 ? (
+              <table className="edit-receipts-table">
+                <thead>
+                  <tr>
+                    <th>Receipt Image</th>
+                    <th>Vendor</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Comments</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {receipts.map((receipt, index) => (
+                    <tr key={index} className="edit-receipt-row">
+                      <td className="receipt-image-cell">
+                        <img
+                          src={receipt.receipt}
+                          alt="Receipt"
+                          className="edit-receipt-image"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={receipt.vendor}
+                          onChange={(e) => {
+                            const updatedReceipts = [...receipts];
+                            updatedReceipts[index].vendor = e.target.value;
+                            setReceipts(updatedReceipts);
+                          }}
+                          className="edit-vendor-input"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={receipt.amount}
+                          onChange={(e) => {
+                            const updatedReceipts = [...receipts];
+                            const oldAmount = updatedReceipts[index].amount;
+                            const newAmount = parseFloat(e.target.value) || 0;
+                            updatedReceipts[index].amount = newAmount;
+                            setReceipts(updatedReceipts);
+                            setTotalAmount(prev => prev - oldAmount + newAmount);
+                          }}
+                          className="edit-amount-input"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="date"
+                          value={receipt.date}
+                          onChange={(e) => {
+                            const updatedReceipts = [...receipts];
+                            updatedReceipts[index].date = e.target.value;
+                            setReceipts(updatedReceipts);
+                          }}
+                          className="edit-date-input"
+                        />
+                      </td>
+                      <td>
+                        <textarea
+                          value={receipt.comments || ''}
+                          onChange={(e) => {
+                            const updatedReceipts = [...receipts];
+                            updatedReceipts[index].comments = e.target.value;
+                            setReceipts(updatedReceipts);
+                          }}
+                          className="edit-comments-textarea"
+                          rows="2"
+                          placeholder="Add comments..."
+                        />
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => {
+                            setTotalAmount(prev => prev - receipt.amount);
+                            setReceipts(prev => prev.filter((_, i) => i !== index));
+                          }}
+                          className="remove-receipt-btn"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="no-receipts">
+                <p>No receipts added yet. Add expenses above to see them here.</p>
+              </div>
+            )}
+          </div>
 
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
 
