@@ -961,7 +961,7 @@ function ExpenseManager({ onBack, user }) {
               </button>
               <button 
                 className="save-changes-btn"
-                onClick={handleSaveChanges}
+                onClick={handleEditSubmit}
                 disabled={!tripDetails.tripName || receipts.length === 0}
               >
                 Save Changes
