@@ -549,24 +549,35 @@ function ExpenseManager({ onBack, user }) {
                         <button 
                           className="edit-button"
                           onClick={() => {
-                            setTripDetails({
-                              _id: trip._id,
-                              tripName: trip.tripName,
-                              employeeName: trip.employeeName,
-                              dateRange: trip.dateRange,
-                              userEmail: user.username
-                            });
-                            setReceipts(trip.expenses);
-                            setTotalAmount(trip.totalAmount);
-                            setExpenseDetails({
-                              vendor: '',
-                              amount: '',
-                              date: '',
-                              comments: '',
-                              receipt: null
-                            });
-                            setExpenseView('edit');
-                          }}
+                          // Load the existing trip data into state
+                          setTripDetails({
+                            _id: trip._id,
+                            tripName: trip.tripName,
+                            employeeName: trip.employeeName,
+                            dateRange: {
+                              start: trip.dateRange.start,
+                              end: trip.dateRange.end
+                            }
+                          });
+                          
+                          // Load existing receipts/expenses
+                          setReceipts(trip.expenses || []);
+                          
+                          // Set the total amount
+                          setTotalAmount(trip.totalAmount || 0);
+                          
+                          // Reset expense form
+                          setExpenseDetails({
+                            vendor: '',
+                            amount: '',
+                            date: '',
+                            comments: '',
+                            receipt: null
+                          });
+                          
+                          // Now switch to edit view
+                          setExpenseView('edit');
+                        }}
                         >
                           Edit
                         </button>
