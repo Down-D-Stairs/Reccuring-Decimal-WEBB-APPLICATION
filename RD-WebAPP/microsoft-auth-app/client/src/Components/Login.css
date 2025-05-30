@@ -925,3 +925,111 @@
   padding: 40px;
   color: #666;
 }
+
+/* Force table display for edit receipts - ADD THIS AT THE END */
+.edit-trip-container .receipts-table-container {
+  margin: 20px 0;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.edit-trip-container .edit-receipts-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 20px 0 !important;
+  display: table !important;
+}
+
+.edit-trip-container .edit-receipts-table thead {
+  display: table-header-group !important;
+}
+
+.edit-trip-container .edit-receipts-table tbody {
+  display: table-row-group !important;
+}
+
+.edit-trip-container .edit-receipts-table tr {
+  display: table-row !important;
+}
+
+.edit-trip-container .edit-receipts-table th,
+.edit-trip-container .edit-receipts-table td {
+  display: table-cell !important;
+  border: 1px solid #ddd !important;
+  padding: 12px 8px !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+}
+
+.edit-trip-container .edit-receipts-table th {
+  background: #f8f9fa !important;
+  font-weight: bold !important;
+  color: #495057 !important;
+}
+
+.edit-trip-container .receipt-image-cell {
+  width: 100px !important;
+  text-align: center !important;
+}
+
+.edit-trip-container .edit-receipt-image {
+  width: 80px !important;
+  height: 80px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  border: 1px solid #dee2e6 !important;
+}
+
+.edit-trip-container .edit-vendor-input,
+.edit-trip-container .edit-amount-input,
+.edit-trip-container .edit-date-input {
+  width: 100% !important;
+  padding: 6px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  font-size: 14px !important;
+}
+
+.edit-trip-container .edit-comments-textarea {
+  width: 100% !important;
+  padding: 6px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  resize: vertical !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+}
+
+.edit-trip-container .remove-receipt-btn {
+  background: #ff4444 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+}
+
+.edit-trip-container .remove-receipt-btn:hover {
+  background: #ff0000 !important;
+}
+
+.edit-trip-container .no-receipts {
+  text-align: center !important;
+  padding: 40px !important;
+  color: #666 !important;
+  background: #f8f9fa !important;
+  border-radius: 8px !important;
+  margin: 20px 0 !important;
+}
+
+/* Make sure the table container is visible */
+.edit-trip-container .receipts-table-container {
+  display: block !important;
+  visibility: visible !important;
+}
+
+
