@@ -225,7 +225,12 @@ function ExpenseManager({ onBack, user }) {
       });
       document.querySelector('input[type="file"]').value = '';
     } else {
-      setExpenseView('new');
+      // Check if we're editing or creating new
+      if (tripDetails._id) {
+        setExpenseView('edit'); // Return to edit view if we have an ID
+      } else {
+        setExpenseView('new'); // Return to new view if creating
+      }
     }
   };
 
@@ -719,7 +724,7 @@ function ExpenseManager({ onBack, user }) {
                   checked={selectedTrips.includes(trip._id)}
                   onChange={() => {
                     if (selectedTrips.includes(trip._id)) {
-                      setSelectedTrips(selectedTrips.filter(id => id !== trip._id));
+                      setSelectedTrips(selectedTriips.filter(id => id !== trip._id));
                     } else {
                       setSelectedTrips([...selectedTrips, trip._id]);
                     }
