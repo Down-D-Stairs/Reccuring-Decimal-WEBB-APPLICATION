@@ -778,9 +778,9 @@ function ExpenseManager({ onBack, user }) {
             <input
               type="text"
               placeholder="Report Name"
-              value={editingTrip.tripName}
-              onChange={(e) => setEditingTrip({
-                ...editingTrip,
+              value={tripDetails.tripName}
+              onChange={(e) => setTripDetails({
+                ...tripDetails,
                 tripName: e.target.value
               })}
               className="edit-report-name"
@@ -788,20 +788,20 @@ function ExpenseManager({ onBack, user }) {
             
             <input
               type="date"
-              value={editingTrip.dateRange.start}
-              onChange={(e) => setEditingTrip({
-                ...editingTrip,
-                dateRange: { ...editingTrip.dateRange, start: e.target.value }
+              value={tripDetails.dateRange.start}
+              onChange={(e) => setTripDetails({
+                ...tripDetails,
+                dateRange: { ...tripDetails.dateRange, start: e.target.value }
               })}
               className="edit-date-input"
             />
             
             <input
               type="date"
-              value={editingTrip.dateRange.end}
-              onChange={(e) => setEditingTrip({
-                ...editingTrip,
-                dateRange: { ...editingTrip.dateRange, end: e.target.value }
+              value={tripDetails.dateRange.end}
+              onChange={(e) => setTripDetails({
+                ...tripDetails,
+                dateRange: { ...tripDetails.dateRange, end: e.target.value }
               })}
               className="edit-date-input"
             />
@@ -962,7 +962,7 @@ function ExpenseManager({ onBack, user }) {
               <button 
                 className="save-changes-btn"
                 onClick={handleSaveChanges}
-                disabled={!editingTrip.tripName || receipts.length === 0}
+                disabled={!tripDetails.tripName || receipts.length === 0}
               >
                 Save Changes
               </button>
