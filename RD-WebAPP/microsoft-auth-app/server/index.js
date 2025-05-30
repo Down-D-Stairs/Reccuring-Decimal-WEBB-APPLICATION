@@ -121,7 +121,6 @@ app.put('/api/trips/:tripId/status', async (req, res) => {
 // Update trip status
 app.put('/api/trips/:tripId', async (req, res) => {
   try {
-    
     // First update the trip details
     const updatedTrip = await Trip.findByIdAndUpdate(
       req.params.tripId,
