@@ -375,41 +375,54 @@ function ExpenseManager({ onBack, user }) {
   const handleEditSubmit = async (tripId) => {
     setIsSubmitting(true);
     try {
+      // Make sure you're only sending plain data, not DOM elements
       const updateData = {
         tripName: tripDetails.tripName,
-        dateRange: tripDetails.dateRange,
-        email: user.username,
-        totalAmount,
-        expenses: receipts.map(receipt => ({
-          vendor: receipt.vendor,
-          amount: Number(receipt.amount),
-          date: receipt.date,
-          comments: receipt.comments || '',
-          receipt: receipt.receipt,
-          tripId: tripId
-        }))
+        dateRange: {
+          start: tripDetails.dateRange.start,
+          end: tripDetails.dateRange.end
+        },
+        totalAmount: totalAmount,
+        // Don't include the entire tripDetails object as it might contain circular refs
       };
-     
-      console.log('Sending exact data:', JSON.stringify(updateData, null, 2));
 
-      const response = await fetch(`${API_URL}/api/trips/${tripId}`, {
+      const tripResponse = await fetch(`${API_URL}/api/trips/${tripId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData) // Only stringify clean data
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Update failed');
+      if (!tripResponse.ok) {
+        throw new Error('Failed to update trip');
       }
 
-      const updatedTrip = await response.json();
-      console.log('Success! Updated trip:', updatedTrip);
-     
-      fetchTrips();
+      // Update expenses separately
+      for (const receipt of receipts) {
+        const expenseData = {
+          amount: receipt.amount,
+          date: receipt.date,
+          vendor: receipt.vendor,
+          receipt: receipt.receipt,
+          comments: receipt.comments || ''
+        };
+        
+        await fetch(`${API_URL}/api/trips/${tripId}/expenses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(expenseData) // Clean expense data only
+        });
+      }
+
       setExpenseView('list');
+      fetchTrips();
     } catch (error) {
-      console.error('Detailed error:', error);
+      console.error('Error updating trip:', error);
+      // Don't stringify the error object as it might contain circular refs
+      console.error('Error message:', error.message);
     } finally {
       setIsSubmitting(false);
     }
