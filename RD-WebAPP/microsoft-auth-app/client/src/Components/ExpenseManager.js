@@ -11,6 +11,8 @@ function ExpenseManager({ onBack, user }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsPerPage] = useState(2); // You can adjust this number
   
+  const [showAddExpenseForm, setShowAddExpenseForm] = useState(false); // Add this state
+
   const [filters, setFilters] = useState({
     dateStart: '',
     dateEnd: '',
@@ -217,6 +219,33 @@ function ExpenseManager({ onBack, user }) {
       setExpenseView('new');
     }
   };
+
+  // Add this function to handle adding expense in edit mode
+  const handleAddExpenseInEdit = () => {
+    if (expenseDetails.vendor && expenseDetails.amount && expenseDetails.date && expenseDetails.receipt) {
+      setReceipts(prev => [...prev, expenseDetails]);
+      setTotalAmount(prev => prev + Number(expenseDetails.amount));
+      
+      // Reset form
+      setExpenseDetails({
+        vendor: '',
+        amount: '',
+        date: '',
+        comments: '',
+        receipt: null
+      });
+      
+      // Clear file input
+      const fileInput = document.querySelector('.receipt-input');
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      
+      // Hide the form
+      setShowAddExpenseForm(false);
+    }
+  };
+
 
   const handleStatusChange = async (tripId, newStatus) => {
     setTrips(trips.map(trip =>
@@ -789,157 +818,94 @@ function ExpenseManager({ onBack, user }) {
               />
             </div>
            
-            <div className="receipt-section">
-              <div className="expense-form">
-                <input
-                  type="text"
-                  placeholder="Vendor Name"
-                  value={expenseDetails.vendor}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
-                />
-                <input
-                  type="number"
-                  placeholder="Amount"
-                  value={expenseDetails.amount}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
-                />
-                <input
-                  type="date"
-                  value={expenseDetails.date}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
-                />
-                <textarea
-                  placeholder="Comments"
-                  value={expenseDetails.comments}
-                  onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
-                />
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  onChange={(e) => handleReceiptUpload(e.target.files[0])}
-                  className="receipt-input"
-                />
-                {expenseDetails.receipt && (
-                  <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
-                )}
-                <button
-                  onClick={() => {
-                    setReceipts([...receipts, expenseDetails]);
-                    setTotalAmount(prev => prev + Number(expenseDetails.amount));
-                    setExpenseDetails({
-                      vendor: '',
-                      amount: '',
-                      date: '',
-                      comments: '',
-                      receipt: null
-                    });
-                    const fileInput = document.querySelector('.receipt-input');
-                    if (fileInput) {
-                      fileInput.value = '';
-                    }
-                  }}
+            <div className="receipts-section">
+              <div className="receipts-header">
+                <h3>Expenses</h3>
+                <button 
+                  type="button"
+                  onClick={() => setShowAddExpenseForm(true)}
+                  className="add-expense-btn"
                 >
-                  Add Expense
+                  + Add Expense
                 </button>
               </div>
-            </div>
 
-            <div className="receipts-table-container">
-            {receipts.length > 0 ? (
-              <table className="edit-receipts-table">
-                <thead>
-                  <tr>
-                    <th>Receipt Image</th>
-                    <th>Vendor</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Comments</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {receipts.map((receipt, index) => (
-                    <tr key={index} className="edit-receipt-row">
-                      <td className="receipt-image-cell">
-                        <img
-                          src={receipt.receipt}
-                          alt="Receipt"
-                          className="edit-receipt-image"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          value={receipt.vendor}
-                          onChange={(e) => {
-                            const updatedReceipts = [...receipts];
-                            updatedReceipts[index].vendor = e.target.value;
-                            setReceipts(updatedReceipts);
-                          }}
-                          className="edit-vendor-input"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          value={receipt.amount}
-                          onChange={(e) => {
-                            const updatedReceipts = [...receipts];
-                            const oldAmount = updatedReceipts[index].amount;
-                            const newAmount = parseFloat(e.target.value) || 0;
-                            updatedReceipts[index].amount = newAmount;
-                            setReceipts(updatedReceipts);
-                            setTotalAmount(prev => prev - oldAmount + newAmount);
-                          }}
-                          className="edit-amount-input"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="date"
-                          value={receipt.date}
-                          onChange={(e) => {
-                            const updatedReceipts = [...receipts];
-                            updatedReceipts[index].date = e.target.value;
-                            setReceipts(updatedReceipts);
-                          }}
-                          className="edit-date-input"
-                        />
-                      </td>
-                      <td>
-                        <textarea
-                          value={receipt.comments || ''}
-                          onChange={(e) => {
-                            const updatedReceipts = [...receipts];
-                            updatedReceipts[index].comments = e.target.value;
-                            setReceipts(updatedReceipts);
-                          }}
-                          className="edit-comments-textarea"
-                          rows="2"
-                          placeholder="Add comments..."
-                        />
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => {
-                            setTotalAmount(prev => prev - receipt.amount);
-                            setReceipts(prev => prev.filter((_, i) => i !== index));
-                          }}
-                          className="remove-receipt-btn"
-                        >
-                          Remove
-                        </button>
-                      </td>
+              {/* Show the form only when showAddExpenseForm is true */}
+              {showAddExpenseForm && (
+                <div className="expense-form-inline">
+                  <input
+                    type="text"
+                    placeholder="Vendor Name"
+                    value={expenseDetails.vendor}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={expenseDetails.amount}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
+                  />
+                  <input
+                    type="date"
+                    value={expenseDetails.date}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Comments"
+                    value={expenseDetails.comments}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
+                  />
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    onChange={(e) => handleReceiptUpload(e.target.files[0])}
+                    className="receipt-input"
+                  />
+                  <button type="button" onClick={() => handleAddExpenseInEdit()}>Save Expense</button>
+                  <button type="button" onClick={() => setShowAddExpenseForm(false)}>Cancel</button>
+                </div>
+              )}
+
+              {/* Display receipts in table format */}
+              {receipts.length > 0 && (
+                <table className="receipts-table">
+                  <thead>
+                    <tr>
+                      <th>Vendor</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Comments</th>
+                      <th>Receipt</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="no-receipts">
-                <p>No receipts added yet. Add expenses above to see them here.</p>
-              </div>
-            )}
-          </div>
+                  </thead>
+                  <tbody>
+                    {receipts.map((receipt, index) => (
+                      <tr key={index}>
+                        <td>{receipt.vendor}</td>
+                        <td>${receipt.amount}</td>
+                        <td>{receipt.date}</td>
+                        <td>{receipt.comments}</td>
+                        <td>
+                          {receipt.receipt && (
+                            <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
+                          )}
+                        </td>
+                        <td>
+                          <button onClick={() => {
+                            setTotalAmount(prev => prev - receipts[index].amount);
+                            setReceipts(prev => prev.filter((_, i) => i !== index));
+                          }}>
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
 
