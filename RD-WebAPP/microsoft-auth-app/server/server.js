@@ -16,6 +16,113 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected! 🚀'))
   .catch(err => console.error('MongoDB Error:', err));
 
+// Save draft route
+app.post('/api/trips/draft', async (req, res) => {
+  try {
+    const draft = new Trip({
+      tripName: req.body.tripName,
+      dateRange: req.body.dateRange,
+      email: req.body.email,
+      totalAmount: req.body.totalAmount || 0,
+      isDraft: true,
+      status: 'draft'
+    });
+    
+    // Save expenses if any
+    await draft.save();
+    
+    if (req.body.expenses && req.body.expenses.length > 0) {
+      for (const expenseData of req.body.expenses) {
+        const expense = new Expense({
+          amount: expenseData.amount,
+          date: expenseData.date,
+          vendor: expenseData.vendor,
+          receipt: expenseData.receipt,
+          tripId: draft._id
+        });
+        await expense.save();
+        draft.expenses.push(expense._id);
+      }
+      await draft.save();
+    }
+    
+    res.json(draft);
+  } catch (error) {
+    console.error('Error saving draft:', error);
+    res.status(500).json({ error: 'Failed to save draft' });
+  }
+});
+
+// Get draft route
+app.get('/api/trips/draft', async (req, res) => {
+  try {
+    const draft = await Trip.findOne({ 
+      email: req.query.email, 
+      isDraft: true 
+    }).populate('expenses');
+    
+    if (!draft) {
+      return res.status(404).json({ message: 'No draft found' });
+    }
+    
+    res.json(draft);
+  } catch (error) {
+    console.error('Error fetching draft:', error);
+    res.status(500).json({ error: 'Failed to fetch draft' });
+  }
+});
+
+app.get('/api/trips', async (req,res) => {});
+
+// Update draft route
+app.put('/api/trips/:id', async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.id);
+    
+    if (!trip) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+    
+    // Update trip details
+    trip.tripName = req.body.tripName;
+    trip.dateRange = req.body.dateRange;
+    trip.totalAmount = req.body.totalAmount || 0;
+    
+    if (req.body.isDraft !== undefined) {
+      trip.isDraft = req.body.isDraft;
+      trip.status = req.body.isDraft ? 'draft' : 'pending';
+    }
+    
+    // Clear existing expenses if updating
+    if (req.body.expenses) {
+      // Remove old expenses
+      await Expense.deleteMany({ tripId: trip._id });
+      trip.expenses = [];
+      
+      // Add new expenses
+      for (const expenseData of req.body.expenses) {
+        const expense = new Expense({
+          amount: expenseData.amount,
+          date: expenseData.date,
+          vendor: expenseData.vendor,
+          receipt: expenseData.receipt,
+          tripId: trip._id
+        });
+        await expense.save();
+        trip.expenses.push(expense._id);
+      }
+    }
+    
+    await trip.save();
+    const updatedTrip = await Trip.findById(trip._id).populate('expenses');
+    res.json(updatedTrip);
+  } catch (error) {
+    console.error('Error updating trip:', error);
+    res.status(500).json({ error: 'Failed to update trip' });
+  }
+});
+
+
 // Get all trips
 app.get('/api/trips', async (req, res) => {
   try {
@@ -58,6 +165,8 @@ app.post('/api/trips', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // Add expense to trip
 app.post('/api/trips/:tripId/expenses', async (req, res) => {
@@ -803,6 +912,8 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 
 // Start the server

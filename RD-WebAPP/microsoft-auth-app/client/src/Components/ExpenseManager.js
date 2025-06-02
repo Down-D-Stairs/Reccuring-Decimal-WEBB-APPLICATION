@@ -93,6 +93,10 @@ function ExpenseManager({ onBack, user }) {
             setHasDraft(true);
             setDraftId(draft._id);
           }
+        } else if (response.status === 404) {
+          // No draft found, that's okay
+          setHasDraft(false);
+          setDraftId(null);
         }
       } catch (error) {
         console.error('Error checking for draft:', error);
@@ -127,6 +131,10 @@ function ExpenseManager({ onBack, user }) {
         });
       }
 
+      if (!response.ok) {
+        throw new Error('Failed to save draft');
+      }
+
       const savedDraft = await response.json();
       setDraftId(savedDraft._id);
       setHasDraft(true);
@@ -142,21 +150,42 @@ function ExpenseManager({ onBack, user }) {
   const handleLoadDraft = async () => {
     try {
       const response = await fetch(`${API_URL}/api/trips/draft?email=${user.username}`);
+      
+      if (!response.ok) {
+        throw new Error('Draft not found');
+      }
+
       const draft = await response.json();
       
-      if (draft) {
+      if (draft && draft._id) {
         setTripDetails({
           _id: draft._id,
-          tripName: draft.tripName,
-          dateRange: draft.dateRange
+          tripName: draft.tripName || '',
+          dateRange: {
+            start: draft.dateRange?.start ? draft.dateRange.start.split('T')[0] : '',
+            end: draft.dateRange?.end ? draft.dateRange.end.split('T')[0] : ''
+          }
         });
         setReceipts(draft.expenses || []);
         setTotalAmount(draft.totalAmount || 0);
         setDraftId(draft._id);
         setExpenseView('new');
+      } else {
+        throw new Error('Invalid draft data');
       }
     } catch (error) {
       console.error('Error loading draft:', error);
+      alert('Failed to load draft. Starting fresh.');
+      setHasDraft(false);
+      setDraftId(null);
+      // Start fresh
+      setTripDetails({
+        tripName: '',
+        dateRange: { start: '', end: '' }
+      });
+      setReceipts([]);
+      setTotalAmount(0);
+      setExpenseView('new');
     }
   };
 

@@ -16,49 +16,6 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected! 🚀'))
   .catch(err => console.error('MongoDB Error:', err));
 
-// Get all trips
-app.get('/api/trips', async (req, res) => {
-  try {
-    console.log('Incoming request query:', req.query);
-    // Let's try fetching ALL trips first to see what's in the database
-    const allTrips = await Trip.find({});
-    console.log('All trips in database:', allTrips);
-   
-    // Then let's see what we get with the email filter
-    const userTrips = await Trip.find({ email: req.query.email }).populate('expenses');
-    console.log('User filtered trips:', userTrips);
-   
-    res.json(userTrips);
-  } catch (error) {
-    console.error('Database query error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Create new trip
-app.post('/api/trips', async (req, res) => {
-  try {
-    console.log('POST /api/trips - Request body:', req.body);
-   
-    const trip = new Trip({
-      tripName: req.body.tripName,
-      dateRange: req.body.dateRange,
-      email: req.body.email,
-      totalAmount: 0,
-      status: 'pending'
-    });
-   
-    console.log('Created trip object:', trip);
-    const savedTrip = await trip.save();
-    console.log('Saved trip:', savedTrip);
-   
-    res.status(200).json(savedTrip);
-  } catch (error) {
-    console.error('Error creating trip:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Save draft route
 app.post('/api/trips/draft', async (req, res) => {
   try {
@@ -115,6 +72,8 @@ app.get('/api/trips/draft', async (req, res) => {
   }
 });
 
+app.get('/api/trips', async (req,res) => {});
+
 // Update draft route
 app.put('/api/trips/:id', async (req, res) => {
   try {
@@ -162,6 +121,52 @@ app.put('/api/trips/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to update trip' });
   }
 });
+
+
+// Get all trips
+app.get('/api/trips', async (req, res) => {
+  try {
+    console.log('Incoming request query:', req.query);
+    // Let's try fetching ALL trips first to see what's in the database
+    const allTrips = await Trip.find({});
+    console.log('All trips in database:', allTrips);
+   
+    // Then let's see what we get with the email filter
+    const userTrips = await Trip.find({ email: req.query.email }).populate('expenses');
+    console.log('User filtered trips:', userTrips);
+   
+    res.json(userTrips);
+  } catch (error) {
+    console.error('Database query error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create new trip
+app.post('/api/trips', async (req, res) => {
+  try {
+    console.log('POST /api/trips - Request body:', req.body);
+   
+    const trip = new Trip({
+      tripName: req.body.tripName,
+      dateRange: req.body.dateRange,
+      email: req.body.email,
+      totalAmount: 0,
+      status: 'pending'
+    });
+   
+    console.log('Created trip object:', trip);
+    const savedTrip = await trip.save();
+    console.log('Saved trip:', savedTrip);
+   
+    res.status(200).json(savedTrip);
+  } catch (error) {
+    console.error('Error creating trip:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 // Add expense to trip
 app.post('/api/trips/:tripId/expenses', async (req, res) => {
