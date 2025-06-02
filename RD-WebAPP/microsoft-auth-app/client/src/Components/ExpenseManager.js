@@ -7,6 +7,9 @@ function ExpenseManager({ onBack, user }) {
   const [expenseView, setExpenseView] = useState('list');
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftId, setDraftId] = useState(null);
+
   
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
