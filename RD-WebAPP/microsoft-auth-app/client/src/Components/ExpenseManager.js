@@ -76,6 +76,87 @@ function ExpenseManager({ onBack, user }) {
     }
   };
  
+  useEffect(() => {
+    checkForDraft();
+  }, [user]);
+
+  const checkForDraft = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/trips/draft?email=${user.username}`);
+        if (response.ok) {
+          const draft = await response.json();
+          if (draft) {
+            setHasDraft(true);
+            setDraftId(draft._id);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for draft:', error);
+      }
+    };
+
+    const handleSaveDraft = async () => {
+    try {
+      const draftData = {
+        tripName: tripDetails.tripName,
+        dateRange: tripDetails.dateRange,
+        email: user.username,
+        totalAmount,
+        expenses: receipts,
+        isDraft: true
+      };
+
+      let response;
+      if (draftId) {
+        // Update existing draft
+        response = await fetch(`${API_URL}/api/trips/${draftId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draftData)
+        });
+      } else {
+        // Create new draft
+        response = await fetch(`${API_URL}/api/trips/draft`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draftData)
+        });
+      }
+
+      const savedDraft = await response.json();
+      setDraftId(savedDraft._id);
+      setHasDraft(true);
+      
+      alert('Draft saved successfully!');
+      setExpenseView('list');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      alert('Failed to save draft');
+    }
+  };
+
+  const handleLoadDraft = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/trips/draft?email=${user.username}`);
+      const draft = await response.json();
+      
+      if (draft) {
+        setTripDetails({
+          _id: draft._id,
+          tripName: draft.tripName,
+          dateRange: draft.dateRange
+        });
+        setReceipts(draft.expenses || []);
+        setTotalAmount(draft.totalAmount || 0);
+        setDraftId(draft._id);
+        setExpenseView('new');
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error);
+    }
+  };
+
+
   const applyFilters = (trips) => {
     let filteredTrips = trips.filter(trip => {
       const matchesDate = (!filters.dateStart || new Date(trip.dateRange.start) >= new Date(filters.dateStart)) &&
@@ -441,22 +522,41 @@ function ExpenseManager({ onBack, user }) {
         <div className="actions">
           <button onClick={onBack}>Home Page</button>
           <button onClick={() => {
-            setExpenseView(expenseView === 'list' ? 'new' : 'list');
-            setTripDetails({
-              tripName: '',
-              dateRange: { start: '', end: '' }
-            });
-            setExpenseDetails({
-              vendor: '',
-              amount: '',
-              date: '',
-              comments: '',
-              receipt: null
-            });
-            setReceipts([]);
-            setTotalAmount(0);
+            if (expenseView === 'list') {
+              // Going from list to new report
+              if (hasDraft) {
+                const choice = window.confirm('You have an unfinished report. Would you like to continue it? (Cancel to start fresh)');
+                if (choice) {
+                  handleLoadDraft();
+                  return;
+                } else {
+                  // Clear draft and start fresh
+                  setHasDraft(false);
+                  setDraftId(null);
+                }
+              }
+              
+              // Start fresh
+              setExpenseView('new');
+              setTripDetails({
+                tripName: '',
+                dateRange: { start: '', end: '' }
+              });
+              setExpenseDetails({
+                vendor: '',
+                amount: '',
+                date: '',
+                comments: '',
+                receipt: null
+              });
+              setReceipts([]);
+              setTotalAmount(0);
+            } else {
+              // Going back to list
+              setExpenseView('list');
+            }
           }}>
-            {expenseView === 'list' ? 'New Report' : 'View Reports'}
+            {expenseView === 'list' ? (hasDraft ? 'Continue/New Report' : 'New Report') : 'View Reports'}
           </button>
           {ADMIN_EMAILS.includes(user?.username) && (
             <button
@@ -1224,7 +1324,17 @@ function ExpenseManager({ onBack, user }) {
             </div>
           </div>
 
-          <button
+          <div className="form-actions">
+            <button
+              className="save-draft-btn"
+              onClick={handleSaveDraft}
+              disabled={!tripDetails.tripName}
+              type="button"
+            >
+              Save Draft
+            </button>
+            
+            <button
               className="submit-trip"
               onClick={handleSubmit}
               disabled={
@@ -1249,6 +1359,7 @@ function ExpenseManager({ onBack, user }) {
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
+          </div>
         </div>
       )}
     </div>
