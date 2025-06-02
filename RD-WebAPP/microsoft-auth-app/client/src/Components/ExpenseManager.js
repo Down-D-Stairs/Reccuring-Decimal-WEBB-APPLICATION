@@ -3,6 +3,7 @@ import './Login.css';
 
 function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
+  const [isProcessingReceipt, setIsProcessingReceipt] = useState(false);
   const [expenseView, setExpenseView] = useState('list');
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
@@ -164,43 +165,48 @@ function ExpenseManager({ onBack, user }) {
   };
 
   const handleReceiptUpload = async (file) => {
-    const formData = new FormData();
-    formData.append('document', file);
+  setIsProcessingReceipt(true); // Start loading
+  
+  const formData = new FormData();
+  formData.append('document', file);
 
-    try {
-      const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Token 13de7c14cd271b1f3415142a1c19e5a3'
-        },
-        body: formData
+  try {
+    const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Token 13de7c14cd271b1f3415142a1c19e5a3'
+      },
+      body: formData
+    });
+
+    const result = await response.json();
+    
+    if (result.document) {
+      const { total_amount, date, supplier_name } = result.document.inference.prediction;
+      
+      const base64Promise = new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
       });
 
-      const result = await response.json();
-     
-      if (result.document) {
-        const { total_amount, date, supplier_name } = result.document.inference.prediction;
-       
-        const base64Promise = new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
-
-        const base64Receipt = await base64Promise;
-       
-        setExpenseDetails({
-          ...expenseDetails,
-          amount: total_amount.value,
-          date: date.value,
-          vendor: supplier_name.value,
-          receipt: base64Receipt
-        });
-      }
-    } catch (error) {
-      console.error('Error processing receipt:', error);
+      const base64Receipt = await base64Promise;
+      
+      setExpenseDetails({
+        ...expenseDetails,
+        amount: total_amount.value,
+        date: date.value,
+        vendor: supplier_name.value,
+        receipt: base64Receipt
+      });
     }
-  };
+  } catch (error) {
+    console.error('Error processing receipt:', error);
+  } finally {
+    setIsProcessingReceipt(false); // End loading
+  }
+};
+
 
   const handleExpenseSubmit = (addAnother = false) => {
     setReceipts(prev => [...prev, expenseDetails]);
@@ -704,7 +710,10 @@ function ExpenseManager({ onBack, user }) {
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
                 onChange={(e) => handleReceiptUpload(e.target.files[0])}
+                disabled={isProcessingReceipt}
               />
+              {isProcessingReceipt && <span className="processing-text">Processing receipt...
+              </span>}
               {expenseDetails.receipt && (
                 <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
               )}
@@ -1052,7 +1061,9 @@ function ExpenseManager({ onBack, user }) {
                     accept=".jpg,.jpeg,.png,.pdf"
                     onChange={(e) => handleReceiptUpload(e.target.files[0])}
                     className="receipt-input"
+                    disabled={isProcessingReceipt}
                   />
+                  {isProcessingReceipt && <span className="processing-text">Processing receipt...</span>}
                   <button type="button" onClick={() => handleAddExpenseInEdit()}>Save Expense</button>
                   <button type="button" onClick={() => setShowAddExpenseForm(false)}>Cancel</button>
                 </div>

@@ -1041,3 +1041,22 @@
 }
 
 
+.processing-text {
+  color: #0066cc;
+  font-style: italic;
+  margin-left: 10px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.receipt-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
