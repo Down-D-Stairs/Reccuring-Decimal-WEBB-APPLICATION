@@ -68,9 +68,10 @@ function ExpenseManager({ onBack, user }) {
       const data = await response.json();
       console.log('All trips from server:', data);
        
-      const filteredTrips = ADMIN_EMAILS.includes(user.username)
-        ? data
-        : data.filter(trip => trip.email === user.username);
+      // Filter out drafts and apply user filtering
+      const filteredTrips = data
+        .filter(trip => !trip.isDraft) // Exclude drafts
+        .filter(trip => ADMIN_EMAILS.includes(user.username) || trip.email === user.username);
        
       console.log('Filtered trips:', filteredTrips);
       setTrips(filteredTrips); // Keep only this setTrips call
