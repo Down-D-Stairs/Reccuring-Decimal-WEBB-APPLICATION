@@ -7,9 +7,6 @@ function ExpenseManager({ onBack, user }) {
   const [expenseView, setExpenseView] = useState('list');
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
-  const [hasDraft, setHasDraft] = useState(false);
-  const [draftId, setDraftId] = useState(null);
-
   
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,10 +65,9 @@ function ExpenseManager({ onBack, user }) {
       const data = await response.json();
       console.log('All trips from server:', data);
        
-      // Filter out drafts and apply user filtering
-      const filteredTrips = data
-        .filter(trip => !trip.isDraft) // Exclude drafts
-        .filter(trip => ADMIN_EMAILS.includes(user.username) || trip.email === user.username);
+      const filteredTrips = ADMIN_EMAILS.includes(user.username)
+        ? data
+        : data.filter(trip => trip.email === user.username);
        
       console.log('Filtered trips:', filteredTrips);
       setTrips(filteredTrips); // Keep only this setTrips call
@@ -80,116 +76,6 @@ function ExpenseManager({ onBack, user }) {
     }
   };
  
-  useEffect(() => {
-    checkForDraft();
-  }, [user]);
-
-  const checkForDraft = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/trips/draft?email=${user.username}`);
-        if (response.ok) {
-          const draft = await response.json();
-          if (draft) {
-            setHasDraft(true);
-            setDraftId(draft._id);
-          }
-        } else if (response.status === 404) {
-          // No draft found, that's okay
-          setHasDraft(false);
-          setDraftId(null);
-        }
-      } catch (error) {
-        console.error('Error checking for draft:', error);
-      }
-    };
-
-    const handleSaveDraft = async () => {
-    try {
-      const draftData = {
-        tripName: tripDetails.tripName,
-        dateRange: tripDetails.dateRange,
-        email: user.username,
-        totalAmount,
-        expenses: receipts,
-        isDraft: true
-      };
-
-      let response;
-      if (draftId) {
-        // Update existing draft
-        response = await fetch(`${API_URL}/api/trips/${draftId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(draftData)
-        });
-      } else {
-        // Create new draft
-        response = await fetch(`${API_URL}/api/trips/draft`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(draftData)
-        });
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to save draft');
-      }
-
-      const savedDraft = await response.json();
-      setDraftId(savedDraft._id);
-      setHasDraft(true);
-      
-      alert('Draft saved successfully!');
-      setExpenseView('list');
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      alert('Failed to save draft');
-    }
-  };
-
-  const handleLoadDraft = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/trips/draft?email=${user.username}`);
-      
-      if (!response.ok) {
-        throw new Error('Draft not found');
-      }
-
-      const draft = await response.json();
-      
-      if (draft && draft._id) {
-        setTripDetails({
-          _id: draft._id,
-          tripName: draft.tripName || '',
-          dateRange: {
-            start: draft.dateRange?.start ? draft.dateRange.start.split('T')[0] : '',
-            end: draft.dateRange?.end ? draft.dateRange.end.split('T')[0] : ''
-          }
-        });
-        setReceipts(draft.expenses || []);
-        setTotalAmount(draft.totalAmount || 0);
-        setDraftId(draft._id);
-        setExpenseView('new');
-      } else {
-        throw new Error('Invalid draft data');
-      }
-    } catch (error) {
-      console.error('Error loading draft:', error);
-      alert('Failed to load draft. Starting fresh.');
-      setHasDraft(false);
-      setDraftId(null);
-      // Start fresh
-      setTripDetails({
-        tripName: '',
-        dateRange: { start: '', end: '' }
-      });
-      setReceipts([]);
-      setTotalAmount(0);
-      setExpenseView('new');
-    }
-  };
-
-
   const applyFilters = (trips) => {
     let filteredTrips = trips.filter(trip => {
       const matchesDate = (!filters.dateStart || new Date(trip.dateRange.start) >= new Date(filters.dateStart)) &&
@@ -555,41 +441,22 @@ function ExpenseManager({ onBack, user }) {
         <div className="actions">
           <button onClick={onBack}>Home Page</button>
           <button onClick={() => {
-            if (expenseView === 'list') {
-              // Going from list to new report
-              if (hasDraft) {
-                const choice = window.confirm('You have an unfinished report. Would you like to continue it? (Cancel to start fresh)');
-                if (choice) {
-                  handleLoadDraft();
-                  return;
-                } else {
-                  // Clear draft and start fresh
-                  setHasDraft(false);
-                  setDraftId(null);
-                }
-              }
-              
-              // Start fresh
-              setExpenseView('new');
-              setTripDetails({
-                tripName: '',
-                dateRange: { start: '', end: '' }
-              });
-              setExpenseDetails({
-                vendor: '',
-                amount: '',
-                date: '',
-                comments: '',
-                receipt: null
-              });
-              setReceipts([]);
-              setTotalAmount(0);
-            } else {
-              // Going back to list
-              setExpenseView('list');
-            }
+            setExpenseView(expenseView === 'list' ? 'new' : 'list');
+            setTripDetails({
+              tripName: '',
+              dateRange: { start: '', end: '' }
+            });
+            setExpenseDetails({
+              vendor: '',
+              amount: '',
+              date: '',
+              comments: '',
+              receipt: null
+            });
+            setReceipts([]);
+            setTotalAmount(0);
           }}>
-            {expenseView === 'list' ? (hasDraft ? 'Continue/New Report' : 'New Report') : 'View Reports'}
+            {expenseView === 'list' ? 'New Report' : 'View Reports'}
           </button>
           {ADMIN_EMAILS.includes(user?.username) && (
             <button
@@ -1357,17 +1224,7 @@ function ExpenseManager({ onBack, user }) {
             </div>
           </div>
 
-          <div className="form-actions">
-            <button
-              className="save-draft-btn"
-              onClick={handleSaveDraft}
-              disabled={!tripDetails.tripName}
-              type="button"
-            >
-              Save Draft
-            </button>
-            
-            <button
+          <button
               className="submit-trip"
               onClick={handleSubmit}
               disabled={
@@ -1392,7 +1249,6 @@ function ExpenseManager({ onBack, user }) {
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
-          </div>
         </div>
       )}
     </div>

@@ -1060,24 +1060,3 @@
 }
 
 
-.form-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.save-draft-btn {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.save-draft-btn:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-}

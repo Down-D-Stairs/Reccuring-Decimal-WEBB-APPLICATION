@@ -51,10 +51,6 @@ const tripSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  isDraft: {
-    type: Boolean,
-    default: false
-  },
   expenses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Expense'
