@@ -7,6 +7,7 @@ function ExpenseManager({ onBack, user }) {
   const [expenseView, setExpenseView] = useState('list');
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
+  const [hasDraft, setHasDraft] = useState(false);
   
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,6 +50,7 @@ function ExpenseManager({ onBack, user }) {
 
   useEffect(() => {
     fetchTrips();
+    checkForDraft();
   }, [user]);
  
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -380,6 +382,16 @@ function ExpenseManager({ onBack, user }) {
         });
       }
 
+    // Delete the draft after successful submission
+    try {
+      await fetch(`${API_URL}/api/drafts/${user.username}`, {
+        method: 'DELETE'
+      });
+      setHasDraft(false);
+    } catch (draftError) {
+      console.log('No draft to delete or error deleting draft');
+    }
+
       setExpenseView('list');
       fetchTrips();
     } catch (error) {
@@ -433,6 +445,76 @@ function ExpenseManager({ onBack, user }) {
       setIsSubmitting(false);
     }
   };
+
+  const checkForDraft = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/drafts/${user.username}`);
+      if (response.ok) {
+        setHasDraft(true);
+      } else {
+        setHasDraft(false);
+      }
+    } catch (error) {
+      console.error('Error checking for draft:', error);
+      setHasDraft(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      const draftData = {
+        tripName: tripDetails.tripName,
+        dateRange: tripDetails.dateRange,
+        email: user.username,
+        totalAmount,
+        expenses: receipts
+      };
+
+      const response = await fetch(`${API_URL}/api/drafts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draftData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save draft');
+      }
+
+      setHasDraft(true);
+      alert('Draft saved successfully!');
+      setExpenseView('list');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      alert('Failed to save draft');
+    }
+  };
+
+  const handleLoadDraft = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/drafts/${user.username}`);
+      
+      if (!response.ok) {
+        throw new Error('No draft found');
+      }
+      
+      const draft = await response.json();
+      
+      setTripDetails({
+        tripName: draft.tripName,
+        dateRange: {
+          start: draft.dateRange.start,
+          end: draft.dateRange.end
+        }
+      });
+      setReceipts(draft.expenses || []);
+      setTotalAmount(draft.totalAmount || 0);
+      setExpenseView('new');
+    } catch (error) {
+      console.error('Error loading draft:', error);
+      alert('Failed to load draft');
+    }
+  };
+
 
   return (
     <div className="expense-manager">
@@ -1223,6 +1305,27 @@ function ExpenseManager({ onBack, user }) {
               ))}
             </div>
           </div>
+
+          <div className="draft-actions">
+            {hasDraft && (
+              <button
+                className="load-draft-btn"
+                onClick={handleLoadDraft}
+                style={{ background: '#28a745', color: 'white', marginRight: '10px' }}
+              >
+                Continue Previous Draft
+              </button>
+            )}
+            <button
+              className="save-draft-btn"
+              onClick={handleSaveDraft}
+              disabled={!tripDetails.tripName}
+              style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
+            >
+              Save as Draft
+            </button>
+          </div>
+
 
           <button
               className="submit-trip"

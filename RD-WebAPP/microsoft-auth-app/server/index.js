@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const { Trip, Expense } = require('./models/Expense');
 const { Project, TimeEntry } = require('./models/TimeProject');
+const Draft = require('./models/Draft');
 require('dotenv').config();
 
 const { sendStatusEmail } = require('./services/notificationService');
@@ -160,6 +161,63 @@ app.put('/api/trips/:tripId', async (req, res) => {
     res.status(500).json({ error: error.message || 'Failed to update trip' });
   }
 });
+
+
+// Save/Update draft
+app.post('/api/drafts', async (req, res) => {
+  try {
+    // Check if user already has a draft
+    let draft = await Draft.findOne({ email: req.body.email });
+    
+    if (draft) {
+      // Update existing draft
+      draft.tripName = req.body.tripName;
+      draft.dateRange = req.body.dateRange;
+      draft.totalAmount = req.body.totalAmount;
+      draft.expenses = req.body.expenses;
+      draft.updatedAt = new Date();
+      await draft.save();
+    } else {
+      // Create new draft
+      draft = new Draft(req.body);
+      await draft.save();
+    }
+    
+    res.json(draft);
+  } catch (error) {
+    console.error('Error saving draft:', error);
+    res.status(500).json({ error: 'Failed to save draft' });
+  }
+});
+
+// Get user's draft
+app.get('/api/drafts/:email', async (req, res) => {
+  try {
+    const draft = await Draft.findOne({ email: req.params.email });
+    
+    if (!draft) {
+      return res.status(404).json({ message: 'No draft found' });
+    }
+    
+    res.json(draft);
+  } catch (error) {
+    console.error('Error fetching draft:', error);
+    res.status(500).json({ error: 'Failed to fetch draft' });
+  }
+});
+
+// Delete draft (when user submits the report)
+app.delete('/api/drafts/:email', async (req, res) => {
+  try {
+    await Draft.deleteOne({ email: req.params.email });
+    res.json({ message: 'Draft deleted' });
+  } catch (error) {
+    console.error('Error deleting draft:', error);
+    res.status(500).json({ error: 'Failed to delete draft' });
+  }
+});
+
+
 
 // Get all projects with optional filtering
 app.get('/api/projects', async (req, res) => {
