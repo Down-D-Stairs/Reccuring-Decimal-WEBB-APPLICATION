@@ -182,20 +182,62 @@
   background: #0052a3;
 }
 
+/* Add this animation for the loading spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Enhanced submit button styles */
 .submit-trip {
-  margin: 0 auto;
-  background: #0066cc;
-  color: white;
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
-  border-radius: 4px;
-  padding: 12px 24px;
-  cursor: pointer;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  color: white;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.submit-trip:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .submit-trip:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Processing overlay styles */
+.processing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.processing-popup {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.processing-spinner {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
 }
 
 /* Trip list styles */

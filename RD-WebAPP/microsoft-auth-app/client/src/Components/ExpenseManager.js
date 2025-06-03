@@ -8,6 +8,7 @@ function ExpenseManager({ onBack, user }) {
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
   const [hasDraft, setHasDraft] = useState(false);
+
   
   // Add these state variables at the top with your other state variables
   const [currentPage, setCurrentPage] = useState(1);
@@ -399,9 +400,45 @@ function ExpenseManager({ onBack, user }) {
     }
   };
 
-  const handleSubmit = () => {
-    handleNewTripSubmit();
+  const handleSubmit = async () => {
+    // Confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to submit this expense report?\n\n` +
+      `Report Name: ${tripDetails.tripName}\n` +
+      `Total Amount: $${totalAmount.toFixed(2)}\n` +
+      `Number of Expenses: ${receipts.length}\n\n` 
+    );
+
+    if (!confirmed) return;
+
+    setIsSubmitting(true);
+    
+    try {
+      await handleNewTripSubmit();
+    
+      // Reset form after successful submission
+      setTripDetails({ tripName: '', dateRange: { start: '', end: '' } });
+      setReceipts([]);
+      setTotalAmount(0);
+      setExpenseDetails({
+        vendor: '',
+        amount: '',
+        date: '',
+        comments: '',
+        receipt: null
+      });
+
+      // Success message
+      alert(`✅ Report "${tripDetails.tripName}" submitted successfully!\nTotal: $${totalAmount.toFixed(2)}`);
+      
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('❌ Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   const handleEditSubmit = async (tripId) => {
     setIsSubmitting(true);
@@ -1352,6 +1389,20 @@ function ExpenseManager({ onBack, user }) {
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
+          
+        </div>
+      )}
+      {isSubmitting && (expenseView === 'new' || expenseView === 'edit') && (
+        <div className="processing-overlay">
+          <div className="processing-popup">
+            <div className="processing-spinner">⏳</div>
+            <h3>
+              {expenseView === 'edit' ? 'Saving Changes...' : 'Submitting Your Report...'}
+            </h3>
+            <p>Processing {receipts.length} expense(s)</p>
+            <p>Total Amount: ${totalAmount.toFixed(2)}</p>
+            <p>Please wait, do not close this window.</p>
+          </div>
         </div>
       )}
     </div>
