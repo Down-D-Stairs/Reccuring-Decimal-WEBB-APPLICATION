@@ -1261,9 +1261,7 @@ function ExpenseManager({ onBack, user }) {
                 className="trip-name-input"
               />
             </div>
-
-            
-            
+                            
             <div className="form-field">
               <label className="field-label">Date Range</label>
               <div className="date-inputs">
@@ -1278,7 +1276,7 @@ function ExpenseManager({ onBack, user }) {
                     })}
                   />
                 </div>
-                
+                         
                 <div className="date-field">
                   <label className="date-label">End</label>
                   <input
@@ -1294,7 +1292,7 @@ function ExpenseManager({ onBack, user }) {
             </div>
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
           </div>
-
+          
           <div className="scrollable-section">
             <button
               className="add-expense-btn"
@@ -1311,38 +1309,54 @@ function ExpenseManager({ onBack, user }) {
             >
               Add Expense
             </button>
-
-            <div className="expenses-box">
-              {receipts.map((receipt, index) => (
-                <div key={index} className="expense-item">
-                  <img src={receipt.receipt} alt="Receipt" />
-                  <div className="expense-details">
-                    <p>Vendor: {receipt.vendor}</p>
-                    <p>Amount: ${receipt.amount.toFixed(2)}</p>
-                    <p>Date: {new Date(receipt.date).toLocaleDateString()}</p>
-                    <p>Comments: {receipt.comments}</p>
-                    <button
-                      onClick={() => {
-                        setTotalAmount(prev => prev - receipt.amount);
-                        setReceipts(prev => prev.filter((_, i) => i !== index));
-                      }}
-                      style={{
-                        background: '#ff4444',
-                        color: 'white',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+            
+            <div className="receipts-section">
+              <h3>Expenses</h3>
+              {receipts.length > 0 ? (
+                <table className="receipts-table">
+                  <thead>
+                    <tr>
+                      <th>Vendor</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Comments</th>
+                      <th>Receipt</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {receipts.map((receipt, index) => (
+                      <tr key={index}>
+                        <td>{receipt.vendor}</td>
+                        <td>${receipt.amount}</td>
+                        <td>{receipt.date}</td>
+                        <td>{receipt.comments}</td>
+                        <td>
+                          {receipt.receipt && (
+                            <img src={receipt.receipt} alt="Receipt" className="receipt-thumbnail" />
+                          )}
+                        </td>
+                        <td>
+                          <button 
+                            onClick={() => {
+                              setTotalAmount(prev => prev - receipt.amount);
+                              setReceipts(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="remove-receipt-btn"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="no-expenses">No expenses added yet. Click "Add Expense" to get started.</p>
+              )}
             </div>
           </div>
-
+          
           <div className="draft-actions">
             {hasDraft && (
               <button
@@ -1362,37 +1376,34 @@ function ExpenseManager({ onBack, user }) {
               Save as Draft
             </button>
           </div>
-
-
+          
           <button
               className="submit-trip"
               onClick={handleSubmit}
               disabled={
-                  !tripDetails.tripName ||
+                !tripDetails.tripName ||
+                !tripDetails.dateRange.start ||
+                !tripDetails.dateRange.end ||
+                receipts.length === 0 ||
+                isSubmitting
+              }
+              style={{
+                backgroundColor: (!tripDetails.tripName ||
                   !tripDetails.dateRange.start ||
                   !tripDetails.dateRange.end ||
                   receipts.length === 0 ||
-                  isSubmitting
-              }
-              style={{
-                  backgroundColor: (!tripDetails.tripName ||
-                      !tripDetails.dateRange.start ||
-                      !tripDetails.dateRange.end ||
-                      receipts.length === 0 ||
-                      isSubmitting) ? '#cccccc' : '#0066cc',
-                  cursor: (!tripDetails.tripName ||
-                      !tripDetails.dateRange.start ||
-                      !tripDetails.dateRange.end ||
-                      receipts.length === 0 ||
-                      isSubmitting) ? 'not-allowed' : 'pointer'
+                  isSubmitting) ? '#cccccc' : '#0066cc',
+                cursor: (!tripDetails.tripName ||
+                  !tripDetails.dateRange.start ||
+                  !tripDetails.dateRange.end ||
+                  receipts.length === 0 ||
+                  isSubmitting) ? 'not-allowed' : 'pointer'
               }}
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
-          
         </div>
-      )}
-      {isSubmitting && (expenseView === 'new' || expenseView === 'edit') && (
+      )}      {isSubmitting && (expenseView === 'new' || expenseView === 'edit') && (
         <div className="processing-overlay">
           <div className="processing-popup">
             <div className="processing-spinner">⏳</div>
