@@ -691,7 +691,7 @@ const fetchProjects = async () => {
                   <React.Fragment key={trip._id}>
                     <tr className="report-row">
                       <td className="report-name">{trip.tripName}</td>
-                      <td>{trip.employeeName}</td>
+                      <td>{trip.email}</td>
                       <td className="amount">${trip.totalAmount.toFixed(2)}</td>
                       <td className="date-range">
                         {new Date(trip.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(trip.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}

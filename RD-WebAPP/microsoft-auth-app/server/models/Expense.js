@@ -20,10 +20,6 @@ const tripSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  employeeName: {
-    type: String,
-    required: false
-  },
   // JUST ADD THIS ONE OPTIONAL FIELD
   projectName: {
     type: String,
