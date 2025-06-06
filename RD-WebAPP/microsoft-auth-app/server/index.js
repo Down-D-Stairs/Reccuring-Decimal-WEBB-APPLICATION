@@ -128,7 +128,7 @@ app.put('/api/trips/:tripId', async (req, res) => {
       req.params.tripId,
       {
         tripName: req.body.tripName,
-        projectName: tripDetails.projectName, // ADD THIS LINE
+        projectName: req.body.projectName, // ADD THIS LINE
         dateRange: req.body.dateRange,
         totalAmount: req.body.totalAmount,
       },

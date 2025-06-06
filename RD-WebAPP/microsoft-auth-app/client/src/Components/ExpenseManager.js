@@ -1255,7 +1255,7 @@ const fetchProjects = async () => {
               </button>
               <button
                 className="save-changes-btn"
-                onClick={() => handleEditSubmit(trip._id)}
+                onClick={() => handleEditSubmit(tripDetails._id)}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
