@@ -738,16 +738,9 @@ const fetchProjects = async () => {
                       <tr className="expanded-row">
                         <td colSpan="6">
                           <div className="trip-details-expanded">
-                            <div className="trip-info-section">
-                              <h4>Trip Information</h4>
-                              <div className="trip-info-grid">
-                               
-                                {trip.projectName && (
-                                  <p><strong>Project:</strong> {trip.projectName}</p>
-                                )}
-                                
-                              </div>
-                            </div>
+                            {trip.projectName && (
+                              <p style={{marginBottom: '15px'}}><strong>Project:</strong> {trip.projectName}</p>
+                            )}
                             
                             <h4>Expense Details</h4>
                             <div className="expenses-grid">
@@ -1045,17 +1038,11 @@ const fetchProjects = async () => {
                       <tr className="expanded-row">
                         <td colSpan="9">
                           <div className="trip-details-expanded">
-                            <div className="trip-info-section">
-                              <h4>Trip Information</h4>
-                              <div className="trip-info-grid">
-                                
-                                {trip.projectName && (
-                                  <p><strong>Project:</strong> {trip.projectName}</p>
-                                )}
-                                
-                              </div>
-                            </div>
                             
+                            {trip.projectName && (
+                              <p style={{marginBottom: '15px'}}><strong>Project:</strong> {trip.projectName}</p>
+                            )}
+
                             <h4>Expense Details</h4>
                             <div className="expenses-grid">
                               {trip.expenses?.map((expense, index) => (
