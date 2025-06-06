@@ -462,6 +462,7 @@ const fetchProjects = async () => {
     try {
       const updateData = {
         tripName: tripDetails.tripName,
+        projectName: tripDetails.projectName, // ADD THIS LINE
         dateRange: tripDetails.dateRange,
         email: user.username,
         totalAmount,
