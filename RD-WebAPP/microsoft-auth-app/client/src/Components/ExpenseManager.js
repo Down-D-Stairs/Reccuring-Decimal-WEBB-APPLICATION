@@ -738,6 +738,20 @@ const fetchProjects = async () => {
                       <tr className="expanded-row">
                         <td colSpan="6">
                           <div className="trip-details-expanded">
+                            <div className="trip-info-section">
+                              <h4>Trip Information</h4>
+                              <div className="trip-info-grid">
+                                <p><strong>Report Name:</strong> {trip.tripName}</p>
+                                <p><strong>Employee:</strong> {trip.email}</p>
+                                {trip.projectName && (
+                                  <p><strong>Project:</strong> {trip.projectName}</p>
+                                )}
+                                <p><strong>Date Range:</strong> {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
+                                <p><strong>Total Amount:</strong> ${trip.totalAmount.toFixed(2)}</p>
+                                <p><strong>Status:</strong> <span className={`status-badge ${trip.status}`}>{trip.status}</span></p>
+                              </div>
+                            </div>
+                            
                             <h4>Expense Details</h4>
                             <div className="expenses-grid">
                               {trip.expenses?.map((expense, index) => (
@@ -1034,6 +1048,20 @@ const fetchProjects = async () => {
                       <tr className="expanded-row">
                         <td colSpan="9">
                           <div className="trip-details-expanded">
+                            <div className="trip-info-section">
+                              <h4>Trip Information</h4>
+                              <div className="trip-info-grid">
+                                <p><strong>Report Name:</strong> {trip.tripName}</p>
+                                <p><strong>Employee:</strong> {trip.email}</p>
+                                {trip.projectName && (
+                                  <p><strong>Project:</strong> {trip.projectName}</p>
+                                )}
+                                <p><strong>Date Range:</strong> {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
+                                <p><strong>Total Amount:</strong> ${trip.totalAmount.toFixed(2)}</p>
+                                <p><strong>Status:</strong> <span className={`status-badge ${trip.status}`}>{trip.status}</span></p>
+                              </div>
+                            </div>
+                            
                             <h4>Expense Details</h4>
                             <div className="expenses-grid">
                               {trip.expenses?.map((expense, index) => (
