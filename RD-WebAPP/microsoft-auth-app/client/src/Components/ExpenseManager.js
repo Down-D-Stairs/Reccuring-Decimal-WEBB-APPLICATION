@@ -1116,6 +1116,7 @@ function ExpenseManager({ onBack, user }) {
               placeholder="Trip Name"
               value={tripDetails.tripName}
               onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
+              className="trip-name-input"
             />
             <p>Email: {user.username}</p>
             <div className="date-inputs">
@@ -1136,11 +1137,11 @@ function ExpenseManager({ onBack, user }) {
                 })}
               />
             </div>
-           
+                   
             <div className="receipts-section">
               <div className="receipts-header">
                 <h3>Expenses</h3>
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowAddExpenseForm(true)}
                   className="add-expense-btn"
@@ -1148,48 +1149,9 @@ function ExpenseManager({ onBack, user }) {
                   + Add Expense
                 </button>
               </div>
-
-              {/* Show the form only when showAddExpenseForm is true */}
-              {showAddExpenseForm && (
-                <div className="expense-form-inline">
-                  <input
-                    type="text"
-                    placeholder="Vendor Name"
-                    value={expenseDetails.vendor}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    value={expenseDetails.amount}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
-                  />
-                  <input
-                    type="date"
-                    value={expenseDetails.date}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Comments"
-                    value={expenseDetails.comments}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
-                  />
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={(e) => handleReceiptUpload(e.target.files[0])}
-                    className="receipt-input"
-                    disabled={isProcessingReceipt}
-                  />
-                  {isProcessingReceipt && <span className="processing-text">Processing receipt...</span>}
-                  <button type="button" onClick={() => handleAddExpenseInEdit()}>Save Expense</button>
-                  <button type="button" onClick={() => setShowAddExpenseForm(false)}>Cancel</button>
-                </div>
-              )}
-
+              
               {/* Display receipts in table format */}
-              {receipts.length > 0 && (
+              {receipts.length > 0 ? (
                 <table className="receipts-table">
                   <thead>
                     <tr>
@@ -1214,10 +1176,13 @@ function ExpenseManager({ onBack, user }) {
                           )}
                         </td>
                         <td>
-                          <button onClick={() => {
-                            setTotalAmount(prev => prev - receipts[index].amount);
-                            setReceipts(prev => prev.filter((_, i) => i !== index));
-                          }}>
+                          <button 
+                            onClick={() => {
+                              setTotalAmount(prev => prev - receipts[index].amount);
+                              setReceipts(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="remove-receipt-btn"
+                          >
                             Remove
                           </button>
                         </td>
@@ -1225,20 +1190,22 @@ function ExpenseManager({ onBack, user }) {
                     ))}
                   </tbody>
                 </table>
+              ) : (
+                <p className="no-expenses">No expenses added yet. Click "Add Expense" to get started.</p>
               )}
             </div>
-
+            
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
-
+            
             <div className="edit-actions">
               <button
-                className="cancel-edit"
+                className="cancel-edit-btn"
                 onClick={() => setExpenseView('list')}
               >
                 Cancel
               </button>
               <button
-                className="save-changes"
+                className="save-changes-btn"
                 onClick={() => handleEditSubmit(tripDetails._id)}
                 disabled={isSubmitting}
               >
@@ -1246,8 +1213,86 @@ function ExpenseManager({ onBack, user }) {
               </button>
             </div>
           </div>
-        </div>
-       
+
+          {/* Pop-up form for adding expenses - same as new report view */}
+          {showAddExpenseForm && (
+            <div className="modal-overlay">
+              <div className="add-expense-modal">
+                <div className="modal-header">
+                  <h3>Add New Expense</h3>
+                  <button 
+                    className="close-modal-btn"
+                    onClick={() => setShowAddExpenseForm(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <div className="expense-form">
+                  <input
+                    type="text"
+                    placeholder="Vendor Name"
+                    value={expenseDetails.vendor}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
+                    className="form-input"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={expenseDetails.amount}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
+                    className="form-input"
+                  />
+                  <input
+                    type="date"
+                    value={expenseDetails.date}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
+                    className="form-input"
+                  />
+                  <textarea
+                    placeholder="Comments (optional)"
+                    value={expenseDetails.comments}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
+                    className="form-textarea"
+                    rows="3"
+                  />
+                  
+                  <div className="receipt-upload">
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      onChange={(e) => handleReceiptUpload(e.target.files[0])}
+                      className="receipt-input"
+                      disabled={isProcessingReceipt}
+                    />
+                    {isProcessingReceipt && (
+                      <span className="processing-text">Processing receipt...</span>
+                    )}
+                    {expenseDetails.receipt && (
+                      <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
+                    )}
+                  </div>
+                  
+                  <div className="modal-actions">
+                    <button 
+                      onClick={() => setShowAddExpenseForm(false)}
+                      className="cancel-btn"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => handleAddExpenseInEdit()}
+                      disabled={!expenseDetails.vendor || !expenseDetails.amount || !expenseDetails.date || !expenseDetails.receipt}
+                      className="save-expense-btn"
+                    >
+                      Save Expense
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>       
       ) : (
         <div className="create-trip-container">
           <div className="fixed-section">
