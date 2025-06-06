@@ -707,6 +707,7 @@ const fetchProjects = async () => {
                             setTripDetails({
                               _id: trip._id,
                               tripName: trip.tripName,
+                              projectName: trip.projectName || '',
                               employeeName: trip.employeeName,
                               dateRange: trip.dateRange,
                               userEmail: user.username
@@ -1144,6 +1145,27 @@ const fetchProjects = async () => {
               onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
               className="trip-name-input"
             />
+            
+            {/* ADD PROJECT DROPDOWN HERE */}
+            <div className="form-field">
+              <label className="field-label">Project (Optional)</label>
+              <select
+                value={tripDetails.projectName || ''}
+                onChange={(e) => setTripDetails({
+                  ...tripDetails,
+                  projectName: e.target.value
+                })}
+                className="project-select"
+              >
+                <option value="">Select a project (optional)</option>
+                {projects.map((projectName, index) => (
+                  <option key={index} value={projectName}>
+                    {projectName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
             <p>Email: {user.username}</p>
             <div className="date-inputs">
               <input
