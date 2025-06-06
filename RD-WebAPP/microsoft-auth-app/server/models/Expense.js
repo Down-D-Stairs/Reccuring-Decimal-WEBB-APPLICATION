@@ -8,10 +8,6 @@ const expenseSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  comments: {
-    type: String,
-    default: ''
-  },
   tripId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Trip',
@@ -23,6 +19,11 @@ const tripSchema = new mongoose.Schema({
   tripName: {
     type: String,
     required: true
+  },
+  // JUST ADD THIS ONE OPTIONAL FIELD
+  projectName: {
+    type: String,
+    required: false  // Optional!
   },
   dateRange: {
     start: {
@@ -47,10 +48,6 @@ const tripSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'denied'],
     default: 'pending'
   },
-  reason: {
-    type: String,
-    default: ''
-  },
   expenses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Expense'
@@ -60,4 +57,4 @@ const tripSchema = new mongoose.Schema({
 const Expense = mongoose.model('Expense', expenseSchema);
 const Trip = mongoose.model('Trip', tripSchema);
 
-module.exports = { Trip, Expense };
+module.exports = { Expense, Trip };

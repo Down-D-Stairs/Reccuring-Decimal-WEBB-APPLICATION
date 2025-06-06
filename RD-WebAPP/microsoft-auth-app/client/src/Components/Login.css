@@ -1312,3 +1312,12 @@
 }
 
 
+.project-select {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+

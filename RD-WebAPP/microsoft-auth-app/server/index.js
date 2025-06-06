@@ -43,6 +43,7 @@ app.post('/api/trips', async (req, res) => {
    
     const trip = new Trip({
       tripName: req.body.tripName,
+      projectName: req.body.projectName || null, // Optional!
       dateRange: req.body.dateRange,
       email: req.body.email,
       totalAmount: 0,
@@ -172,6 +173,7 @@ app.post('/api/drafts', async (req, res) => {
     if (draft) {
       // Update existing draft
       draft.tripName = req.body.tripName;
+      draft.projectName = req.body.projectName || null; // ADD THIS
       draft.dateRange = req.body.dateRange;
       draft.totalAmount = req.body.totalAmount;
       draft.expenses = req.body.expenses;
@@ -863,6 +865,37 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
 });
 
 
+// Add this simple endpoint
+app.get('/api/user-project-names', async (req, res) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find projects where user is member or approver
+    const projects = await Project.find({
+      $and: [
+        { isActive: true },
+        {
+          $or: [
+            { approvers: { $regex: email, $options: 'i' } },
+            { projectMembers: { $regex: email, $options: 'i' } }
+          ]
+        }
+      ]
+    }).select('projectName'); // Only get project names
+
+    // Just return array of project names
+    const projectNames = projects.map(p => p.projectName);
+
+    res.json(projectNames);
+  } catch (error) {
+    console.error('Error fetching project names:', error);
+    res.status(500).json({ error: 'Failed to fetch project names' });
+  }
+});
 
 
 // Start the server

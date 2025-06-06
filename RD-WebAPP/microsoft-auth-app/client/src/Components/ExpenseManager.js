@@ -8,6 +8,7 @@ function ExpenseManager({ onBack, user }) {
   const [expandedTrip, setExpandedTrip] = useState(null);
   const [selectedTrips, setSelectedTrips] = useState([]);
   const [hasDraft, setHasDraft] = useState(false);
+  const [projects, setProjects] = useState([]);
 
   
   // Add these state variables at the top with your other state variables
@@ -28,6 +29,7 @@ function ExpenseManager({ onBack, user }) {
  
   const [tripDetails, setTripDetails] = useState({
     tripName: '',
+    projectName: '',
     dateRange: { start: '', end: '' }
   });
 
@@ -52,6 +54,7 @@ function ExpenseManager({ onBack, user }) {
   useEffect(() => {
     fetchTrips();
     checkForDraft();
+    fetchProjects(); // ADD THIS LINE
   }, [user]);
  
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -105,6 +108,19 @@ function ExpenseManager({ onBack, user }) {
 
     return filteredTrips;
   };  
+
+// Add this simple function
+const fetchProjects = async () => {
+  try {
+    const response = await fetch(`${API_URL}/api/user-project-names?email=${user.username}`);
+    const projectNames = await response.json();
+    setProjects(projectNames);
+  } catch (error) {
+    console.error('Failed to fetch projects:', error);
+  }
+};
+
+  
 
   // Add this function with your other functions
   const getPaginatedReports = (filteredReports) => {
@@ -360,6 +376,7 @@ function ExpenseManager({ onBack, user }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tripName: tripDetails.tripName,
+          projectName: tripDetails.projectName,
           dateRange: tripDetails.dateRange,
           email: user.username,
           totalAmount
@@ -1306,6 +1323,25 @@ function ExpenseManager({ onBack, user }) {
                 className="trip-name-input"
               />
             </div>
+
+            <div className="form-field">
+              <label className="field-label">Project (Optional)</label>
+              <select
+                value={tripDetails.projectName}
+                onChange={(e) => setTripDetails({
+                  ...tripDetails,
+                  projectName: e.target.value
+                })}
+                className="project-select"
+              >
+                <option value="">Select a project (optional)</option>
+                {projects.map((projectName, index) => (
+                  <option key={index} value={projectName}>
+                    {projectName}
+                  </option>
+                ))}
+              </select>
+            </div>
                             
             <div className="form-field">
               <label className="field-label">Date Range</label>
@@ -1466,3 +1502,4 @@ function ExpenseManager({ onBack, user }) {
 }
 
 export default ExpenseManager;
+               

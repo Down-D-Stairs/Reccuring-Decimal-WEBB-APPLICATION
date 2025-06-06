@@ -1,31 +1,39 @@
 const mongoose = require('mongoose');
 
-const draftExpenseSchema = new mongoose.Schema({
-  vendor: String,
-  amount: Number,
-  date: String,
-  comments: String,
-  receipt: String
-});
-
 const draftSchema = new mongoose.Schema({
   tripName: {
     type: String,
     required: true
   },
-  dateRange: {
-    start: String,
-    end: String
-  },
-  email: {
+  // JUST ADD THIS ONE OPTIONAL FIELD
+  projectName: {
     type: String,
-    required: true
+    required: false  // Optional!
+  },
+  dateRange: {
+    start: {
+      type: Date,
+      required: true
+    },
+    end: {
+      type: Date,
+      required: true
+    }
   },
   totalAmount: {
     type: Number,
     default: 0
   },
-  expenses: [draftExpenseSchema],
+  email: {
+    type: String,
+    required: true
+  },
+  expenses: [{
+    amount: Number,
+    date: Date,
+    vendor: String,
+    receipt: String
+  }],
   createdAt: {
     type: Date,
     default: Date.now
