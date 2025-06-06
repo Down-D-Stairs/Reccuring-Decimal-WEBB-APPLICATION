@@ -741,14 +741,11 @@ const fetchProjects = async () => {
                             <div className="trip-info-section">
                               <h4>Trip Information</h4>
                               <div className="trip-info-grid">
-                                <p><strong>Report Name:</strong> {trip.tripName}</p>
-                                <p><strong>Employee:</strong> {trip.email}</p>
+                               
                                 {trip.projectName && (
                                   <p><strong>Project:</strong> {trip.projectName}</p>
                                 )}
-                                <p><strong>Date Range:</strong> {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
-                                <p><strong>Total Amount:</strong> ${trip.totalAmount.toFixed(2)}</p>
-                                <p><strong>Status:</strong> <span className={`status-badge ${trip.status}`}>{trip.status}</span></p>
+                                
                               </div>
                             </div>
                             
@@ -1051,14 +1048,11 @@ const fetchProjects = async () => {
                             <div className="trip-info-section">
                               <h4>Trip Information</h4>
                               <div className="trip-info-grid">
-                                <p><strong>Report Name:</strong> {trip.tripName}</p>
-                                <p><strong>Employee:</strong> {trip.email}</p>
+                                
                                 {trip.projectName && (
                                   <p><strong>Project:</strong> {trip.projectName}</p>
                                 )}
-                                <p><strong>Date Range:</strong> {new Date(trip.dateRange.start).toLocaleDateString()} - {new Date(trip.dateRange.end).toLocaleDateString()}</p>
-                                <p><strong>Total Amount:</strong> ${trip.totalAmount.toFixed(2)}</p>
-                                <p><strong>Status:</strong> <span className={`status-badge ${trip.status}`}>{trip.status}</span></p>
+                                
                               </div>
                             </div>
                             
