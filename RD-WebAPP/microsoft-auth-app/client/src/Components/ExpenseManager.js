@@ -1404,6 +1404,33 @@ const fetchProjects = async () => {
               </div>
             </div>
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
+
+            <button
+              className="submit-trip"
+              onClick={handleSubmit}
+              disabled={
+                !tripDetails.tripName ||
+                !tripDetails.dateRange.start ||
+                !tripDetails.dateRange.end ||
+                receipts.length === 0 ||
+                isSubmitting
+              }
+              style={{
+                backgroundColor: (!tripDetails.tripName ||
+                  !tripDetails.dateRange.start ||
+                  !tripDetails.dateRange.end ||
+                  receipts.length === 0 ||
+                  isSubmitting) ? '#cccccc' : '#0066cc',
+                cursor: (!tripDetails.tripName ||
+                  !tripDetails.dateRange.start ||
+                  !tripDetails.dateRange.end ||
+                  receipts.length === 0 ||
+                  isSubmitting) ? 'not-allowed' : 'pointer'
+              }}
+          >
+              {isSubmitting ? 'Submitting...' : 'Submit Report'}
+          </button>
+          
           </div>
           
           <div className="scrollable-section">
@@ -1490,31 +1517,7 @@ const fetchProjects = async () => {
             </button>
           </div>
           
-          <button
-              className="submit-trip"
-              onClick={handleSubmit}
-              disabled={
-                !tripDetails.tripName ||
-                !tripDetails.dateRange.start ||
-                !tripDetails.dateRange.end ||
-                receipts.length === 0 ||
-                isSubmitting
-              }
-              style={{
-                backgroundColor: (!tripDetails.tripName ||
-                  !tripDetails.dateRange.start ||
-                  !tripDetails.dateRange.end ||
-                  receipts.length === 0 ||
-                  isSubmitting) ? '#cccccc' : '#0066cc',
-                cursor: (!tripDetails.tripName ||
-                  !tripDetails.dateRange.start ||
-                  !tripDetails.dateRange.end ||
-                  receipts.length === 0 ||
-                  isSubmitting) ? 'not-allowed' : 'pointer'
-              }}
-          >
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
-          </button>
+          
         </div>
       )}      {isSubmitting && (expenseView === 'new' || expenseView === 'edit') && (
         <div className="processing-overlay">
