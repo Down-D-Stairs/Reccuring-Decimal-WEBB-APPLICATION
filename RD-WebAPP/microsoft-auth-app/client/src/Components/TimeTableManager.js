@@ -1057,7 +1057,7 @@ return (
                               <td>
                                 <textarea
                                   placeholder="Approval comments (required for approval/denial)"
-                                  value={timesheetStatusUpdates[timesheet._id]?.comments || ''}
+                                  value={timesheet.approvalComments}
                                   onChange={(e) => setTimesheetStatusUpdates({
                                     ...timesheetStatusUpdates,
                                     [timesheet._id]: {
