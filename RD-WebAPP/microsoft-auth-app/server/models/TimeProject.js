@@ -59,7 +59,16 @@ const timeEntrySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  comments: String,
+  comments: 
+  {
+    type: String,
+    default: ''
+  },
+  approvalComments:
+  {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

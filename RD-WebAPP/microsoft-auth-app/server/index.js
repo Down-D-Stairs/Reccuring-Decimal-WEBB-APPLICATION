@@ -846,7 +846,7 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
       timesheetId,
       { 
         status,
-        comments, // Make sure this field exists in your schema
+        approvalComments: comments, // Make sure this field exists in your schema
         reason,   // For compatibility
         approverEmail,
         approvedDate

@@ -1056,7 +1056,7 @@ return (
                               </td>
                               <td>
                                 <textarea
-                                  placeholder="Comments (required for approval/denial)"
+                                  placeholder="Approval comments (required for approval/denial)"
                                   value={timesheetStatusUpdates[timesheet._id]?.comments || ''}
                                   onChange={(e) => setTimesheetStatusUpdates({
                                     ...timesheetStatusUpdates,
@@ -1102,10 +1102,20 @@ return (
                                         </div>
                                       ))}
                                     </div>
+                                    
+                                    {/* Employee's week comments */}
                                     {timesheet.comments && (
                                       <div className="week-comments-table">
-                                        <h4>Week Comments:</h4>
+                                        <h4>Employee Week Comments:</h4>
                                         <p>{timesheet.comments}</p>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Approver's comments */}
+                                    {timesheet.approvalComments && (
+                                      <div className="approval-comments-display">
+                                        <h4>Approval Comments:</h4>
+                                        <p>{timesheet.approvalComments}</p>
                                       </div>
                                     )}
                                   </div>
@@ -1144,22 +1154,37 @@ return (
             return approverProjects.length === 0 ? (
               <p>You are not assigned as an approver for any projects.</p>
             ) : (
-              <div className="projects-for-approval">
-                {approverProjects.map(project => (
-                  <div key={project._id} className="approval-project-card">
-                    <h3>{project.projectName}</h3>
-                    <p>Client: {project.clientName}</p>
-                    <p>Date Range: {new Date(project.dateRange.start).toLocaleDateString()} - 
-                       {new Date(project.dateRange.end).toLocaleDateString()}</p>
-                    
-                    <button 
-                      className="view-timesheets-button"
-                      onClick={() => handleViewProjectTimesheets(project._id)}
-                    >
-                      View Submitted Timesheets
-                    </button>
-                  </div>
-                ))}
+              <div className="projects-table-container">
+                <table className="projects-table">
+                  <thead>
+                    <tr>
+                      <th>Project Name</th>
+                      <th>Client</th>
+                      <th>Date Range</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approverProjects.map(project => (
+                      <tr key={project._id}>
+                        <td>{project.projectName}</td>
+                        <td>{project.clientName}</td>
+                        <td>
+                          {new Date(project.dateRange.start).toLocaleDateString()} - 
+                          {new Date(project.dateRange.end).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <button
+                            className="view-timesheets-button-table"
+                            onClick={() => handleViewProjectTimesheets(project._id)}
+                          >
+                            View Timesheets
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             );
           })()}
