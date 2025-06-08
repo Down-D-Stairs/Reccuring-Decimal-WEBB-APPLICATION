@@ -1111,11 +1111,11 @@ return (
                                       </div>
                                     )}
                                     
-                                    {/* Approver's comments - show current input OR saved approval comments */}
-                                    {(timesheetStatusUpdates[timesheet._id]?.comments || timesheet.approvalComments) && (
+                                    {/* Approver's comments - ONLY show saved approval comments */}
+                                    {timesheet.approvalComments && (
                                       <div className="approval-comments-display">
                                         <h4>Approval Comments:</h4>
-                                        <p>{timesheetStatusUpdates[timesheet._id]?.comments || timesheet.approvalComments}</p>
+                                        <p>{timesheet.approvalComments}</p>
                                       </div>
                                     )}
                                   </div>
