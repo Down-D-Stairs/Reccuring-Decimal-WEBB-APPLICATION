@@ -654,7 +654,7 @@ const fetchProjects = async () => {
 
             <input
               type="text"
-              placeholder="Search by trip or employee name"
+              placeholder="Search by report or employee name"
               value={filters.searchTerm}
               onChange={(e) => handleFilterChange({...filters, searchTerm: e.target.value})}
             />
@@ -1430,7 +1430,7 @@ const fetchProjects = async () => {
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
-          
+
           </div>
           
           <div className="scrollable-section">
