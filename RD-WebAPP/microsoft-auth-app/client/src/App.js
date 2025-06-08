@@ -82,6 +82,8 @@ function App() {
                     border: 'none',
                     borderRadius: '4px',
                     cursor: 'pointer',
+                    marginBottom: '20px',
+                    width: '200px'
                   }}
                   onClick={() => setCurrentView('expense-manager')}
                 >
@@ -90,17 +92,19 @@ function App() {
                 {console.log('Rendering logged-in user view')}
                 <button 
                   style={{
-                    padding: '30px 24px',
+                    padding: '12px 24px',
                     fontSize: '16px',
                     backgroundColor: '#0078d4',
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
                     cursor: 'pointer',
+                    marginBottom: '20px',
+                    width: '200px'
                   }}
                   onClick={() => setCurrentView('timetable')}
                 >
-                  TimeTable
+                  Timesheet
                 </button>
               
               

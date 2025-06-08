@@ -924,7 +924,7 @@ const fetchProjects = async () => {
             </select>
             <input
               type="text"
-              placeholder="Search by report name or employee"
+              placeholder="Search by report or employee name"
               value={filters.searchTerm}
               onChange={(e) => handleFilterChange({...filters, searchTerm: e.target.value})}
             />
