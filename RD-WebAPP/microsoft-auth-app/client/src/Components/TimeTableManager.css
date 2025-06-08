@@ -594,3 +594,220 @@
   font-style: italic;
   color: #6c757d;
 }
+
+.comments-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.comments-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.comments-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+.comments-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.comments-display {
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  font-size: 14px;
+  color: #555;
+  margin-top: 8px;
+}
+
+.comments-display.empty {
+  font-style: italic;
+  color: #999;
+}
+
+/* Timesheet approval table styles */
+.timesheets-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.timesheets-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.timesheets-table th {
+  background: #f8f9fa;
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+  font-size: 14px;
+}
+
+.timesheets-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+.timesheets-table tr:hover {
+  background: #f8f9fa;
+}
+
+/* Status badge in table */
+.timesheets-table .status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.timesheets-table .status-badge.submitted {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.timesheets-table .status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.timesheets-table .status-badge.denied {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Table form elements */
+.status-select {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  width: 100%;
+  max-width: 120px;
+}
+
+.approval-comments-table {
+  width: 100%;
+  max-width: 200px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.submit-decision-button-table {
+  padding: 6px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.submit-decision-button-table:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.submit-decision-button-table:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+/* Expanded row details */
+.expanded-timesheet-details {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.day-entries-table h4,
+.week-comments-table h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 14px;
+}
+
+.day-entry-row {
+  padding: 5px 0;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 13px;
+}
+
+.day-entry-row:last-child {
+  border-bottom: none;
+}
+
+.week-comments-table {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+}
+
+.week-comments-table p {
+  margin: 0;
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  font-size: 13px;
+}
+
+/* Expand/collapse button */
+.timesheets-table button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #007bff;
+  padding: 4px 8px;
+}
+
+.timesheets-table button:hover {
+  background: #e9ecef;
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .timesheets-table th,
+  .timesheets-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .approval-comments-table {
+    max-width: 150px;
+  }
+}

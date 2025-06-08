@@ -62,6 +62,10 @@ function TimeTableManager({ onBack, user }) {
   ], []);
 
   const isAdmin = ADMIN_EMAILS.includes(user?.username);
+  
+  const [weekComments, setWeekComments] = useState('');
+  const [expandedTimesheet, setExpandedTimesheet] = useState(null);
+
 
   // Get default week (current week starting Monday)
   function getDefaultWeek() {
@@ -370,7 +374,8 @@ const fetchTimeEntries = async () => {
             dayEntries,
             totalHours: dayEntries.reduce((sum, day) => sum + day.hours, 0),
             status: 'submitted',
-            submittedDate: new Date().toISOString()
+            submittedDate: new Date().toISOString(),
+            comments: weekComments // Add this line
           };
         });
       
@@ -401,6 +406,7 @@ const fetchTimeEntries = async () => {
       
       // Refresh time entries
       fetchTimeEntries();
+      setWeekComments('');
     } catch (error) {
       console.error('Error submitting timesheet:', error);
       alert(`Failed to submit timesheet: ${error.message}`);
@@ -799,6 +805,17 @@ return (
           </table>
         </div>
 
+        <div className="comments-section">
+          <label className="comments-label">Week Comments (Optional)</label>
+          <textarea
+            className="comments-input"
+            placeholder="Add any comments for this week..."
+            value={weekComments}
+            onChange={(e) => setWeekComments(e.target.value)}
+            rows={3}
+          />
+        </div>
+
         <div className="timesheet-actions">
           <button 
             className="submit-timesheet-button"
@@ -998,85 +1015,108 @@ return (
                 <div key={employeeName} className="employee-timesheets">
                   <h3>{employeeName}</h3>
                   
-                  {timesheets.map(timesheet => (
-                    <div key={timesheet._id} className="timesheet-card">
-                      <p>Week: {new Date(timesheet.weekStartDate).toLocaleDateString()} - 
-                         {new Date(timesheet.weekEndDate).toLocaleDateString()}</p>
-                      <p>Total Hours: {timesheet.totalHours}</p>
-                      <p>Status: <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></p>
-                      
-                      <div className="day-entries">
-                        {timesheet.dayEntries.map((day, index) => (
-                          <div key={index} className="day-entry">
-                            <p>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</p>
-                            {day.notes && <p>Notes: {day.notes}</p>}
-                          </div>
+                  <div className="timesheets-table-container">
+                    <table className="timesheets-table">
+                      <thead>
+                        <tr>
+                          <th>Employee</th>
+                          <th>Week</th>
+                          <th>Total Hours</th>
+                          <th>Status</th>
+                          <th>Decision</th>
+                          <th>Comments</th>
+                          <th>Action</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {timesheets.map(timesheet => (
+                          <>
+                            <tr key={timesheet._id}>
+                              <td>{timesheet.employeeName}</td>
+                              <td>{new Date(timesheet.weekStartDate).toLocaleDateString()} - {new Date(timesheet.weekEndDate).toLocaleDateString()}</td>
+                              <td>{timesheet.totalHours}</td>
+                              <td><span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></td>
+                              <td>
+                                <select
+                                  value={timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}
+                                  onChange={(e) => setTimesheetStatusUpdates({
+                                    ...timesheetStatusUpdates,
+                                    [timesheet._id]: {
+                                      ...timesheetStatusUpdates[timesheet._id],
+                                      status: e.target.value
+                                    }
+                                  })}
+                                  className={`status-select ${timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}`}
+                                >
+                                  <option value="submitted">Submitted</option>
+                                  <option value="approved">Approved</option>
+                                  <option value="denied">Denied</option>
+                                </select>
+                              </td>
+                              <td>
+                                <textarea
+                                  placeholder="Comments (required for approval/denial)"
+                                  value={timesheetStatusUpdates[timesheet._id]?.comments || ''}
+                                  onChange={(e) => setTimesheetStatusUpdates({
+                                    ...timesheetStatusUpdates,
+                                    [timesheet._id]: {
+                                      ...timesheetStatusUpdates[timesheet._id],
+                                      comments: e.target.value
+                                    }
+                                  })}
+                                  className="approval-comments-table"
+                                  rows={2}
+                                />
+                              </td>
+                              <td>
+                                <button
+                                  className="submit-decision-button-table"
+                                  onClick={() => handleSubmitTimesheetDecision(timesheet._id)}
+                                  disabled={
+                                    !timesheetStatusUpdates[timesheet._id] ||
+                                    timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
+                                    (timesheetStatusUpdates[timesheet._id]?.status !== 'submitted' &&
+                                     !timesheetStatusUpdates[timesheet._id]?.comments)
+                                  }
+                                >
+                                  Submit
+                                </button>
+                              </td>
+                              <td>
+                                <button onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}>
+                                  {expandedTimesheet === timesheet._id ? '▲' : '▼'}
+                                </button>
+                              </td>
+                            </tr>
+                            {expandedTimesheet === timesheet._id && (
+                              <tr>
+                                <td colSpan="8">
+                                  <div className="expanded-timesheet-details">
+                                    <div className="day-entries-table">
+                                      <h4>Daily Breakdown:</h4>
+                                      {timesheet.dayEntries.map((day, index) => (
+                                        <div key={index} className="day-entry-row">
+                                          <span>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</span>
+                                          {day.notes && <span> - Notes: {day.notes}</span>}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {timesheet.comments && (
+                                      <div className="week-comments-table">
+                                        <h4>Week Comments:</h4>
+                                        <p>{timesheet.comments}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
                         ))}
-                      </div>
-                      
-                      {/* ExpenseManager-style approval UI */}
-                      <div className="timesheet-approval-section">
-                        <select
-                          value={timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}
-                          onChange={(e) => setTimesheetStatusUpdates({
-                            ...timesheetStatusUpdates,
-                            [timesheet._id]: {
-                              ...timesheetStatusUpdates[timesheet._id],
-                              status: e.target.value
-                            }
-                          })}
-                          className={`status-select ${timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}`}
-                        >
-                          <option value="submitted">Submitted</option>
-                          <option value="approved">Approved</option>
-                          <option value="denied">Denied</option>
-                        </select>
-                        
-                        <textarea
-                          placeholder="Comments (required for approval/denial)"
-                          value={timesheetStatusUpdates[timesheet._id]?.comments || ''}
-                          onChange={(e) => setTimesheetStatusUpdates({
-                            ...timesheetStatusUpdates,
-                            [timesheet._id]: {
-                              ...timesheetStatusUpdates[timesheet._id],
-                              comments: e.target.value
-                            }
-                          })}
-                          className="approval-comments"
-                        />
-                        
-                        <button 
-                          className="submit-decision-button"
-                          onClick={() => handleSubmitTimesheetDecision(timesheet._id)}
-                          disabled={
-                            !timesheetStatusUpdates[timesheet._id] ||
-                            timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
-                            (timesheetStatusUpdates[timesheet._id]?.status !== 'submitted' && 
-                             !timesheetStatusUpdates[timesheet._id]?.comments)
-                          }
-                        >
-                          Submit Decision
-                        </button>
-                      </div>
-                      
-                      {/* Show comments if available */}
-                      {(timesheet.comments || timesheetStatusUpdates[timesheet._id]?.comments) && (
-                        <div className="timesheet-comments">
-                          <p><strong>Comments:</strong> {timesheetStatusUpdates[timesheet._id]?.comments || timesheet.comments}</p>
-                        </div>
-                      )}
-
-                      
-                      {/* Show approval info */}
-                      {(timesheet.status === 'approved' || timesheet.status === 'denied') && 
-                       timesheet.approverEmail && timesheet.approvedDate && (
-                        <p className="approval-info">
-                          {timesheet.status === 'approved' ? 'Approved' : 'Denied'} by {timesheet.approverEmail} 
-                          on {new Date(timesheet.approvedDate).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ))}
             </div>
