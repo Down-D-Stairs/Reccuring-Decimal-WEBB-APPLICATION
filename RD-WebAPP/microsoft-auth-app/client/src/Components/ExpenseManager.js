@@ -759,7 +759,7 @@ const fetchProjects = async () => {
                             key={expense._id} 
                             className="expense-item clickable"
                             onClick={() => {
-                              setSelectedExpense(expense);
+                              setSelectedExpense({...expense, tripProjectName: trip.projectName}); // Pass project name
                               setIsExpenseModalOpen(true);
                             }}
                           >
@@ -1567,7 +1567,7 @@ const fetchProjects = async () => {
                 <h3>Expense Details</h3>
                 <div className="detail-row">
                   <span className="detail-label">Project:</span>
-                  <span className="detail-value">{trips.projectName || 'No project assigned'}</span>
+                  <span className="detail-value">{selectedExpense.tripProjectName || 'No project assigned'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Vendor:</span>
