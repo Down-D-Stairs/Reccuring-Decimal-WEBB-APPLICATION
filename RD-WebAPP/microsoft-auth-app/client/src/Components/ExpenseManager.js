@@ -1567,7 +1567,7 @@ const fetchProjects = async () => {
                 <h3>Expense Details</h3>
                 <div className="detail-row">
                   <span className="detail-label">Project:</span>
-                  <span className="detail-value">{trip.projectName || 'No project assigned'}</span>
+                  <span className="detail-value">{trips.projectName || 'No project assigned'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Vendor:</span>
