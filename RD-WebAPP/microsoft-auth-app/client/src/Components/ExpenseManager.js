@@ -9,6 +9,9 @@ function ExpenseManager({ onBack, user }) {
   const [selectedTrips, setSelectedTrips] = useState([]);
   const [hasDraft, setHasDraft] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+
 
   
   // Add these state variables at the top with your other state variables
@@ -570,6 +573,19 @@ const fetchProjects = async () => {
     }
   };
 
+  const downloadReceipt = (expense) => {
+    const link = document.createElement('a');
+    link.href = expense.receipt;
+    
+    // Format: Receipt_VendorName_Date.jpg
+    const date = new Date(expense.date).toISOString().split('T')[0]; // YYYY-MM-DD
+    const vendorName = expense.vendor.replace(/[^a-zA-Z0-9]/g, '_'); // Replace special chars
+    link.download = `Receipt_${vendorName}_${date}.jpg`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="expense-manager">
@@ -737,30 +753,26 @@ const fetchProjects = async () => {
                     </tr>
                     
                     {expandedTrip === trip._id && (
-                      <tr className="expanded-row">
-                        <td colSpan="6">
-                          <div className="trip-details-expanded">
-                            {trip.projectName && (
-                              <p style={{marginBottom: '15px'}}><strong>Project:</strong> {trip.projectName}</p>
-                            )}
-                            
-                            <h4>Expense Details</h4>
-                            <div className="expenses-grid">
-                              {trip.expenses?.map((expense, index) => (
-                                <div key={index} className="expense-detail-card">
-                                  <img src={expense.receipt} alt="Receipt" className="receipt-image" />
-                                  <div className="expense-info">
-                                    <p><strong>Vendor:</strong> {expense.vendor}</p>
-                                    <p><strong>Amount:</strong> ${expense.amount.toFixed(2)}</p>
-                                    <p><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</p>
-                                    {expense.comments && <p><strong>Comments:</strong> {expense.comments}</p>}
-                                  </div>
-                                </div>
-                              ))}
+                      <div className="expenses-list">
+                        {trip.expenses.map(expense => (
+                          <div 
+                            key={expense._id} 
+                            className="expense-item clickable"
+                            onClick={() => {
+                              setSelectedExpense(expense);
+                              setIsExpenseModalOpen(true);
+                            }}
+                          >
+                            <img src={expense.receipt} alt="Receipt" className="receipt-thumbnail" />
+                            <div className="expense-details">
+                              <p>Amount: ${expense.amount}</p>
+                              <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                              <p>Vendor: {expense.vendor}</p>
                             </div>
+                            <span className="click-to-view">Click to view details</span>
                           </div>
-                        </td>
-                      </tr>
+                        ))}
+                      </div>
                     )}
                   </React.Fragment>
                 ))}
@@ -1529,6 +1541,51 @@ const fetchProjects = async () => {
             <p>Processing {receipts.length} expense(s)</p>
             <p>Total Amount: ${totalAmount.toFixed(2)}</p>
             <p>Please wait, do not close this window.</p>
+          </div>
+        </div>
+      )}
+      {isExpenseModalOpen && selectedExpense && (
+        <div className="expense-modal-overlay" onClick={() => setIsExpenseModalOpen(false)}>
+          <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="modal-close-btn"
+              onClick={() => setIsExpenseModalOpen(false)}
+            >
+              ×
+            </button>
+            
+            <div className="expense-modal-content">
+              <div className="expense-modal-image">
+                <img 
+                  src={selectedExpense.receipt} 
+                  alt="Receipt" 
+                  className="full-receipt-image"
+                />
+              </div>
+              
+              <div className="expense-modal-details">
+                <h3>Expense Details</h3>
+                <div className="detail-row">
+                  <span className="detail-label">Vendor:</span>
+                  <span className="detail-value">{selectedExpense.vendor}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Amount:</span>
+                  <span className="detail-value">${selectedExpense.amount}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Date:</span>
+                  <span className="detail-value">{new Date(selectedExpense.date).toLocaleDateString()}</span>
+                </div>
+                
+                <button 
+                  className="download-receipt-btn"
+                  onClick={() => downloadReceipt(selectedExpense)}
+                >
+                  Download Receipt
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
