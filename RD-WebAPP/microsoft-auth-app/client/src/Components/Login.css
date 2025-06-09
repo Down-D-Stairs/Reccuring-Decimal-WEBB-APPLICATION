@@ -143,32 +143,59 @@
   background-color: #cccccc;
 }
 
-.expenses-box {
+.expenses-list {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
 }
 
 .expense-item {
   display: flex;
-  gap: 15px;
-  padding: 10px;
+  flex-direction: column;
+  width: 200px; /* Fixed smaller width */
   background: #f8f9fa;
-  border-radius: 4px;
-  margin-bottom: 10px;
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
 }
 
-.expense-item img {
-  max-width: 100px !important;
-  max-height: 100px !important;
-  width: auto !important;
-  height: auto !important;
-  object-fit: scale-down !important;
-  flex-shrink: 0;
+.expense-item.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.expense-item.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-thumbnail {
+  width: 100%;
+  height: 120px; /* Smaller height */
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 8px;
 }
 
 .expense-details {
   flex: 1;
+}
+
+.expense-details p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.click-to-view {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: 11px;
+  color: #007bff;
+  font-style: italic;
 }
 
 .add-expense-btn {

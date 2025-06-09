@@ -1566,6 +1566,10 @@ const fetchProjects = async () => {
               <div className="expense-modal-details">
                 <h3>Expense Details</h3>
                 <div className="detail-row">
+                  <span className="detail-label">Project:</span>
+                  <span className="detail-value">{trip.projectName || 'No project assigned'}</span>
+                </div>
+                <div className="detail-row">
                   <span className="detail-label">Vendor:</span>
                   <span className="detail-value">{selectedExpense.vendor}</span>
                 </div>
