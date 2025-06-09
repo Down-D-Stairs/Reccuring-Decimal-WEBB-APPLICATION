@@ -753,26 +753,41 @@ const fetchProjects = async () => {
                     </tr>
                     
                     {expandedTrip === trip._id && (
-                      <div className="expenses-list">
-                        {trip.expenses.map(expense => (
-                          <div 
-                            key={expense._id} 
-                            className="expense-item clickable"
-                            onClick={() => {
-                              setSelectedExpense({...expense, tripProjectName: trip.projectName}); // Pass project name
-                              setIsExpenseModalOpen(true);
-                            }}
-                          >
-                            <img src={expense.receipt} alt="Receipt" className="receipt-thumbnail" />
-                            <div className="expense-details">
-                              <p>Amount: ${expense.amount}</p>
-                              <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
-                              <p>Vendor: {expense.vendor}</p>
+                      <tr className="expanded-row">
+                        <td colSpan="6">
+                          <div className="trip-details-expanded">
+                            
+                            {/* Show project name first, prominently */}
+                            {trip.projectName && (
+                              <div className="project-info">
+                                <h4>Project: {trip.projectName}</h4>
+                              </div>
+                            )}
+
+                            <h4>Expense Details</h4>
+                            <div className="expenses-list">
+                              {trip.expenses?.map((expense, index) => (
+                                <div 
+                                  key={index} 
+                                  className="expense-item clickable"
+                                  onClick={() => {
+                                    setSelectedExpense({...expense, tripProjectName: trip.projectName});
+                                    setIsExpenseModalOpen(true);
+                                  }}
+                                >
+                                  <img src={expense.receipt} alt="Receipt" className="receipt-thumbnail" />
+                                  <div className="expense-details">
+                                    <p>Amount: ${expense.amount.toFixed(2)}</p>
+                                    <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                                    <p>Vendor: {expense.vendor}</p>
+                                  </div>
+                                  <span className="click-to-view">Click to view details</span>
+                                </div>
+                              ))}
                             </div>
-                            <span className="click-to-view">Click to view details</span>
                           </div>
-                        ))}
-                      </div>
+                        </td>
+                      </tr>
                     )}
                   </React.Fragment>
                 ))}

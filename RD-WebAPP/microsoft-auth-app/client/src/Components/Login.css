@@ -1373,6 +1373,20 @@
   border-radius: 4px;
 }
 
+.project-info {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #2196f3;
+}
+
+.project-info h4 {
+  margin: 0;
+  color: #1976d2;
+  font-size: 16px;
+}
+
 /* Expense Modal Styles */
 .expense-modal-overlay {
   position: fixed;
