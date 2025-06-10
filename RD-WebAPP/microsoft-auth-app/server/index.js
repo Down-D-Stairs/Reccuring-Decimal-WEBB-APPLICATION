@@ -819,6 +819,8 @@ app.get('/api/timeentries/project/:projectId', async (req, res) => {
       .sort({ submittedDate: -1 })
       .populate('employeeId', 'name email');
       
+    console.log('First timeentry approvalComments:', timeEntries[0]?.approvalComments); // ADD THIS LINE
+    
     res.json(timeEntries);
   } catch (error) {
     console.error('Error fetching project time entries:', error);
