@@ -1085,12 +1085,6 @@ return (
                                       ))}
                                     </div>
                                     
-                                    {/* Debug - show all comment fields */}
-                                    <div className="debug-comments">
-                                      <p>Comments field: {timesheet.comments || 'EMPTY'}</p>
-                                      <p>ApprovalComments field: {timesheet.approvalComments || 'EMPTY'}</p>
-                                      <p>Reason field: {timesheet.reason || 'EMPTY'}</p>
-                                    </div>
                                     
                                     {/* Employee's week comments */}
                                     {timesheet.comments && (
@@ -1100,11 +1094,14 @@ return (
                                       </div>
                                     )}
                                     
-                                    {/* Approver's comments */}
-                                    {timesheet.approvalComments && (
+                                    {/* Approver's comments - FORCE display regardless of textarea state */}
+                                    {(timesheet.approvalComments || timesheetStatusUpdates[timesheet._id]?.approvalComments) && (
                                       <div className="approval-comments-display">
                                         <h4>Approval Comments:</h4>
-                                        <p>{timesheet.approvalComments}</p>
+                                        <p>
+                                          SAVED: {timesheet.approvalComments || 'NONE'}<br/>
+                                          TEXTAREA: {timesheetStatusUpdates[timesheet._id]?.approvalComments || 'NONE'}
+                                        </p>
                                       </div>
                                     )}
                                   </div>
