@@ -1085,6 +1085,13 @@ return (
                                       ))}
                                     </div>
                                     
+                                    {/* Debug - show all comment fields */}
+                                    <div className="debug-comments">
+                                      <p>Comments field: {timesheet.comments || 'EMPTY'}</p>
+                                      <p>ApprovalComments field: {timesheet.approvalComments || 'EMPTY'}</p>
+                                      <p>Reason field: {timesheet.reason || 'EMPTY'}</p>
+                                    </div>
+                                    
                                     {/* Employee's week comments */}
                                     {timesheet.comments && (
                                       <div className="week-comments-table">
@@ -1093,7 +1100,7 @@ return (
                                       </div>
                                     )}
                                     
-                                    {/* Approver's comments - ONLY show saved approval comments */}
+                                    {/* Approver's comments */}
                                     {timesheet.approvalComments && (
                                       <div className="approval-comments-display">
                                         <h4>Approval Comments:</h4>
