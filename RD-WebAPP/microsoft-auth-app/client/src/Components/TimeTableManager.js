@@ -583,24 +583,20 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
+    if (response.ok) {
+      const updatedTimesheet = await response.json();
+      
+      // Refresh the timesheets list to show updated data
+      await handleViewProjectTimesheets(selectedProjectId);
+      
+      // Clear the status updates for this timesheet
+      setTimesheetStatusUpdates(prev => ({
+        ...prev,
+        [timesheetId]: { status: updatedTimesheet.status, approvalComments: '' }
+      }));
+      
+      alert('Timesheet status updated successfully!');
     }
-
-    const updatedTimesheet = await response.json();
-    
-    // Update the local state with the updated timesheet
-    setSelectedProjectTimesheets(
-      selectedProjectTimesheets.map(timesheet => 
-        timesheet._id === timesheetId ? updatedTimesheet : timesheet
-      )
-    );
-    // Clear the status update for this timesheet
-    const newStatusUpdates = { ...timesheetStatusUpdates };
-    delete newStatusUpdates[timesheetId];
-    setTimesheetStatusUpdates(newStatusUpdates);
-    
-    alert(`Timesheet ${update.status === 'approved' ? 'approved' : 'denied'} successfully!`);
   } catch (error) {
     console.error('Error updating timesheet status:', error);
     alert('Failed to update timesheet status');
