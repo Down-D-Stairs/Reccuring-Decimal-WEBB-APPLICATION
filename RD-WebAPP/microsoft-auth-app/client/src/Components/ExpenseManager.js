@@ -522,6 +522,7 @@ const fetchProjects = async () => {
     try {
       const draftData = {
         tripName: tripDetails.tripName,
+        projectName: tripDetails.projectName,
         dateRange: tripDetails.dateRange,
         email: user.username,
         totalAmount,
@@ -546,7 +547,6 @@ const fetchProjects = async () => {
       alert('Failed to save draft');
     }
   };
-
   const handleLoadDraft = async () => {
     try {
       const response = await fetch(`${API_URL}/api/drafts/${user.username}`);
@@ -559,6 +559,7 @@ const fetchProjects = async () => {
       
       setTripDetails({
         tripName: draft.tripName,
+        projectName: draft.projectName || '',
         dateRange: {
           start: draft.dateRange.start,
           end: draft.dateRange.end
@@ -572,7 +573,6 @@ const fetchProjects = async () => {
       alert('Failed to load draft');
     }
   };
-
   const downloadReceipt = (expense) => {
     const link = document.createElement('a');
     link.href = expense.receipt;
