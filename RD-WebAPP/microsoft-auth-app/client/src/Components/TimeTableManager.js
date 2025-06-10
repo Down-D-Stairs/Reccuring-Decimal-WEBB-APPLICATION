@@ -1061,7 +1061,7 @@ return (
                                     !timesheetStatusUpdates[timesheet._id] ||
                                     timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
                                     (timesheetStatusUpdates[timesheet._id]?.status !== 'submitted' &&
-                                     !timesheetStatusUpdates[timesheet._id]?.comments)
+                                     !timesheetStatusUpdates[timesheet._id]?.approvalComment)
                                   }
                                 >
                                   Submit
