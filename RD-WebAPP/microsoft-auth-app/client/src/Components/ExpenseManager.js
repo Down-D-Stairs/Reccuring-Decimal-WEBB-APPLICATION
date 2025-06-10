@@ -561,8 +561,8 @@ const fetchProjects = async () => {
         tripName: draft.tripName,
         projectName: draft.projectName || '',
         dateRange: {
-          start: draft.dateRange.start,
-          end: draft.dateRange.end
+          start: draft.dateRange.start ? new Date(draft.dateRange.start).toISOString().split('T')[0] : '',
+          end: draft.dateRange.end ? new Date(draft.dateRange.end).toISOString().split('T')[0] : ''
         }
       });
       setReceipts(draft.expenses || []);
@@ -572,8 +572,8 @@ const fetchProjects = async () => {
       console.error('Error loading draft:', error);
       alert('Failed to load draft');
     }
-  };
-  const downloadReceipt = (expense) => {
+  };  
+    const downloadReceipt = (expense) => {
     const link = document.createElement('a');
     link.href = expense.receipt;
     
