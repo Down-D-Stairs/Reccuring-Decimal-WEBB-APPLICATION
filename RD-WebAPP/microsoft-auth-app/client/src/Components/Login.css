@@ -172,6 +172,22 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.expense-detail.clickable {
+  cursor: pointer;
+  padding: 10px;
+  margin: 5px 0;
+  background: #f9f9f9;
+  border-radius: 4px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.expense-detail.clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #f0f8ff;
+}
+
 .receipt-thumbnail {
   width: 100%;
   height: 120px; /* Smaller height */

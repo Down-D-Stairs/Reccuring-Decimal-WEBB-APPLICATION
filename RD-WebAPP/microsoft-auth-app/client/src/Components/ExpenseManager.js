@@ -1075,7 +1075,14 @@ const fetchProjects = async () => {
                             <h4>Expense Details</h4>
                             <div className="expenses-grid">
                               {trip.expenses?.map((expense, index) => (
-                                <div key={index} className="expense-detail-card">
+                                <div 
+                                  key={index} 
+                                  className="expense-detail-card clickable"
+                                  onClick={() => {
+                                    setSelectedExpense({...expense, tripProjectName: trip.projectName});
+                                    setIsExpenseModalOpen(true);
+                                  }}
+                                >
                                   <img src={expense.receipt} alt="Receipt" className="receipt-image" />
                                   <div className="expense-info">
                                     <p><strong>Vendor:</strong> {expense.vendor}</p>
@@ -1083,6 +1090,7 @@ const fetchProjects = async () => {
                                     <p><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</p>
                                     {expense.comments && <p><strong>Comments:</strong> {expense.comments}</p>}
                                   </div>
+                                  <span className="click-to-view">Click to view details</span>
                                 </div>
                               ))}
                             </div>
