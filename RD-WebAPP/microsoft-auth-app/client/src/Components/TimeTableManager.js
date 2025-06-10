@@ -1076,6 +1076,24 @@ return (
                               <tr>
                                 <td colSpan="8">
                                   <div className="expanded-timesheet-details">
+                                    
+                                    {/* Employee's week comments */}
+                                    {timesheet.comments && (
+                                      <div className="week-comments-table">
+                                        <h4>Employee Week Comments:</h4>
+                                        <p>{timesheet.comments}</p>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Approver's comments */}
+                                    {timesheet.approvalComments && (
+                                      <div className="approval-comments-display">
+                                        <h4>Approval Comments:</h4>
+                                        <p>{timesheet.approvalComments}</p>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Your existing day entries code */}
                                     <div className="day-entries-table">
                                       <h4>Daily Breakdown:</h4>
                                       {timesheet.dayEntries.map((day, index) => (
@@ -1086,25 +1104,6 @@ return (
                                       ))}
                                     </div>
                                     
-                                    
-                                    {/* Employee's week comments */}
-                                    {timesheet.comments && (
-                                      <div className="week-comments-table">
-                                        <h4>Employee Week Comments:</h4>
-                                        <p>{timesheet.comments}</p>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Approver's comments - FORCE display regardless of textarea state */}
-                                    {(timesheet.approvalComments || timesheetStatusUpdates[timesheet._id]?.approvalComments) && (
-                                      <div className="approval-comments-display">
-                                        <h4>Approval Comments:</h4>
-                                        <p>
-                                          SAVED: {timesheet.approvalComments || 'NONE'}<br/>
-                                          TEXTAREA: {timesheetStatusUpdates[timesheet._id]?.approvalComments || 'NONE'}
-                                        </p>
-                                      </div>
-                                    )}
                                   </div>
                                 </td>
                               </tr>
