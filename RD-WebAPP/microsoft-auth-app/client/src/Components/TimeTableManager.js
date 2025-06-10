@@ -479,7 +479,7 @@ const handleViewProjectTimesheets = async (projectId) => {
     data.forEach(timesheet => {
       initialStatusUpdates[timesheet._id] = {
         status: timesheet.status,
-        approvalComments: '' // Changed from 'comments' to 'approvalComments'
+        approvalComments: timesheet.approvalComments || '' // Changed from 'comments' to 'approvalComments'
       };
     });
     
@@ -1038,7 +1038,7 @@ return (
                               <td>
                                 <textarea
                                   placeholder="Approval comments (required for approval/denial)"
-                                  value={timesheetStatusUpdates[timesheet._id]?.approvalComments || ''}
+                                  value={timesheetStatusUpdates[timesheet._id]?.approvalComments || timesheet.approvalComments || ''}
                                   onChange={(e) => setTimesheetStatusUpdates({
                                     ...timesheetStatusUpdates,
                                     [timesheet._id]: {
