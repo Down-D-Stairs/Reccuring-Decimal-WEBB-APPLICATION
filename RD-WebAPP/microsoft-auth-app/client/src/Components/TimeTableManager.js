@@ -472,6 +472,7 @@ const handleViewProjectTimesheets = async (projectId) => {
     
     const data = await response.json();
     console.log('Fetched project timesheets:', data);
+    console.log('Full timesheet object:', JSON.stringify(data[0], null, 2));
     
     // Initialize the status updates with existing data
     const initialStatusUpdates = {};
