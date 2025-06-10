@@ -478,7 +478,7 @@ const handleViewProjectTimesheets = async (projectId) => {
     data.forEach(timesheet => {
       initialStatusUpdates[timesheet._id] = {
         status: timesheet.status,
-        comments: timesheet.comments || timesheet.reason || ''
+        approvalComments: '' // Changed from 'comments' to 'approvalComments'
       };
     });
     
@@ -570,19 +570,6 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
     const update = timesheetStatusUpdates[timesheetId];
     if (!update) return;
     
-    // Don't allow empty comments for approval/denial
-    if (update.status !== 'submitted' && !update.comments) {
-      alert('Please provide comments for your decision.');
-      return;
-    }
-    
-    console.log('Submitting timesheet decision:', {
-      timesheetId,
-      status: update.status,
-      comments: update.comments,
-      approverEmail: user.username
-    });
-
     const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
       method: 'PUT',
       headers: {
@@ -590,8 +577,7 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
       },
       body: JSON.stringify({
         status: update.status,
-        comments: update.comments,
-        reason: update.comments,
+        comments: update.approvalComments,
         approverEmail: user.username,
         approvedDate: new Date().toISOString()
       })
@@ -609,7 +595,6 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
         timesheet._id === timesheetId ? updatedTimesheet : timesheet
       )
     );
-    
     // Clear the status update for this timesheet
     const newStatusUpdates = { ...timesheetStatusUpdates };
     delete newStatusUpdates[timesheetId];
@@ -621,7 +606,6 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
     alert('Failed to update timesheet status');
   }
 };
-
 
 
 // Now update the return statement
@@ -1057,17 +1041,17 @@ return (
                               <td>
                                 <textarea
                                   placeholder="Approval comments (required for approval/denial)"
-                                  value={timesheet.approvalComments}
+                                  value={timesheetStatusUpdates[timesheet._id]?.approvalComments || ''}
                                   onChange={(e) => setTimesheetStatusUpdates({
                                     ...timesheetStatusUpdates,
                                     [timesheet._id]: {
                                       ...timesheetStatusUpdates[timesheet._id],
-                                      comments: e.target.value
+                                      approvalComments: e.target.value
                                     }
                                   })}
                                   className="approval-comments-table"
                                   rows={2}
-                                />
+                                />                              
                               </td>
                               <td>
                                 <button
