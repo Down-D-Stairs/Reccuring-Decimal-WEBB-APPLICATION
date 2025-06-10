@@ -1060,9 +1060,11 @@ return (
                                   disabled={
                                     !timesheetStatusUpdates[timesheet._id] ||
                                     timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
-                                    (timesheetStatusUpdates[timesheet._id]?.status !== 'submitted' &&
-                                     !timesheetStatusUpdates[timesheet._id]?.approvalComment)
+                                    ((timesheetStatusUpdates[timesheet._id]?.status === 'approved' || 
+                                      timesheetStatusUpdates[timesheet._id]?.status === 'denied') &&
+                                    !timesheetStatusUpdates[timesheet._id]?.approvalComments)
                                   }
+
                                 >
                                   Submit
                                 </button>
