@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import * as msal from "@azure/msal-browser";
 import ExpenseManager from './Components/ExpenseManager';
 import TimeTableManager from './Components/TimeTableManager';
