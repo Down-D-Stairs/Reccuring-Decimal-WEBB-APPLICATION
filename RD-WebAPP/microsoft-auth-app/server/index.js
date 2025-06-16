@@ -72,6 +72,7 @@ app.post('/api/trips/:tripId/expenses', async (req, res) => {
       amount: req.body.amount,
       date: req.body.date,
       vendor: req.body.vendor,
+      comments:  req.body.comments,
       receipt: req.body.receipt,
       tripId: req.params.tripId
     });

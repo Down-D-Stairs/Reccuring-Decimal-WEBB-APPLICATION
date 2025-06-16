@@ -8,6 +8,10 @@ const expenseSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  comments: {        // ADD THIS FIELD
+    type: String,
+    default: ''
+  },
   tripId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Trip',
