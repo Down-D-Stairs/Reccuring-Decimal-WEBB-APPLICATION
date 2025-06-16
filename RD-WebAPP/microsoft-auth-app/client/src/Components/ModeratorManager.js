@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './ModeratorManager.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function ModeratorManager({ onBack, user }) {
   const [moderators, setModerators] = useState([]);
   const [newModeratorEmail, setNewModeratorEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
+  
 
   useEffect(() => {
     fetchModerators();
