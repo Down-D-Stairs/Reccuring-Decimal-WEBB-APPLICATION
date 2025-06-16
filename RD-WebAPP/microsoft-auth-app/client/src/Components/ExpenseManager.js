@@ -584,10 +584,20 @@ const fetchProjects = async () => {
     const link = document.createElement('a');
     link.href = expense.receipt;
     
-    // Format: Receipt_VendorName_Date.jpg
-    const date = new Date(expense.date).toISOString().split('T')[0]; // YYYY-MM-DD
-    const vendorName = expense.vendor.replace(/[^a-zA-Z0-9]/g, '_'); // Replace special chars
-    link.download = `Receipt_${vendorName}_${date}.jpg`;
+    // Detect file type from base64 data
+    let fileExtension = '.jpg'; // default
+    if (expense.receipt.startsWith('data:application/pdf')) {
+      fileExtension = '.pdf';
+    } else if (expense.receipt.startsWith('data:image/png')) {
+      fileExtension = '.png';
+    } else if (expense.receipt.startsWith('data:image/jpeg') || expense.receipt.startsWith('data:image/jpg')) {
+      fileExtension = '.jpg';
+    }
+    
+    // Format: Receipt_VendorName_Date.extension
+    const date = new Date(expense.date).toISOString().split('T')[0];
+    const vendorName = expense.vendor.replace(/[^a-zA-Z0-9]/g, '_');
+    link.download = `Receipt_${vendorName}_${date}${fileExtension}`;
     
     document.body.appendChild(link);
     link.click();
