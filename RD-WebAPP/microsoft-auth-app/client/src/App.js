@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as msal from "@azure/msal-browser";
 import ExpenseManager from './Components/ExpenseManager';
 import TimeTableManager from './Components/TimeTableManager';
+import ModeratorManager from './Components/ModeratorManager'; 
 
 const msalConfig = {
   auth: {
@@ -17,6 +18,12 @@ function App() {
   const [currentView, setCurrentView] = useState('main');
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState(null);
+
+  // Add the admin emails constant
+  const ADMIN_EMAILS = useMemo(() => [
+    'kkarumudi@recurringdecimal.com',
+    'sn@recurringdecimal.com'
+  ], []);
 
   useEffect(() => {
     msalInstance.initialize().then(() => {
@@ -106,6 +113,26 @@ function App() {
                 >
                   Timesheet
                 </button>
+
+                {ADMIN_EMAILS.includes(user.username) && (
+                  <button 
+                    style={{
+                      padding: '12px 24px',
+                      fontSize: '16px',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      marginBottom: '10px',
+                      display: 'block',
+                      margin: '10px auto'
+                    }}
+                    onClick={() => setCurrentView('manage-moderators')}
+                  >
+                    Manage Moderators
+                  </button>
+                )}
               
               
               <button 
@@ -141,6 +168,8 @@ function App() {
             </button>
           )}
         </>
+      ) : currentView === 'manage-moderators' ? (
+        <ModeratorManager onBack={() => setCurrentView('main')} user={user} />
       ) : currentView === 'expense-manager' ? (
         <ExpenseManager onBack={() => setCurrentView('main')} user={user} />
       ) : currentView === 'timetable' ? (

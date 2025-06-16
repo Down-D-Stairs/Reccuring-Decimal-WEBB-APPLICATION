@@ -11,6 +11,7 @@ function ExpenseManager({ onBack, user }) {
   const [projects, setProjects] = useState([]);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
 
 
   
@@ -58,6 +59,12 @@ function ExpenseManager({ onBack, user }) {
     fetchTrips();
     checkForDraft();
     fetchProjects(); // ADD THIS LINE
+    if (user?.username) {
+      fetch(`${API_URL}/api/moderators/check/${user.username}`)
+        .then(res => res.json())
+        .then(data => setIsModerator(data.isModerator))
+        .catch(err => console.error('Failed to check moderator status:', err));
+    }
   }, [user]);
  
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -611,7 +618,7 @@ const fetchProjects = async () => {
           }}>
             {expenseView === 'list' ? 'New Report' : 'View Reports'}
           </button>
-          {ADMIN_EMAILS.includes(user?.username) && (
+          {(ADMIN_EMAILS.includes(user?.username) || isModerator) && (
             <button
               className="approve-deny-btn"
               onClick={() => setExpenseView('approve')}

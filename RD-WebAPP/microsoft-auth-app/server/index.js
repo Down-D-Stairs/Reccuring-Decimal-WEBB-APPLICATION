@@ -4,6 +4,7 @@ const cors = require('cors');
 const { Trip, Expense } = require('./models/Expense');
 const { Project, TimeEntry } = require('./models/TimeProject');
 const Draft = require('./models/Draft');
+const Moderator = require('./models/Moderator');
 require('dotenv').config();
 
 const { sendStatusEmail } = require('./services/notificationService');
@@ -897,6 +898,56 @@ app.get('/api/user-project-names', async (req, res) => {
   } catch (error) {
     console.error('Error fetching project names:', error);
     res.status(500).json({ error: 'Failed to fetch project names' });
+  }
+});
+
+// Get all moderators (admin only)
+app.get('/api/moderators', async (req, res) => {
+  try {
+    const moderators = await Moderator.find({ isActive: true }).sort({ addedDate: -1 });
+    res.json(moderators);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch moderators' });
+  }
+});
+
+// Add new moderator (admin only)
+app.post('/api/moderators', async (req, res) => {
+  try {
+    const { email, addedBy } = req.body;
+    
+    const existingModerator = await Moderator.findOne({ email });
+    if (existingModerator) {
+      return res.status(400).json({ error: 'User is already a moderator' });
+    }
+    
+    const moderator = new Moderator({ email, addedBy });
+    await moderator.save();
+    res.json(moderator);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add moderator' });
+  }
+});
+
+// Remove moderator (admin only)
+app.delete('/api/moderators/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    await Moderator.findOneAndUpdate({ email }, { isActive: false });
+    res.json({ message: 'Moderator removed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to remove moderator' });
+  }
+});
+
+// Check if user is moderator (for frontend)
+app.get('/api/moderators/check/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const moderator = await Moderator.findOne({ email, isActive: true });
+    res.json({ isModerator: !!moderator });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check moderator status' });
   }
 });
 

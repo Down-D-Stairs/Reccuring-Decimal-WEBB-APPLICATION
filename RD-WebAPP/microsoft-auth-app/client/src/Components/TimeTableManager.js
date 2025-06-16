@@ -16,6 +16,7 @@ function TimeTableManager({ onBack, user }) {
     start: startOfCurrentMonth(),
     end: endOfCurrentMonth()
   });
+  const [isModerator, setIsModerator] = useState(false);
   const [dayHours, setDayHours] = useState({
     monday: 0,
     tuesday: 0,
@@ -57,11 +58,12 @@ function TimeTableManager({ onBack, user }) {
   });
 
   const ADMIN_EMAILS = useMemo(() => [
+    'pgupta@recurringdecimal.com',
     'kkarumudi@recurringdecimal.com',
     'sn@recurringdecimal.com'
   ], []);
 
-  const isAdmin = ADMIN_EMAILS.includes(user?.username);
+  const isAdmin = (ADMIN_EMAILS.includes(user?.username) || isModerator);
   
   const [weekComments, setWeekComments] = useState('');
   const [expandedTimesheet, setExpandedTimesheet] = useState(null);
@@ -115,6 +117,14 @@ function TimeTableManager({ onBack, user }) {
     return date.toISOString().split('T')[0];
   }
 
+  useEffect(() => {
+    if (user?.username) {
+      fetch(`${API_URL}/api/moderators/check/${user.username}`)
+        .then(res => res.json())
+        .then(data => setIsModerator(data.isModerator))
+        .catch(err => console.error('Failed to check moderator status:', err));
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchProjects();
