@@ -405,6 +405,7 @@ const fetchProjects = async () => {
             amount: receipt.amount,
             date: receipt.date,
             vendor: receipt.vendor,
+            comments: receipt.comments,
             receipt: receipt.receipt
           })
         });
