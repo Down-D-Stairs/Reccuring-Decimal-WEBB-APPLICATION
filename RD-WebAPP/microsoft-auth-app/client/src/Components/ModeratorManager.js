@@ -15,7 +15,7 @@ function ModeratorManager({ onBack, user }) {
 
   const fetchModerators = async () => {
     try {
-      const response = await fetch('${API_URL}/api/moderators');
+      const response = await fetch(`${API_URL}/api/moderators`);
       const data = await response.json();
       setModerators(data);
     } catch (error) {
@@ -32,7 +32,7 @@ function ModeratorManager({ onBack, user }) {
 
     setIsLoading(true);
     try {
-      const response = await fetch('${API_URL}/api/moderators', {
+      const response = await fetch(`${API_URL}/api/moderators`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
