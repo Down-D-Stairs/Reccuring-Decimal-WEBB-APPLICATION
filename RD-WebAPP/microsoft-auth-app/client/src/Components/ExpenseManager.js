@@ -1627,6 +1627,10 @@ const fetchProjects = async () => {
                   <span className="detail-label">Comments:</span>
                   <span className="detail-value">{selectedExpense.comments || 'No comments'}</span>
                 </div>
+                <div className="detail-row">
+                  <span className="detail-label">Submitted At:</span>
+                  <span className="detail-value">{new Date(selectedExpense.submittedAt).toLocaleDateString()}</span>
+                </div>
                 
                 <button 
                   className="download-receipt-btn"

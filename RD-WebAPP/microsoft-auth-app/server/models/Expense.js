@@ -52,6 +52,10 @@ const tripSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'denied'],
     default: 'pending'
   },
+  submittedAt: {           // ADD THIS FIELD
+    type: Date,
+    default: Date.now
+  },
   expenses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Expense'
