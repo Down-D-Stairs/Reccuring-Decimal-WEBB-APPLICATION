@@ -782,7 +782,7 @@ const fetchProjects = async () => {
                                   Project: {trip.projectName}
                                   {trip.submittedAt && (
                                     <span style={{marginLeft: '20px', color: '#666', fontSize: '0.8em', fontWeight: 'normal'}}>
-                                      (Submitted: {new Date(trip.submittedAt).toLocaleDateString()})
+                                      (Report Submitted at: {new Date(trip.submittedAt).toLocaleDateString()})
                                     </span>
                                   )}
                                 </h4>
@@ -1100,7 +1100,7 @@ const fetchProjects = async () => {
                                   Project: {trip.projectName}
                                   {trip.submittedAt && (
                                     <span style={{marginLeft: '20px', color: '#666', fontSize: '0.8em', fontWeight: 'normal'}}>
-                                      (Submitted: {new Date(trip.submittedAt).toLocaleDateString()})
+                                      (Report Submitted at: {new Date(trip.submittedAt).toLocaleDateString()})
                                     </span>
                                   )}
                                 </h4>
@@ -1630,7 +1630,7 @@ const fetchProjects = async () => {
                     {selectedExpense.tripProjectName || 'No project assigned'} 
                     {selectedExpense.trip?.submittedAt && (
                       <span style={{marginLeft: '20px', color: '#666', fontSize: '0.9em'}}>
-                        (Submitted: {new Date(selectedExpense.trip.submittedAt).toLocaleDateString()})
+                        (Report Submitted at: {new Date(selectedExpense.trip.submittedAt).toLocaleDateString()})
                       </span>
                     )}
                   </span>
