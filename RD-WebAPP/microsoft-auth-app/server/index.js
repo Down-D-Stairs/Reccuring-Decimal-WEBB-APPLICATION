@@ -48,7 +48,8 @@ app.post('/api/trips', async (req, res) => {
       dateRange: req.body.dateRange,
       email: req.body.email,
       totalAmount: 0,
-      status: 'pending'
+      status: 'pending',
+      submittedAt: new Date()
     });
    
     console.log('Created trip object:', trip);
