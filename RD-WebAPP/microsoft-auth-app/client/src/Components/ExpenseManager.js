@@ -778,9 +778,17 @@ const fetchProjects = async () => {
                             {/* Show project name first, prominently */}
                             {trip.projectName && (
                               <div className="project-info">
-                                <h4>Project: {trip.projectName}</h4>
+                                <h4>
+                                  Project: {trip.projectName}
+                                  {trip.submittedAt && (
+                                    <span style={{marginLeft: '20px', color: '#666', fontSize: '0.8em', fontWeight: 'normal'}}>
+                                      (Submitted: {new Date(trip.submittedAt).toLocaleDateString()})
+                                    </span>
+                                  )}
+                                </h4>
                               </div>
                             )}
+
 
                             <h4>Expense Details</h4>
                             <div className="expenses-list">
@@ -1087,8 +1095,18 @@ const fetchProjects = async () => {
                           <div className="trip-details-expanded">
                             
                             {trip.projectName && (
-                              <p style={{marginBottom: '15px'}}><strong>Project:</strong> {trip.projectName}</p>
+                              <div className="project-info">
+                                <h4>
+                                  Project: {trip.projectName}
+                                  {trip.submittedAt && (
+                                    <span style={{marginLeft: '20px', color: '#666', fontSize: '0.8em', fontWeight: 'normal'}}>
+                                      (Submitted: {new Date(trip.submittedAt).toLocaleDateString()})
+                                    </span>
+                                  )}
+                                </h4>
+                              </div>
                             )}
+
 
                             <h4>Expense Details</h4>
                             <div className="expenses-grid">
