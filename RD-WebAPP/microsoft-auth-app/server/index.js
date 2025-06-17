@@ -904,6 +904,7 @@ app.get('/api/user-project-names', async (req, res) => {
   }
 });
 
+
 // Get all moderators (admin only)
 app.get('/api/moderators', async (req, res) => {
   try {
@@ -953,6 +954,59 @@ app.get('/api/moderators/check/:email', async (req, res) => {
     res.status(500).json({ error: 'Failed to check moderator status' });
   }
 });
+
+// Get projects that a user has submitted timesheets for
+app.get('/api/timeentries/user-projects/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // Find all time entries for this user and group by project
+    const userTimeEntries = await TimeEntry.find({ 
+      employeeName: username  // Changed from employeeEmail to employeeName
+    }).populate('projectId');
+    
+    // Group by project and count timesheets
+    const projectMap = {};
+    userTimeEntries.forEach(entry => {
+      if (entry.projectId) {
+        const projectId = entry.projectId._id.toString();
+        if (!projectMap[projectId]) {
+          projectMap[projectId] = {
+            _id: entry.projectId._id,
+            projectName: entry.projectId.projectName,
+            clientName: entry.projectId.clientName,
+            timesheetCount: 0
+          };
+        }
+        projectMap[projectId].timesheetCount++;
+      }
+    });
+    
+    const projects = Object.values(projectMap);
+    res.json(projects);
+  } catch (error) {
+    console.error('Error fetching user history projects:', error);
+    res.status(500).json({ error: 'Failed to fetch user history projects' });
+  }
+});
+
+// Get user's timesheets for a specific project
+app.get('/api/timeentries/user-project/:username/:projectId', async (req, res) => {
+  try {
+    const { username, projectId } = req.params;
+    
+    const timesheets = await TimeEntry.find({
+      employeeName: username,  // Changed from employeeEmail to employeeName
+      projectId: projectId
+    }).populate('projectId').sort({ weekStartDate: -1 });
+    
+    res.json(timesheets);
+  } catch (error) {
+    console.error('Error fetching user project timesheets:', error);
+    res.status(500).json({ error: 'Failed to fetch user project timesheets' });
+  }
+});
+
 
 
 // Start the server
