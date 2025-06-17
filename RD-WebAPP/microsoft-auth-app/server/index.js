@@ -147,6 +147,7 @@ app.put('/api/trips/:tripId', async (req, res) => {
         amount: expense.amount,
         date: expense.date,
         vendor: expense.vendor,
+        comments: expense.comments,
         receipt: expense.receipt,
         tripId: req.params.tripId
       });
