@@ -1608,15 +1608,13 @@ const fetchProjects = async () => {
                 <h3>Expense Details</h3>
                 <div className="detail-row">
                   <span className="detail-label">Project:</span>
-                  <span className="detail-value">{selectedExpense.tripProjectName || 'No project assigned'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Report Submitted:</span>
                   <span className="detail-value">
-                    {selectedExpense.trip?.submittedAt 
-                      ? new Date(selectedExpense.trip.submittedAt).toLocaleDateString()
-                      : 'N/A'
-                    }
+                    {selectedExpense.tripProjectName || 'No project assigned'} 
+                    {selectedExpense.trip?.submittedAt && (
+                      <span style={{marginLeft: '20px', color: '#666', fontSize: '0.9em'}}>
+                        (Submitted: {new Date(selectedExpense.trip.submittedAt).toLocaleDateString()})
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="detail-row">
