@@ -1008,6 +1008,24 @@ app.get('/api/timeentries/user-project/:username/:projectId', async (req, res) =
 });
 
 
+// Get user's timesheets for a specific project
+app.get('/api/timeentries/user-project/:username/:projectId', async (req, res) => {
+  try {
+    const { username, projectId } = req.params;
+    
+    const timesheets = await TimeEntry.find({
+      employeeName: username,  // Changed from employeeEmail to employeeName
+      projectId: projectId
+    }).populate('projectId').sort({ weekStartDate: -1 });
+    
+    res.json(timesheets);
+  } catch (error) {
+    console.error('Error fetching user project timesheets:', error);
+    res.status(500).json({ error: 'Failed to fetch user project timesheets' });
+  }
+});
+
+
 
 // Start the server
 const PORT = process.env.PORT || 5000;

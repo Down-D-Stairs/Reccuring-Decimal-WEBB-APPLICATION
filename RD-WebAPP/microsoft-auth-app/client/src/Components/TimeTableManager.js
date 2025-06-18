@@ -176,7 +176,7 @@ const fetchTimeEntries = async () => {
 
     // Log what we're sending to help debug
     console.log('Fetching time entries with params:', {
-      employeeEmail: user.username,
+      employeeName: user.username,
       weekStart: selectedWeek.start,
       weekEnd: selectedWeek.end
     });
