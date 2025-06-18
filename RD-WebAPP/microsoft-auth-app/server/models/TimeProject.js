@@ -69,6 +69,10 @@ const timeEntrySchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  approverEmail: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now
