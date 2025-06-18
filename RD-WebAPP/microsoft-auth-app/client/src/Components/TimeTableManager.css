@@ -386,10 +386,26 @@
 }
 
 .timesheet-actions {
+  margin-top: 15px;
   display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+  justify-content: space-between;
+  align-items: center;
 }
+
+.timesheet-history-btn {
+  padding: 10px 20px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.timesheet-history-btn:hover {
+  background: #138496;
+}
+
 
 .submit-timesheet-button {
   padding: 12px 24px;
@@ -880,4 +896,5 @@
 .timesheet-history-btn:hover {
   background: #138496;
 }
+
 

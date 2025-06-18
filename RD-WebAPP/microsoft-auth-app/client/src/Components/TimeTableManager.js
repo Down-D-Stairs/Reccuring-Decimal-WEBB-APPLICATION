@@ -974,22 +974,22 @@ return (
           />
         </div>
 
-        <div className="comments-actions">
-            <button 
-              className="timesheet-history-btn"
-              onClick={() => setView('history')}
-            >
-              Timesheet History
-            </button>
-        </div>
 
+        
         <div className="timesheet-actions">
           <button 
+            className="timesheet-history-btn"
+            onClick={() => setView('history')}
+          >
+            Timesheet History
+          </button>
+          
+          <button
             className="submit-timesheet-button"
             onClick={handleSubmitTimesheet}
-            disabled={weeklyEntries.length === 0}
+            disabled={isSubmitting || weeklyEntries.length === 0}
           >
-            Submit Timesheet
+            {isSubmitting ? 'Submitting...' : 'Submit Timesheet'}
           </button>
         </div>
       </div>
