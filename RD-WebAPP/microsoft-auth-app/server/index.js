@@ -368,7 +368,7 @@ app.put('/api/projects/:projectId', async (req, res) => {
 // Get time entries for a specific week and employee
 app.get('/api/timeentries', async (req, res) => {
   try {
-    const { employeeId, weekStart, weekEnd } = req.query;
+    const { employeeEmail, weekStart, weekEnd } = req.query;
     console.log(`Fetching time entries for employee ${employeeId} from ${weekStart} to ${weekEnd}`);
     
     if (!employeeId || !weekStart || !weekEnd) {
@@ -376,7 +376,7 @@ app.get('/api/timeentries', async (req, res) => {
     }
     
     const timeEntries = await TimeEntry.find({
-      employeeId,
+      employeeName: employeeEmail,
       weekStartDate: weekStart,
       weekEndDate: weekEnd
     }).populate('projectId');

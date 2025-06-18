@@ -380,7 +380,7 @@ const fetchTimeEntries = async () => {
           
           return {
             employeeId: user.id,
-            employeeName: user.name,
+            employeeName: user.username,
             projectId: entry.projectId,
             weekStartDate: selectedWeek.start,
             weekEndDate: selectedWeek.end,
