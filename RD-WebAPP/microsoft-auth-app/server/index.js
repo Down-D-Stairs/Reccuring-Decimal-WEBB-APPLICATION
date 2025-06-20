@@ -16,7 +16,7 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 console.log('🔍 Environment check:');
 console.log('📍 MONGODB_URI exists:', !!process.env.MONGODB_URI);
-console.log('📍 MONGODB_URI preview:', process.env.MONGODB_URI?.substring(0, 30) + '...');
+console.log('📍 MONGODB_URI preview:', process.env.MONGODB_URI);
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected! 🚀'))
