@@ -1491,7 +1491,6 @@ const fetchProjects = async () => {
               <button
                 className="save-draft-btn"
                 onClick={handleSaveDraft}
-                disabled={!tripDetails.tripName}
                 style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
               >
                 Save as Draft
