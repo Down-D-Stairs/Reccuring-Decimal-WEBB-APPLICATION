@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const draftSchema = new mongoose.Schema({
   tripName: {
     type: String,
-    required: true
+    required: false
   },
   // JUST ADD THIS ONE OPTIONAL FIELD
   projectName: {
@@ -13,11 +13,13 @@ const draftSchema = new mongoose.Schema({
   dateRange: {
     start: {
       type: Date,
-      required: true
+      required: false,
+      default: null
     },
     end: {
       type: Date,
-      required: true
+      required: false,
+      default: null
     }
   },
   totalAmount: {

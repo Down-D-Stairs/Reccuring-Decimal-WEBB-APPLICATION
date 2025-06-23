@@ -531,7 +531,10 @@ const fetchProjects = async () => {
       const draftData = {
         tripName: tripDetails.tripName,
         projectName: tripDetails.projectName,
-        dateRange: tripDetails.dateRange,
+        dateRange: {
+          start: tripDetails.dateRange.start || null, // Convert empty string to null
+          end: tripDetails.dateRange.end || null     // Convert empty string to null
+        },
         email: user.username,
         totalAmount,
         expenses: receipts
