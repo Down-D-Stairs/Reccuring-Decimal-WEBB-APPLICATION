@@ -528,6 +528,13 @@
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
+.form-input[placeholder="$0.00"] {
+  font-family: monospace;
+  font-size: 16px;
+  text-align: right;
+  padding-right: 10px;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

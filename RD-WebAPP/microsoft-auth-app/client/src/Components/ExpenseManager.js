@@ -888,10 +888,34 @@ const fetchProjects = async () => {
               onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
             />
             <input
-              type="number"
-              placeholder="Amount"
-              value={expenseDetails.amount}
-              onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
+              type="text" // Change from "number" to "text" so we can format it
+              placeholder="$0.00"
+              value={expenseDetails.amount ? `$${parseFloat(expenseDetails.amount).toFixed(2)}` : ''}
+              onChange={(e) => {
+                // Remove dollar sign and any non-numeric characters except decimal
+                let value = e.target.value.replace(/[^0-9.]/g, '');
+                
+                // Ensure only one decimal point
+                const parts = value.split('.');
+                if (parts.length > 2) {
+                  value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                
+                // Limit to 2 decimal places
+                if (parts[1] && parts[1].length > 2) {
+                  value = parts[0] + '.' + parts[1].substring(0, 2);
+                }
+                
+                setExpenseDetails({...expenseDetails, amount: value});
+              }}
+              onBlur={(e) => {
+                // Format to 2 decimal places when user leaves the field
+                if (expenseDetails.amount && !isNaN(expenseDetails.amount)) {
+                  const formatted = parseFloat(expenseDetails.amount).toFixed(2);
+                  setExpenseDetails({...expenseDetails, amount: formatted});
+                }
+              }}
+              className="form-input"
             />
             <input
               type="date"
@@ -1673,4 +1697,4 @@ const fetchProjects = async () => {
 }
 
 export default ExpenseManager;
-               
+                                
