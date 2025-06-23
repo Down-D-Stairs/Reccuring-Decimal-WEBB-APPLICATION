@@ -610,47 +610,53 @@ const fetchProjects = async () => {
 
 
   const renderReceiptPreview = (receipt) => {
+    console.log('Receipt data:', receipt);
+    console.log('Receipt type:', typeof receipt);
+    
     if (!receipt) return null;
     
     // Handle different types of receipt data
     let receiptUrl = '';
+    let isPDF = false;
     
     if (typeof receipt === 'string') {
       receiptUrl = receipt;
+      isPDF = receiptUrl.includes('data:application/pdf') || receiptUrl.toLowerCase().includes('.pdf');
+      console.log('String receipt - isPDF:', isPDF);
     } else if (receipt instanceof File) {
       receiptUrl = URL.createObjectURL(receipt);
+      isPDF = receipt.type === 'application/pdf' || receipt.name.toLowerCase().endsWith('.pdf');
+      console.log('File receipt - isPDF:', isPDF, 'File type:', receipt.type, 'File name:', receipt.name);
     } else {
+      console.log('Unknown receipt type');
       return null;
     }
     
-    // Check if it's a PDF
-    const isPDF = receiptUrl.includes('data:application/pdf') || 
-                  receiptUrl.toLowerCase().includes('.pdf') ||
-                  (receipt instanceof File && receipt.type === 'application/pdf');
+    console.log('Final receiptUrl:', receiptUrl);
+    console.log('Final isPDF:', isPDF);
     
     if (isPDF) {
       return (
         <div className="pdf-preview">
+          <p>PDF detected! Trying to display...</p>
           <iframe
             src={receiptUrl}
             width="100%"
             height="400px"
             title="PDF Receipt Preview"
             style={{ border: '1px solid #ddd', borderRadius: '4px' }}
+            onLoad={() => console.log('PDF iframe loaded successfully')}
+            onError={() => console.log('PDF iframe failed to load')}
           />
-          <p style={{ textAlign: 'center', marginTop: '10px', color: '#666' }}>
-            PDF Receipt Preview
-          </p>
+          <p>If PDF doesn't show, <a href={receiptUrl} target="_blank" rel="noopener noreferrer">click here to open</a></p>
         </div>
       );
     } else {
-      // Regular image preview
       return (
         <img src={receiptUrl} alt="Receipt Preview" className="receipt-preview" />
       );
     }
   };
-
 
 
   return (
