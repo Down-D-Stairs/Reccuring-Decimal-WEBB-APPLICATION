@@ -608,6 +608,31 @@ const fetchProjects = async () => {
     document.body.removeChild(link);
   };
 
+
+  const renderReceiptPreview = (receipt) => {
+    if (!receipt) return null;
+    
+    // Check if it's a PDF (either data URL or file extension)
+    if (receipt.includes('data:application/pdf') || receipt.toLowerCase().includes('.pdf')) {
+      return (
+        <div className="pdf-preview">
+          <div className="pdf-placeholder">
+            📄 PDF Receipt Uploaded
+            <br />
+            <a href={receipt} target="_blank" rel="noopener noreferrer">
+              Click to view PDF
+            </a>
+          </div>
+        </div>
+      );
+    } else {
+      // Regular image preview
+      return (
+        <img src={receipt} alt="Receipt Preview" className="receipt-preview" />
+      );
+    }
+  };
+
   return (
     <div className="expense-manager">
       <div className="header">
@@ -939,7 +964,7 @@ const fetchProjects = async () => {
               />
               {isProcessingReceipt && <span className="processing-text">Processing receipt...
               </span>}
-              {expenseDetails.receipt && (
+              {expenseDetails.receipt && renderReceiptPreview(
                 <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
               )}
             </div>
@@ -1422,7 +1447,7 @@ const fetchProjects = async () => {
                     {isProcessingReceipt && (
                       <span className="processing-text">Processing receipt...</span>
                     )}
-                    {expenseDetails.receipt && (
+                    {expenseDetails.receipt && renderReceiptPreview(
                       <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview" />
                     )}
                   </div>
