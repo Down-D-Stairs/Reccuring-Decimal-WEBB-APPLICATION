@@ -373,7 +373,7 @@ app.put('/api/projects/:projectId', async (req, res) => {
 app.get('/api/timeentries', async (req, res) => {
   try {
     const { employeeEmail, weekStart, weekEnd } = req.query;
-    console.log(`Fetching time entries for employee ${employeeId} from ${weekStart} to ${weekEnd}`);
+    console.log(`Fetching time entries for employee ${employeeEmail} from ${weekStart} to ${weekEnd}`);
     
     if (!employeeId || !weekStart || !weekEnd) {
       return res.status(400).json({ error: 'Missing required parameters' });
