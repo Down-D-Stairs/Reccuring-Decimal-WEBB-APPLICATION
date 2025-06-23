@@ -880,10 +880,10 @@ const fetchProjects = async () => {
        
       ) : expenseView === 'add-expense' ? (
         <div className="add-expense-container">
-          <div className="ai-prompt">
-            <p>💡 <strong>Tip:</strong> Upload a receipt and our AI will automatically fill in the amount, vendor, and date for you!</p>
-          </div>
           <div className="expense-form">
+            <div className="ai-prompt">
+              <p>💡 <strong>Tip:</strong> Upload a receipt and our AI will automatically fill in the vendor, amount, and date for you!</p>
+            </div>
             <input
               type="text"
               placeholder="Vendor Name"
