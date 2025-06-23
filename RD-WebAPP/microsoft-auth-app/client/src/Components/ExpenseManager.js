@@ -1374,6 +1374,10 @@ const fetchProjects = async () => {
                     ×
                   </button>
                 </div>
+
+                <div className="ai-prompt">
+                  <p>💡 <strong>Tip:</strong> Upload a receipt and our AI will automatically fill in the amount, vendor, and date for you!</p>
+                </div>
                 
                 <div className="expense-form">
                   <input
