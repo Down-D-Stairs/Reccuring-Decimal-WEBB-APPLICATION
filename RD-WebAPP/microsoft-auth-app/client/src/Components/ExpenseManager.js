@@ -1501,10 +1501,8 @@ const fetchProjects = async () => {
           >
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
-
-          </div>
-
-          <div className="draft-actions">
+        
+        <div className="draft-actions">
             {hasDraft && (
               <button
                 className="load-draft-btn"
@@ -1522,8 +1520,9 @@ const fetchProjects = async () => {
             >
               Save as Draft
             </button>
-          </div>
-          
+        </div>
+
+        </div>
           <div className="scrollable-section">
             <button
               className="add-expense-btn"
