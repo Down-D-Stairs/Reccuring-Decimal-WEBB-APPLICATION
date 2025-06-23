@@ -60,6 +60,7 @@ function TimeTableManager({ onBack, user }) {
   const [userHistoryProjects, setUserHistoryProjects] = useState([]);
   const [selectedHistoryProjectId, setSelectedHistoryProjectId] = useState(null);
   const [userHistoryTimesheets, setUserHistoryTimesheets] = useState([]);
+  const [projectTimesheetCounts, setProjectTimesheetCounts] = useState({});
 
   const ADMIN_EMAILS = useMemo(() => [
     'pgupta@recurringdecimal.com',
@@ -789,6 +790,29 @@ const HistoryView = () => {
   );
 };
 
+const fetchProjectTimesheetCounts = async (projectIds) => {
+  try {
+    const counts = {};
+    
+    // Fetch counts for each project
+    await Promise.all(
+      projectIds.map(async (projectId) => {
+        const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}?status=submitted`);
+        if (response.ok) {
+          const timesheets = await response.json();
+          counts[projectId] = timesheets.length;
+        } else {
+          counts[projectId] = 0;
+        }
+      })
+    );
+    
+    return counts;
+  } catch (error) {
+    console.error('Error fetching timesheet counts:', error);
+    return {};
+  }
+};
 
 
 // Now update the return statement
@@ -1232,7 +1256,7 @@ return (
                               </td>
                               <td>
                                 <textarea
-                                  placeholder="Approval comments (required for approval/denial)"
+                                  placeholder="Approval comments"
                                   value={timesheetStatusUpdates[timesheet._id]?.approvalComments || timesheet.approvalComments || ''}
                                   onChange={(e) => setTimesheetStatusUpdates({
                                     ...timesheetStatusUpdates,
@@ -1331,6 +1355,16 @@ return (
               const approversList = project.approvers.split(',').map(email => email.trim());
               return approversList.includes(user.username);
             });
+
+            // Fetch counts when component loads
+            useEffect(() => {
+              if (approverProjects.length > 0) {
+                const projectIds = approverProjects.map(p => p._id);
+                fetchProjectTimesheetCounts(projectIds).then(counts => {
+                  setProjectTimesheetCounts(counts);
+                });
+              }
+            }, [approverProjects.length]);
             
             return approverProjects.length === 0 ? (
               <p>You are not assigned as an approver for any projects.</p>
@@ -1342,6 +1376,7 @@ return (
                       <th>Project Name</th>
                       <th>Client</th>
                       <th>Date Range</th>
+                      <th>Pending Timesheets</th> {/* Add this column */}
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -1353,6 +1388,11 @@ return (
                         <td>
                           {new Date(project.dateRange.start).toLocaleDateString()} - 
                           {new Date(project.dateRange.end).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <span className="timesheet-count-badge">
+                            {projectTimesheetCounts[project._id] || 0}
+                          </span>
                         </td>
                         <td>
                           <button

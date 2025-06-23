@@ -897,4 +897,29 @@
   background: #138496;
 }
 
+.timesheet-count-badge {
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+  display: inline-block;
+}
+
+.timesheet-count-badge:empty::after {
+  content: "0";
+}
+
+/* Different colors based on count */
+.timesheet-count-badge[data-count="0"] {
+  background-color: #6c757d;
+}
+
+.timesheet-count-badge[data-count]:not([data-count="0"]) {
+  background-color: #dc3545;
+}
+
 

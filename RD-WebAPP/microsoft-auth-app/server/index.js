@@ -1029,6 +1029,30 @@ app.get('/api/timeentries/user-project/:username/:projectId', async (req, res) =
   }
 });
 
+// Get timesheet counts for multiple projects
+app.post('/api/timeentries/counts', async (req, res) => {
+  try {
+    const { projectIds, status = 'submitted' } = req.body;
+    
+    const counts = {};
+    
+    await Promise.all(
+      projectIds.map(async (projectId) => {
+        const count = await TimeEntry.countDocuments({
+          projectId,
+          status
+        });
+        counts[projectId] = count;
+      })
+    );
+    
+    res.json(counts);
+  } catch (error) {
+    console.error('Error fetching timesheet counts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 
 // Start the server
