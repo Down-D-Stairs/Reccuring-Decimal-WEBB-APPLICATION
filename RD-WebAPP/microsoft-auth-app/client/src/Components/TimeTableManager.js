@@ -706,8 +706,17 @@ const HistoryView = () => {
                               <div className="approval-comments-display">
                                 <h4>Approval Comments:</h4>
                                 <p>{timesheet.approvalComments}</p>
+                                {timesheet.approverEmail && (
+                                  <p className="approver-info">
+                                    <strong>Approved by:</strong> {timesheet.approverEmail}
+                                    {timesheet.approvedDate && (
+                                      <span> on {new Date(timesheet.approvedDate).toLocaleDateString()}</span>
+                                    )}
+                                  </p>
+                                )}
                               </div>
                             )}
+
                             
                             <div className="day-entries-table">
                               <h4>Daily Breakdown:</h4>
