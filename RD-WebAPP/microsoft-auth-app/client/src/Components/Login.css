@@ -1688,34 +1688,21 @@
 }
 
 .pdf-preview {
-  border: 2px dashed #007bff;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
   margin: 10px 0;
-  background-color: #f8f9ff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
 }
 
-.pdf-placeholder {
-  font-size: 16px;
-  color: #495057;
-  line-height: 1.5;
+.pdf-preview iframe {
+  display: block;
+  margin: 0 auto;
 }
 
-.pdf-placeholder a {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 8px 16px;
-  border: 1px solid #007bff;
-  border-radius: 4px;
-  display: inline-block;
-  margin-top: 10px;
-  transition: all 0.2s;
+.pdf-preview p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.pdf-placeholder a:hover {
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-}

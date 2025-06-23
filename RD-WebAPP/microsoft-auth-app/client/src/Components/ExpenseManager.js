@@ -618,10 +618,9 @@ const fetchProjects = async () => {
     if (typeof receipt === 'string') {
       receiptUrl = receipt;
     } else if (receipt instanceof File) {
-      // If it's a File object, create a URL for it
       receiptUrl = URL.createObjectURL(receipt);
     } else {
-      return null; // Unknown type
+      return null;
     }
     
     // Check if it's a PDF
@@ -632,13 +631,16 @@ const fetchProjects = async () => {
     if (isPDF) {
       return (
         <div className="pdf-preview">
-          <div className="pdf-placeholder">
-            📄 PDF Receipt Uploaded
-            <br />
-            <a href={receiptUrl} target="_blank" rel="noopener noreferrer">
-              Click to view PDF
-            </a>
-          </div>
+          <iframe
+            src={receiptUrl}
+            width="100%"
+            height="400px"
+            title="PDF Receipt Preview"
+            style={{ border: '1px solid #ddd', borderRadius: '4px' }}
+          />
+          <p style={{ textAlign: 'center', marginTop: '10px', color: '#666' }}>
+            PDF Receipt Preview
+          </p>
         </div>
       );
     } else {
@@ -648,6 +650,7 @@ const fetchProjects = async () => {
       );
     }
   };
+
 
 
   return (
