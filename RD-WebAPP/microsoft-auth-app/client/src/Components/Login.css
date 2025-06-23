@@ -531,7 +531,7 @@
 .form-input[placeholder="$0.00"] {
   font-family: monospace;
   font-size: 16px;
-  text-align: right;
+  text-align: left;
   padding-right: 10px;
 }
 
