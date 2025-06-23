@@ -143,6 +143,26 @@ function TimeTableManager({ onBack, user }) {
     calculateTotalHours();
   }, [weeklyEntries]);
 
+  useEffect(() => {
+    const fetchApprovalCounts = async () => {
+      if (view === 'approvals' && !selectedProjectId) {
+        const approverProjects = projects.filter(project => {
+          if (!project.approvers) return false;
+          const approversList = project.approvers.split(',').map(email => email.trim());
+          return approversList.includes(user.username);
+        });
+        
+        if (approverProjects.length > 0) {
+          const projectIds = approverProjects.map(p => p._id);
+          const counts = await fetchProjectTimesheetCounts(projectIds);
+          setProjectTimesheetCounts(counts);
+        }
+      }
+    };
+    
+    fetchApprovalCounts();
+  }, [view, selectedProjectId, projects, user.username]);
+
   // Update the fetchProjects function
 const fetchProjects = async () => {
   try {
@@ -1356,15 +1376,6 @@ return (
               return approversList.includes(user.username);
             });
 
-            // Fetch counts when component loads
-            useEffect(() => {
-              if (approverProjects.length > 0) {
-                const projectIds = approverProjects.map(p => p._id);
-                fetchProjectTimesheetCounts(projectIds).then(counts => {
-                  setProjectTimesheetCounts(counts);
-                });
-              }
-            }, [approverProjects.length]);
             
             return approverProjects.length === 0 ? (
               <p>You are not assigned as an approver for any projects.</p>
