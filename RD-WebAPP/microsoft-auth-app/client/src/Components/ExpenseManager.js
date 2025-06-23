@@ -612,14 +612,30 @@ const fetchProjects = async () => {
   const renderReceiptPreview = (receipt) => {
     if (!receipt) return null;
     
-    // Check if it's a PDF (either data URL or file extension)
-    if (receipt.includes('data:application/pdf') || receipt.toLowerCase().includes('.pdf')) {
+    // Handle different types of receipt data
+    let receiptUrl = '';
+    
+    if (typeof receipt === 'string') {
+      receiptUrl = receipt;
+    } else if (receipt instanceof File) {
+      // If it's a File object, create a URL for it
+      receiptUrl = URL.createObjectURL(receipt);
+    } else {
+      return null; // Unknown type
+    }
+    
+    // Check if it's a PDF
+    const isPDF = receiptUrl.includes('data:application/pdf') || 
+                  receiptUrl.toLowerCase().includes('.pdf') ||
+                  (receipt instanceof File && receipt.type === 'application/pdf');
+    
+    if (isPDF) {
       return (
         <div className="pdf-preview">
           <div className="pdf-placeholder">
             📄 PDF Receipt Uploaded
             <br />
-            <a href={receipt} target="_blank" rel="noopener noreferrer">
+            <a href={receiptUrl} target="_blank" rel="noopener noreferrer">
               Click to view PDF
             </a>
           </div>
@@ -628,10 +644,11 @@ const fetchProjects = async () => {
     } else {
       // Regular image preview
       return (
-        <img src={receipt} alt="Receipt Preview" className="receipt-preview" />
+        <img src={receiptUrl} alt="Receipt Preview" className="receipt-preview" />
       );
     }
   };
+
 
   return (
     <div className="expense-manager">
