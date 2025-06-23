@@ -222,12 +222,11 @@
 }
 
 .form-buttons button:last-child {
-  background-color: #0078d4;
-  color: white;
+  background-color: #28a745;
 }
 
-.form-buttons button:last-child:hover {
-  background-color: #006cbd;
+.form-buttons button:last-child:hover:not(:disabled) {
+  background-color: #218838;
 }
 
 .form-buttons button:disabled {
@@ -406,59 +405,36 @@
   background: #138496;
 }
 
-/* Submit Timesheet Button */
+
 .submit-timesheet-button {
   padding: 12px 24px;
-  background-color: #28a745 !important;
-  color: white !important;
+  background-color: #28a745;
+  color: white;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: pointer;   
   font-size: 16px;
   font-weight: bold;
 }
 
 .submit-timesheet-button:hover {
-  background-color: #218838 !important;
+  background-color: #28a745;
 }
 
-/* Submit Decision Button in Approvals */
-.submit-decision-button-table {
-  padding: 6px 12px;
-  background-color: #28a745 !important;
-  color: white !important;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.submit-decision-button-table:hover:not(:disabled) {
-  background-color: #218838 !important;
-}
-
-/* Create Project Submit Button */
-.form-buttons button[onClick*="handleCreateProject"],
-.form-buttons button:last-child {
-  background-color: #28a745 !important;
-  color: white !important;
-  font-weight: bold;
-}
-
-.form-buttons button[onClick*="handleCreateProject"]:hover,
-.form-buttons button:last-child:hover {
-  background-color: #218838 !important;
+.submit-timesheet-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 /* Approvals View Styles */
 .approvals-container {
-  padding: 20px;  max-width: 1200px;
+  padding: 20px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .approvals-button {
-  background-color: #4CAF50;
+  background-color: #0078d4;
   color: white;
   padding: 10px 15px;
   border: none;
@@ -630,7 +606,7 @@
 }
 
 .submit-decision-button {
-  background-color: #0078d4;
+  background-color: #28a745;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -814,7 +790,7 @@
 
 .submit-decision-button-table {
   padding: 6px 12px;
-  background: #007bff;
+  background: #28a745;
   color: white;
   border: none;
   border-radius: 4px;
@@ -829,7 +805,7 @@
 }
 
 .submit-decision-button-table:hover:not(:disabled) {
-  background: #0056b3;
+  background: #28a745;
 }
 
 /* Expanded row details */
