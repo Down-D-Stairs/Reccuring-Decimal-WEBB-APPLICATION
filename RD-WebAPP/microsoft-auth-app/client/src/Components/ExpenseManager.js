@@ -1503,6 +1503,26 @@ const fetchProjects = async () => {
           </button>
 
           </div>
+
+          <div className="draft-actions">
+            {hasDraft && (
+              <button
+                className="load-draft-btn"
+                onClick={handleLoadDraft}
+                style={{ background: '#28a745', color: 'white', marginRight: '10px' }}
+              >
+                Continue Previous Draft
+              </button>
+            )}
+            <button
+              className="save-draft-btn"
+              onClick={handleSaveDraft}
+              disabled={!tripDetails.tripName}
+              style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
+            >
+              Save as Draft
+            </button>
+          </div>
           
           <div className="scrollable-section">
             <button
@@ -1568,25 +1588,7 @@ const fetchProjects = async () => {
             </div>
           </div>
           
-          <div className="draft-actions">
-            {hasDraft && (
-              <button
-                className="load-draft-btn"
-                onClick={handleLoadDraft}
-                style={{ background: '#28a745', color: 'white', marginRight: '10px' }}
-              >
-                Continue Previous Draft
-              </button>
-            )}
-            <button
-              className="save-draft-btn"
-              onClick={handleSaveDraft}
-              disabled={!tripDetails.tripName}
-              style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
-            >
-              Save as Draft
-            </button>
-          </div>
+          
           
           
         </div>
