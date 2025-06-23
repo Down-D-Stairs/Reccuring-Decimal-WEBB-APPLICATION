@@ -1475,7 +1475,25 @@ const fetchProjects = async () => {
               </div>
             </div>
             <p className="total">Total: ${totalAmount.toFixed(2)}</p>
-
+            <div className="draft-actions">
+              {hasDraft && (
+                <button
+                  className="load-draft-btn"
+                  onClick={handleLoadDraft}
+                  style={{ background: '#28a745', color: 'white', marginRight: '10px' }}
+                >
+                  Continue Previous Draft
+                </button>
+              )}
+              <button
+                className="save-draft-btn"
+                onClick={handleSaveDraft}
+                disabled={!tripDetails.tripName}
+                style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
+              >
+                Save as Draft
+              </button>
+            </div>        
             <button
               className="submit-trip"
               onClick={handleSubmit}
@@ -1502,25 +1520,7 @@ const fetchProjects = async () => {
               {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
         
-        <div className="draft-actions">
-            {hasDraft && (
-              <button
-                className="load-draft-btn"
-                onClick={handleLoadDraft}
-                style={{ background: '#28a745', color: 'white', marginRight: '10px' }}
-              >
-                Continue Previous Draft
-              </button>
-            )}
-            <button
-              className="save-draft-btn"
-              onClick={handleSaveDraft}
-              disabled={!tripDetails.tripName}
-              style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
-            >
-              Save as Draft
-            </button>
-        </div>
+        
 
         </div>
           <div className="scrollable-section">
