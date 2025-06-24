@@ -1688,21 +1688,14 @@
 }
 
 .pdf-preview {
-  margin: 10px 0;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  background-color: #f9f9f9;
+  text-align: center;
 }
 
-.pdf-preview iframe {
-  display: block;
-  margin: 0 auto;
+.pdf-badge {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
 }
 
-.pdf-preview p {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-}
 
