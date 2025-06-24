@@ -56,6 +56,10 @@ const tripSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  reason: {
+    type: String,
+    default: ''
+  },
   expenses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Expense'
