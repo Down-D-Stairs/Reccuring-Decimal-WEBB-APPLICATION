@@ -1246,18 +1246,24 @@ const AdminCalendarDashboard = () => {
                 </select>
               </div>
               
-              {selectedProject && projectData.length > 0 && (
+              {selectedProject && (
                 <div className="project-data">
                   <h5>{projects.find(p => p._id === selectedProject)?.projectName}</h5>
-                  <div className="total-hours">
-                    Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                  </div>
-                  {projectData.map((entry, index) => (
-                    <div key={index} className="project-entry">
-                      <div className="employee-name">{entry.employeeName}</div>
-                      <div className="hours">{entry.totalHours}h</div>
-                    </div>
-                  ))}
+                  {projectData.length > 0 ? (
+                    <>
+                      <div className="total-hours">
+                        Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                      </div>
+                      {projectData.map((entry, index) => (
+                        <div key={index} className="project-entry">
+                          <div className="employee-name">{entry.employeeName}</div>
+                          <div className="hours">{entry.totalHours}h</div>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <p>No hours found for this project in the selected time range.</p>
+                  )}
                 </div>
               )}
             </div>
