@@ -73,6 +73,21 @@ function TimeTableManager({ onBack, user }) {
   const [weekComments, setWeekComments] = useState('');
   const [expandedTimesheet, setExpandedTimesheet] = useState(null);
 
+  // Update your ADMIN_EMAILS check to exclude moderators for this feature
+  const isAdminOnly = ADMIN_EMAILS.includes(user?.username); // Only true admins, not moderators
+
+  // Add new state variables for the calendar dashboard
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarData, setCalendarData] = useState({});
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDayData, setSelectedDayData] = useState([]);
+  const [rightPanelView, setRightPanelView] = useState('employee'); // 'employee' or 'project'
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [selectedProject, setSelectedProject] = useState('');
+  const [employeeTimeRange, setEmployeeTimeRange] = useState('week'); // 'week', '2weeks', 'month'
+  const [employeeData, setEmployeeData] = useState([]);
+  const [projectData, setProjectData] = useState([]);
+
 
   // Get default week (current week starting Monday)
   function getDefaultWeek() {
@@ -834,6 +849,294 @@ const fetchProjectTimesheetCounts = async (projectIds) => {
   }
 };
 
+// Add calendar helper functions
+const getDaysInMonth = (date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
+  
+  const days = [];
+  
+  // Add empty cells for days before the first day of the month
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    days.push(null);
+  }
+  
+  // Add all days of the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push(new Date(year, month, day));
+  }
+  
+  return days;
+};
+
+const formatMonthYear = (date) => {
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
+// Add API functions for calendar data
+const fetchCalendarData = async () => {
+  try {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+    
+    const response = await fetch(`${API_URL}/api/admin/calendar-data?startDate=${startDate}&endDate=${endDate}`);
+    const data = await response.json();
+    setCalendarData(data);
+  } catch (error) {
+    console.error('Error fetching calendar data:', error);
+  }
+};
+
+const fetchDayDetails = async (date) => {
+  try {
+    const dateStr = date.toISOString().split('T')[0];
+    const response = await fetch(`${API_URL}/api/admin/day-details?date=${dateStr}`);
+    const data = await response.json();
+    setSelectedDayData(data);
+    setSelectedDay(date);
+  } catch (error) {
+    console.error('Error fetching day details:', error);
+  }
+};
+
+const fetchEmployeeData = async (employeeName, timeRange) => {
+  try {
+    const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${employeeName}&range=${timeRange}`);
+    const data = await response.json();
+    setEmployeeData(data);
+  } catch (error) {
+    console.error('Error fetching employee data:', error);
+  }
+};
+
+const fetchProjectData = async (projectId) => {
+  try {
+    const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}`);
+    const data = await response.json();
+    setProjectData(data);
+  } catch (error) {
+    console.error('Error fetching project data:', error);
+  }
+};
+
+// Add useEffect for calendar data
+useEffect(() => {
+  if (view === 'admin-calendar') {
+    fetchCalendarData();
+  }
+}, [view, calendarDate]);
+
+// Add the Calendar Dashboard component
+const AdminCalendarDashboard = () => {
+  const days = getDaysInMonth(calendarDate);
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  
+  const handlePrevMonth = () => {
+    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1));
+  };
+  
+  const handleNextMonth = () => {
+    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1));
+  };
+  
+  const handleDayClick = (date) => {
+    if (date) {
+      fetchDayDetails(date);
+    }
+  };
+  
+  const handleEmployeeSelect = (employeeName) => {
+    setSelectedEmployee(employeeName);
+    fetchEmployeeData(employeeName, employeeTimeRange);
+  };
+  
+  const handleProjectSelect = (projectId) => {
+    setSelectedProject(projectId);
+    fetchProjectData(projectId);
+  };
+  
+  return (
+    <div className="admin-calendar-container">
+      <h2>Admin Calendar Dashboard</h2>
+      
+      <button 
+        className="back-button"
+        onClick={() => setView('list')}
+      >
+        Back to Timesheet
+      </button>
+      
+      <div className="calendar-dashboard">
+        {/* Left Side - Calendar */}
+        <div className="calendar-section">
+          <div className="calendar-header">
+            <button onClick={handlePrevMonth}>‹</button>
+            <h3>{formatMonthYear(calendarDate)}</h3>
+            <button onClick={handleNextMonth}>›</button>
+          </div>
+          
+          <div className="calendar-grid">
+            {/* Day headers */}
+            {dayNames.map(day => (
+              <div key={day} className="calendar-day-header">{day}</div>
+            ))}
+            
+            {/* Calendar days */}
+            {days.map((date, index) => (
+              <div 
+                key={index} 
+                className={`calendar-day ${date ? 'active' : 'inactive'} ${selectedDay && date && date.toDateString() === selectedDay.toDateString() ? 'selected' : ''}`}
+                onClick={() => handleDayClick(date)}
+              >
+                {date && (
+                  <>
+                    <div className="day-number">{date.getDate()}</div>
+                    <div className="day-hours">
+                      {calendarData[date.toISOString().split('T')[0]]?.totalHours || 0}h
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Selected Day Details */}
+          {selectedDay && (
+            <div className="day-details">
+              <h4>Details for {selectedDay.toLocaleDateString()}</h4>
+              {selectedDayData.length === 0 ? (
+                <p>No hours logged for this day</p>
+              ) : (
+                <div className="day-breakdown">
+                  {selectedDayData.map((entry, index) => (
+                    <div key={index} className="employee-day-entry">
+                      <strong>{entry.employeeName}</strong>: {entry.totalHours}h
+                      <div className="project-breakdown">
+                        {entry.projects.map((project, pIndex) => (
+                          <div key={pIndex} className="project-hours">
+                            {project.projectName}: {project.hours}h
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* Right Side - Employee/Project Panel */}
+        <div className="info-panel">
+          <div className="panel-tabs">
+            <button 
+              className={rightPanelView === 'employee' ? 'active' : ''}
+              onClick={() => setRightPanelView('employee')}
+            >
+              Employee View
+            </button>
+            <button 
+              className={rightPanelView === 'project' ? 'active' : ''}
+              onClick={() => setRightPanelView('project')}
+            >
+              Project View
+            </button>
+          </div>
+          
+          {rightPanelView === 'employee' ? (
+            <div className="employee-panel">
+              <h4>Employee Hours</h4>
+              
+              <div className="employee-selector">
+                <select 
+                  value={selectedEmployee} 
+                  onChange={(e) => handleEmployeeSelect(e.target.value)}
+                >
+                  <option value="">Select Employee</option>
+                  {/* Get unique employees from timesheet data */}
+                  {Array.from(new Set(timeEntries.map(entry => entry.employeeName))).map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="time-range-selector">
+                <label>Time Range:</label>
+                <select 
+                  value={employeeTimeRange} 
+                  onChange={(e) => {
+                    setEmployeeTimeRange(e.target.value);
+                    if (selectedEmployee) {
+                      fetchEmployeeData(selectedEmployee, e.target.value);
+                    }
+                  }}
+                >
+                  <option value="week">This Week</option>
+                  <option value="2weeks">Last 2 Weeks</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+              
+              {selectedEmployee && employeeData.length > 0 && (
+                <div className="employee-data">
+                  <h5>{selectedEmployee} - {employeeTimeRange}</h5>
+                  <div className="total-hours">
+                    Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                  </div>
+                  {employeeData.map((entry, index) => (
+                    <div key={index} className="employee-entry">
+                      <div className="project-name">{entry.projectName}</div>
+                      <div className="hours">{entry.totalHours}h</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="project-panel">
+              <h4>Project Hours</h4>
+              
+              <div className="project-selector">
+                <select 
+                  value={selectedProject} 
+                  onChange={(e) => handleProjectSelect(e.target.value)}
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project._id} value={project._id}>{project.projectName}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {selectedProject && projectData.length > 0 && (
+                <div className="project-data">
+                  <h5>{projects.find(p => p._id === selectedProject)?.projectName}</h5>
+                  <div className="total-hours">
+                    Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                  </div>
+                  {projectData.map((entry, index) => (
+                    <div key={index} className="project-entry">
+                      <div className="employee-name">{entry.employeeName}</div>
+                      <div className="hours">{entry.totalHours}h</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 // Now update the return statement
 return (
@@ -1036,6 +1339,15 @@ return (
           >
             Timesheet History
           </button>
+
+          {isAdminOnly && (
+            <button 
+              className="admin-calendar-button"
+              onClick={() => setView('admin-calendar')}
+            >
+              Admin Calendar
+            </button>
+          )}
           
           <button
             className="submit-timesheet-button"
@@ -1423,7 +1735,9 @@ return (
         </div>
       )
     ) : view === 'history' ? (
-    <HistoryView />
+      <HistoryView />
+    ) : view === 'admin-calendar' ? (
+      <AdminCalendarDashboard />
     ) : null}
   </div>
 );

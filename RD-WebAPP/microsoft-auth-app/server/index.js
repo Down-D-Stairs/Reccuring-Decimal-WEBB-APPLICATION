@@ -1053,6 +1053,460 @@ app.post('/api/timeentries/counts', async (req, res) => {
   }
 });
 
+// Get calendar data for a month (total hours per day)
+app.get('/api/admin/calendar-data', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    // Get all time entries in the date range
+    const timeEntries = await TimeEntry.find({
+      'dayEntries.date': {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    }).populate('projectId', 'projectName');
+    
+    // Group by date and calculate total hours
+    const calendarData = {};
+    
+    timeEntries.forEach(entry => {
+      entry.dayEntries.forEach(day => {
+        const dateStr = new Date(day.date).toISOString().split('T')[0];
+        
+        // Only include dates within our range
+        if (dateStr >= startDate && dateStr <= endDate) {
+          if (!calendarData[dateStr]) {
+            calendarData[dateStr] = {
+              totalHours: 0,
+              employeeCount: new Set()
+            };
+          }
+          
+          calendarData[dateStr].totalHours += day.hours;
+          calendarData[dateStr].employeeCount.add(entry.employeeName);
+        }
+      });
+    });
+    
+    // Convert Set to count
+    Object.keys(calendarData).forEach(date => {
+      calendarData[date].employeeCount = calendarData[date].employeeCount.size;
+    });
+    
+    res.json(calendarData);
+  } catch (error) {
+    console.error('Error fetching calendar data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get detailed breakdown for a specific day
+app.get('/api/admin/day-details', async (req, res) => {
+  try {
+    const { date } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({ error: 'Date is required' });
+    }
+    
+    const targetDate = new Date(date);
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    
+    // Get all time entries for this specific date
+    const timeEntries = await TimeEntry.find({
+      'dayEntries.date': {
+        $gte: targetDate,
+        $lt: nextDate
+      }
+    }).populate('projectId', 'projectName clientName');
+    
+    // Group by employee
+    const employeeData = {};
+    
+    timeEntries.forEach(entry => {
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date).toISOString().split('T')[0];
+        
+        if (dayDate === date && day.hours > 0) {
+          if (!employeeData[entry.employeeName]) {
+            employeeData[entry.employeeName] = {
+              employeeName: entry.employeeName,
+              totalHours: 0,
+              projects: []
+            };
+          }
+          
+          employeeData[entry.employeeName].totalHours += day.hours;
+          employeeData[entry.employeeName].projects.push({
+            projectName: entry.projectId ? entry.projectId.projectName : 'Unknown Project',
+            hours: day.hours
+          });
+        }
+      });
+    });
+    
+    const result = Object.values(employeeData);
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching day details:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get employee data for specified time range
+app.get('/api/admin/employee-data', async (req, res) => {
+  try {
+    const { employee, range } = req.query;
+    
+    if (!employee || !range) {
+      return res.status(400).json({ error: 'Employee and range are required' });
+    }
+    
+    // Calculate date range based on selection
+    let startDate, endDate;
+    const today = new Date();
+    
+    switch (range) {
+      case 'week':
+        // Current week (Monday to Sunday)
+        const day = today.getDay();
+        const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(today.setDate(diff));
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+        
+      case '2weeks':
+        // Last 2 weeks
+        endDate = new Date();
+        startDate = new Date();
+        startDate.setDate(endDate.getDate() - 14);
+        break;
+        
+      case 'month':
+        // Current month
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+        
+      default:
+        return res.status(400).json({ error: 'Invalid range' });
+    }
+    
+    // Get time entries for this employee in the date range
+    const timeEntries = await TimeEntry.find({
+      employeeName: employee,
+      'dayEntries.date': {
+        $gte: startDate,
+        $lte: endDate
+      }
+    }).populate('projectId', 'projectName');
+    
+    // Group by project
+    const projectData = {};
+    
+    timeEntries.forEach(entry => {
+      const projectName = entry.projectId ? entry.projectId.projectName : 'Unknown Project';
+      
+      if (!projectData[projectName]) {
+        projectData[projectName] = {
+          projectName,
+          totalHours: 0
+        };
+      }
+
+      // Continuing from where we left off...
+
+      // Sum hours for this project within date range
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date);
+        if (dayDate >= startDate && dayDate <= endDate) {
+          projectData[projectName].totalHours += day.hours;
+        }
+      });
+    });
+    
+    const result = Object.values(projectData).filter(project => project.totalHours > 0);
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching employee data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project data (all employees working on a specific project)
+app.get('/api/admin/project-data', async (req, res) => {
+  try {
+    const { projectId } = req.query;
+    
+    if (!projectId) {
+      return res.status(400).json({ error: 'Project ID is required' });
+    }
+    
+    // Get current month date range
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    // Get all time entries for this project in current month
+    const timeEntries = await TimeEntry.find({
+      projectId: projectId,
+      'dayEntries.date': {
+        $gte: startDate,
+        $lte: endDate
+      }
+    });
+    
+    // Group by employee
+    const employeeData = {};
+    
+    timeEntries.forEach(entry => {
+      if (!employeeData[entry.employeeName]) {
+        employeeData[entry.employeeName] = {
+          employeeName: entry.employeeName,
+          totalHours: 0
+        };
+      }
+      
+      // Sum hours for this employee within date range
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date);
+        if (dayDate >= startDate && dayDate <= endDate) {
+          employeeData[entry.employeeName].totalHours += day.hours;
+        }
+      });
+    });
+    
+    const result = Object.values(employeeData).filter(employee => employee.totalHours > 0);
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching project data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all unique employees who have submitted timesheets
+app.get('/api/admin/employees', async (req, res) => {
+  try {
+    // Get distinct employee names from time entries
+    const employees = await TimeEntry.distinct('employeeName');
+    
+    // Filter out null/empty values and sort
+    const validEmployees = employees
+      .filter(name => name && name.trim())
+      .sort();
+    
+    res.json(validEmployees);
+  } catch (error) {
+    console.error('Error fetching employees:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get summary statistics for admin dashboard
+app.get('/api/admin/summary-stats', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    // Get all time entries in the date range
+    const timeEntries = await TimeEntry.find({
+      'dayEntries.date': {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    }).populate('projectId', 'projectName');
+    
+    let totalHours = 0;
+    let billableHours = 0;
+    const uniqueEmployees = new Set();
+    const uniqueProjects = new Set();
+    
+    timeEntries.forEach(entry => {
+      uniqueEmployees.add(entry.employeeName);
+      if (entry.projectId) {
+        uniqueProjects.add(entry.projectId.projectName);
+      }
+      
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date);
+        const dayDateStr = dayDate.toISOString().split('T')[0];
+        
+        if (dayDateStr >= startDate && dayDateStr <= endDate) {
+          totalHours += day.hours;
+          if (entry.isBillable) {
+            billableHours += day.hours;
+          }
+        }
+      });
+    });
+    
+    const stats = {
+      totalHours,
+      billableHours,
+      nonBillableHours: totalHours - billableHours,
+      uniqueEmployees: uniqueEmployees.size,
+      uniqueProjects: uniqueProjects.size,
+      utilizationRate: totalHours > 0 ? ((billableHours / totalHours) * 100).toFixed(1) : 0
+    };
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching summary stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get top performers (employees with most hours)
+app.get('/api/admin/top-performers', async (req, res) => {
+  try {
+    const { startDate, endDate, limit = 5 } = req.query;
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    // Get all time entries in the date range
+    const timeEntries = await TimeEntry.find({
+      'dayEntries.date': {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    });
+    
+    // Group by employee and calculate total hours
+    const employeeHours = {};
+    
+    timeEntries.forEach(entry => {
+      if (!employeeHours[entry.employeeName]) {
+        employeeHours[entry.employeeName] = {
+          employeeName: entry.employeeName,
+          totalHours: 0,
+          billableHours: 0
+        };
+      }
+      
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date);
+        const dayDateStr = dayDate.toISOString().split('T')[0];
+        
+        if (dayDateStr >= startDate && dayDateStr <= endDate) {
+          employeeHours[entry.employeeName].totalHours += day.hours;
+          if (entry.isBillable) {
+            employeeHours[entry.employeeName].billableHours += day.hours;
+          }
+        }
+      });
+    });
+    
+    // Sort by total hours and limit results
+    const topPerformers = Object.values(employeeHours)
+      .sort((a, b) => b.totalHours - a.totalHours)
+      .slice(0, parseInt(limit));
+    
+    res.json(topPerformers);
+  } catch (error) {
+    console.error('Error fetching top performers:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project utilization data
+app.get('/api/admin/project-utilization', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    // Get all active projects
+    const projects = await Project.find({ isActive: true });
+    
+    // Get time entries for the date range
+    const timeEntries = await TimeEntry.find({
+      'dayEntries.date': {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    }).populate('projectId', 'projectName maxHours');
+    
+    // Calculate utilization for each project
+    const projectUtilization = {};
+    
+    projects.forEach(project => {
+      projectUtilization[project._id] = {
+        projectId: project._id,
+        projectName: project.projectName,
+        maxHours: project.maxHours,
+        actualHours: 0,
+        utilizationPercent: 0
+      };
+    });
+    
+    timeEntries.forEach(entry => {
+      if (entry.projectId && projectUtilization[entry.projectId._id]) {
+        entry.dayEntries.forEach(day => {
+          const dayDate = new Date(day.date);
+          const dayDateStr = dayDate.toISOString().split('T')[0];
+          
+          if (dayDateStr >= startDate && dayDateStr <= endDate) {
+            projectUtilization[entry.projectId._id].actualHours += day.hours;
+          }
+        });
+      }
+    });
+    
+    // Calculate utilization percentages
+    Object.values(projectUtilization).forEach(project => {
+      if (project.maxHours > 0) {
+        project.utilizationPercent = ((project.actualHours / project.maxHours) * 100).toFixed(1);
+      }
+    });
+    
+    const result = Object.values(projectUtilization)
+      .filter(project => project.actualHours > 0)
+      .sort((a, b) => b.actualHours - a.actualHours);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching project utilization:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get timesheet counts for multiple projects (for the pending timesheets column)
+app.post('/api/timeentries/counts', async (req, res) => {
+  try {
+    const { projectIds, status = 'submitted' } = req.body;
+    
+    const counts = {};
+    
+    await Promise.all(
+      projectIds.map(async (projectId) => {
+        const count = await TimeEntry.countDocuments({
+          projectId,
+          status
+        });
+        counts[projectId] = count;
+      })
+    );
+    
+    res.json(counts);
+  } catch (error) {
+    console.error('Error fetching timesheet counts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 
 // Start the server

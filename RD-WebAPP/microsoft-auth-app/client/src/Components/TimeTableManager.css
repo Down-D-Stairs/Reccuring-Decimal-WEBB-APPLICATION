@@ -896,4 +896,352 @@
   background: #138496;
 }
 
+/* Admin Calendar Dashboard Styles */
+.admin-calendar-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-calendar-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0 10px;
+  transition: background-color 0.3s;
+}
+
+.admin-calendar-button:hover {
+  background-color: #c0392b;
+}
+
+.calendar-dashboard {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+/* Left Side - Calendar Section */
+.calendar-section {
+  flex: 2;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.calendar-header button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.calendar-header button:hover {
+  background-color: #2980b9;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  background-color: #bdc3c7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-day-header {
+  background-color: #34495e;
+  color: white;
+  padding: 15px 5px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.calendar-day {
+  background-color: white;
+  min-height: 80px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.calendar-day.active:hover {
+  background-color: #ecf0f1;
+  transform: scale(1.02);
+}
+
+.calendar-day.inactive {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.calendar-day.selected {
+  background-color: #3498db;
+  color: white;
+}
+
+.day-number {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.day-hours {
+  font-size: 12px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-align: center;
+  align-self: flex-start;
+}
+
+.calendar-day.selected .day-hours {
+  background-color: #2c3e50;
+}
+
+/* Selected Day Details */
+.day-details {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.day-details h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 1px solid #bdc3c7;
+  padding-bottom: 10px;
+}
+
+.day-breakdown {
+  margin-top: 15px;
+}
+
+.employee-day-entry {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 3px solid #27ae60;
+}
+
+.project-breakdown {
+  margin-top: 8px;
+  margin-left: 20px;
+}
+
+.project-hours {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin: 2px 0;
+}
+
+/* Right Side - Info Panel */
+.info-panel {
+  flex: 1;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  height: fit-content;
+}
+
+.panel-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.panel-tabs button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #7f8c8d;
+  transition: all 0.3s;
+}
+
+.panel-tabs button.active {
+  color: #3498db;
+  border-bottom: 3px solid #3498db;
+}
+
+.panel-tabs button:hover {
+  color: #2980b9;
+}
+
+/* Employee Panel */
+.employee-panel h4,
+.project-panel h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+.employee-selector,
+.project-selector,
+.time-range-selector {
+  margin-bottom: 20px;
+}
+
+.employee-selector select,
+.project-selector select,
+.time-range-selector select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #bdc3c7;
+  border-radius: 5px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.employee-selector select:focus,
+.project-selector select:focus,
+.time-range-selector select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.time-range-selector label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Employee/Project Data Display */
+.employee-data,
+.project-data {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+}
+
+.employee-data h5,
+.project-data h5 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.total-hours {
+  background-color: #3498db;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.employee-entry,
+.project-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 3px solid #e74c3c;
+}
+
+.project-name,
+.employee-name {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.hours {
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .calendar-dashboard {
+    flex-direction: column;
+  }
+  
+  .calendar-section {
+    margin-bottom: 20px;
+  }
+  
+  .calendar-grid {
+    gap: 1px;
+  }
+  
+  .calendar-day {
+    min-height: 60px;
+    padding: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-calendar-container {
+    padding: 10px;
+  }
+  
+  .calendar-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .calendar-day {
+    min-height: 50px;
+    padding: 3px;
+  }
+  
+  .day-number {
+    font-size: 14px;
+  }
+  
+  .day-hours {
+    font-size: 10px;
+  }
+  
+  .panel-tabs {
+    flex-direction: column;
+  }
+}
 
