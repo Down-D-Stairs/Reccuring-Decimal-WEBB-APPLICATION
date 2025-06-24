@@ -991,7 +991,7 @@ const fetchProjects = async () => {
               {isProcessingReceipt && <span className="processing-text">Processing receipt...
               </span>}
               {expenseDetails.receipt && renderReceiptPreview(
-                expenseDetails.receipt
+                <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
               )}
             </div>
             <div className="button-group">
@@ -1474,7 +1474,7 @@ const fetchProjects = async () => {
                       <span className="processing-text">Processing receipt...</span>
                     )}
                     {expenseDetails.receipt && renderReceiptPreview(
-                      expenseDetails.receipt
+                      <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
                     )}
                   </div>
                   
