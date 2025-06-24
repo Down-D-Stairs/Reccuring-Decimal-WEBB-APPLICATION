@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './TimeTableManager.css';
 
 function TimeTableManager({ onBack, user }) {
@@ -546,6 +546,27 @@ const handleViewProjectTimesheets = async (projectId) => {
   }
 };
 
+// Add these memoized handlers to prevent recreation on every render
+const handleExpandTimesheet = useCallback((timesheetId) => {
+  setExpandedTimesheet(expandedTimesheet === timesheetId ? null : timesheetId);
+}, [expandedTimesheet]);
+
+const handleBackToProjects = useCallback(() => {
+  setSelectedHistoryProjectId(null);
+  setUserHistoryTimesheets([]);
+}, []);
+
+const handleBackToList = useCallback(() => {
+  setView('list');
+}, []);
+
+const handleViewTimesheets = useCallback((projectId) => {
+  fetchUserProjectTimesheets(projectId);
+}, []);
+
+const handleBackToProjectsFromApprovals = useCallback(() => {
+  setSelectedProjectId(null);
+}, []);
 
 
 
@@ -726,7 +747,10 @@ const HistoryView = () => {
                       <td><span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></td>
                       <td>{new Date(timesheet.submittedDate).toLocaleDateString()}</td>
                       <td>
-                        <button onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}>
+                        <button 
+                          onClick={() => handleExpandTimesheet(timesheet._id)}
+                          type="button"
+                        >
                           {expandedTimesheet === timesheet._id ? '▲' : '▼'}
                         </button>
                       </td>
@@ -779,7 +803,7 @@ const HistoryView = () => {
         )}
       </div>
     );
-  }
+  };
 
   return (
     <div className="history-projects-container">
@@ -1643,7 +1667,8 @@ return (
           
           <button 
             className="back-button"
-            onClick={() => setSelectedProjectId(null)}
+            onClick={handleBackToProjectsFromApprovals}  // NEW
+            type="button"  // NEW
           >
             Back to Projects
           </button>
@@ -1793,7 +1818,8 @@ return (
           
           <button 
             className="back-button"
-            onClick={() => setView('list')}
+            onClick={handleBackToList}  // NEW
+            type="button"  // NEW
           >
             Back to Timesheet
           </button>
