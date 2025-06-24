@@ -148,12 +148,14 @@ function TimeTableManager({ onBack, user }) {
     }
   }, [user]);
 
+  // Make sure your existing useEffect has proper dependencies
   useEffect(() => {
     fetchProjects();
-    if (selectedWeek.start && selectedWeek.end) {
+    if (selectedWeek.start && selectedWeek.end && view !== 'admin-calendar') {
       fetchTimeEntries();
     }
-  }, [selectedWeek.start, selectedWeek.end]);
+  }, [selectedWeek.start, selectedWeek.end, view]); // Add view dependency
+
 
   // Calculate total hours whenever weekly entries change
   useEffect(() => {
@@ -973,9 +975,10 @@ const fetchProjectData = async (projectId, range = 'month') => {
 // Add useEffect for calendar data
 useEffect(() => {
   if (view === 'admin-calendar') {
-    fetchCalendarData();
+    fetchAllEmployees();
+    fetchCalendarData(); // Also fetch calendar data once
   }
-}, [view, calendarDate]);
+}, [view]);
 
 // Day Details Modal Component
 const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
@@ -1026,10 +1029,7 @@ const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
 // Add the Calendar Dashboard component
 // Add the Calendar Dashboard component
 const AdminCalendarDashboard = () => {
-  // Fetch employees when component mounts
-  useEffect(() => {
-    fetchAllEmployees();
-  }, []);
+  
 
   const days = getDaysInMonth(calendarDate);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
