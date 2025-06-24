@@ -843,6 +843,17 @@ const fetchProjects = async () => {
                               </div>
                             )}
 
+                            {trip.reason && (trip.status === 'approved' || trip.status === 'denied') && (
+                              <div className="approval-reason-section">
+                                <h4 style={{color: trip.status === 'approved' ? '#28a745' : '#dc3545'}}>
+                                  {trip.status === 'approved' ? 'Approval' : 'Denial'} Reason:
+                                </h4>
+                                <div className="reason-display">
+                                  {trip.reason}
+                                </div>
+                              </div>
+                            )}
+
 
                             <h4>Expense Details</h4>
                             <div className="expenses-list">
@@ -1185,6 +1196,17 @@ const fetchProjects = async () => {
                                     </span>
                                   )}
                                 </h4>
+                              </div>
+                            )}
+
+                            {trip.reason && (trip.status === 'approved' || trip.status === 'denied') && (
+                              <div className="approval-reason-section">
+                                <h4 style={{color: trip.status === 'approved' ? '#28a745' : '#dc3545'}}>
+                                  {trip.status === 'approved' ? 'Approval' : 'Denial'} Reason:
+                                </h4>
+                                <div className="reason-display">
+                                  {trip.reason}
+                                </div>
                               </div>
                             )}
 
