@@ -1024,6 +1024,7 @@ const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
 
 
 // Add the Calendar Dashboard component
+// Add the Calendar Dashboard component
 const AdminCalendarDashboard = () => {
   // Fetch employees when component mounts
   useEffect(() => {
@@ -1048,12 +1049,12 @@ const AdminCalendarDashboard = () => {
   };
   
   const handleEmployeeSelect = (employeeName) => {
-    console.log('Employee selected:', employeeName); // Add logging
+    console.log('Employee selected:', employeeName);
     setSelectedEmployee(employeeName);
     if (employeeName) {
       fetchEmployeeData(employeeName, employeeTimeRange);
     } else {
-      setEmployeeData([]); // Clear data when no employee selected
+      setEmployeeData([]);
     }
   };
   
@@ -1062,7 +1063,7 @@ const AdminCalendarDashboard = () => {
     if (projectId) {
       fetchProjectData(projectId, projectTimeRange);
     } else {
-      setProjectData([]); // Clear data when no project selected
+      setProjectData([]);
     }
   };
 
@@ -1144,7 +1145,6 @@ const AdminCalendarDashboard = () => {
                   onChange={(e) => handleEmployeeSelect(e.target.value)}
                 >
                   <option value="">Select Employee</option>
-                  {/* Use the fetched employees list */}
                   {allEmployees.map(name => (
                     <option key={name} value={name}>{name}</option>
                   ))}
@@ -1190,7 +1190,53 @@ const AdminCalendarDashboard = () => {
               )}
             </div>
           ) : (
-            // ... rest of your project panel code
+            <div className="project-panel">
+              <h4>Project Hours</h4>
+              
+              <div className="project-selector">
+                <select 
+                  value={selectedProject} 
+                  onChange={(e) => handleProjectSelect(e.target.value)}
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project._id} value={project._id}>{project.projectName}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="time-range-selector">
+                <label>Time Range:</label>
+                <select 
+                  value={projectTimeRange} 
+                  onChange={(e) => {
+                    setProjectTimeRange(e.target.value);
+                    if (selectedProject) {
+                      fetchProjectData(selectedProject, e.target.value);
+                    }
+                  }}
+                >
+                  <option value="week">This Week</option>
+                  <option value="2weeks">Last 2 Weeks</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+              
+              {selectedProject && projectData.length > 0 && (
+                <div className="project-data">
+                  <h5>{projects.find(p => p._id === selectedProject)?.projectName}</h5>
+                  <div className="total-hours">
+                    Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                  </div>
+                  {projectData.map((entry, index) => (
+                    <div key={index} className="project-entry">
+                      <div className="employee-name">{entry.employeeName}</div>
+                      <div className="hours">{entry.totalHours}h</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -1204,6 +1250,7 @@ const AdminCalendarDashboard = () => {
     </div>
   );
 };
+
 
 
 
