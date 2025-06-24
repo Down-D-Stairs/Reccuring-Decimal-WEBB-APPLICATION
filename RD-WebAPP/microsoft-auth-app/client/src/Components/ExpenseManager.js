@@ -194,74 +194,47 @@ const fetchProjects = async () => {
   };
 
   const handleReceiptUpload = async (file) => {
-    setIsProcessingReceipt(true); // Start loading
-    
-    try {
-      // Step 1: Generate PDF preview if it's a PDF
-      let previewImage = null;
-      if (file.type === 'application/pdf') {
-        console.log('PDF detected, generating preview...');
-        previewImage = await generatePDFPreview(file);
-      }
-      
-      // Step 2: Process with Mindee AI (your existing code)
-      const formData = new FormData();
-      formData.append('document', file);
-      
-      const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Token 13de7c14cd271b1f3415142a1c19e5a3'
-        },
-        body: formData
-      });
-      
-      const result = await response.json();
-      
-      if (result.document) {
-        const { total_amount, date, supplier_name } = result.document.inference.prediction;
-        
-        // Step 3: Convert original file to base64 for storage
-        const base64Promise = new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
-        const base64Receipt = await base64Promise;
-        
-        // Step 4: Update state with both original receipt and preview
-        setExpenseDetails({
-          ...expenseDetails,
-          amount: total_amount.value,
-          date: date.value,
-          vendor: supplier_name.value,
-          receipt: base64Receipt,        // Original file (PDF or image)
-          receiptPreview: previewImage   // Preview image (only for PDFs)
-        });
-      } else {
-        // If Mindee fails, still save the receipt with preview
-        const base64Promise = new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
-        const base64Receipt = await base64Promise;
-        
-        setExpenseDetails({
-          ...expenseDetails,
-          receipt: base64Receipt,
-          receiptPreview: previewImage
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error processing receipt:', error);
-      alert('Failed to process receipt');
-    } finally {
-      setIsProcessingReceipt(false); // End loading
-    }
-  };
+  setIsProcessingReceipt(true); // Start loading
+  
+  const formData = new FormData();
+  formData.append('document', file);
 
+  try {
+    const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Token 13de7c14cd271b1f3415142a1c19e5a3'
+      },
+      body: formData
+    });
+
+    const result = await response.json();
+    
+    if (result.document) {
+      const { total_amount, date, supplier_name } = result.document.inference.prediction;
+      
+      const base64Promise = new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+
+      const base64Receipt = await base64Promise;
+      
+      setExpenseDetails({
+        ...expenseDetails,
+        amount: total_amount.value,
+        date: date.value,
+        vendor: supplier_name.value,
+        receipt: base64Receipt
+      });
+    }
+  } catch (error) {
+    console.error('Error processing receipt:', error);
+  } finally {
+    setIsProcessingReceipt(false); // End loading
+  }
+};
 
 
   const handleExpenseSubmit = (addAnother = false) => {
@@ -635,52 +608,55 @@ const fetchProjects = async () => {
     document.body.removeChild(link);
   };
 
-  const generatePDFPreview = async (pdfFile) => {
-    try {
-      const formData = new FormData();
-      formData.append('pdf', pdfFile);
-      
-      const response = await fetch(`${API_URL}/api/convert-pdf-preview`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error('PDF conversion failed');
-      }
-      
-      const data = await response.json();
-      return data.previewImage;
-    } catch (error) {
-      console.error('Error generating PDF preview:', error);
-      return null;
-    }
-  };
 
-  const renderReceiptPreview = (receipt, previewImage) => {
+  const renderReceiptPreview = (receipt) => {
+    console.log('Receipt data:', receipt);
+    console.log('Receipt type:', typeof receipt);
+    
     if (!receipt) return null;
     
-    // Use preview image if available (for PDFs), otherwise use original (for images)
-    const displayImage = previewImage || receipt;
+    // Handle different types of receipt data
+    let receiptUrl = '';
+    let isPDF = false;
     
-    if (receipt.includes('data:application/pdf')) {
+    if (typeof receipt === 'string') {
+      receiptUrl = receipt;
+      isPDF = receiptUrl.includes('data:application/pdf') || receiptUrl.toLowerCase().includes('.pdf');
+      console.log('String receipt - isPDF:', isPDF);
+    } else if (receipt instanceof File) {
+      receiptUrl = URL.createObjectURL(receipt);
+      isPDF = receipt.type === 'application/pdf' || receipt.name.toLowerCase().endsWith('.pdf');
+      console.log('File receipt - isPDF:', isPDF, 'File type:', receipt.type, 'File name:', receipt.name);
+    } else {
+      console.log('Unknown receipt type');
+      return null;
+    }
+    
+    console.log('Final receiptUrl:', receiptUrl);
+    console.log('Final isPDF:', isPDF);
+    
+    if (isPDF) {
       return (
         <div className="pdf-preview">
-          <img 
-            src={displayImage} 
-            alt="PDF Preview (First Page)" 
-            className="receipt-preview"
+          <p>PDF detected! Trying to display...</p>
+          <iframe
+            src={receiptUrl}
+            width="100%"
+            height="400px"
+            title="PDF Receipt Preview"
+            style={{ border: '1px solid #ddd', borderRadius: '4px' }}
+            onLoad={() => console.log('PDF iframe loaded successfully')}
+            onError={() => console.log('PDF iframe failed to load')}
           />
-          <p className="pdf-badge">📄 PDF Document (Preview of first page)</p>
+          <p>If PDF doesn't show, <a href={receiptUrl} target="_blank" rel="noopener noreferrer">click here to open</a></p>
         </div>
       );
     } else {
       return (
-        <img src={displayImage} alt="Receipt Preview" className="receipt-preview" />
+        <img src={receiptUrl} alt="Receipt Preview" className="receipt-preview" />
       );
     }
   };
-  
 
 
   return (
@@ -1015,7 +991,7 @@ const fetchProjects = async () => {
               {isProcessingReceipt && <span className="processing-text">Processing receipt...
               </span>}
               {expenseDetails.receipt && renderReceiptPreview(
-                expenseDetails.receipt, expenseDetails.receiptPreview
+                <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
               )}
             </div>
             <div className="button-group">
@@ -1498,7 +1474,7 @@ const fetchProjects = async () => {
                       <span className="processing-text">Processing receipt...</span>
                     )}
                     {expenseDetails.receipt && renderReceiptPreview(
-                      expenseDetails.receipt, expenseDetails.receiptPreview
+                      <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
                     )}
                   </div>
                   
