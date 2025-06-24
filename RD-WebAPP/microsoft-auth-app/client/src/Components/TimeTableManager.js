@@ -87,6 +87,7 @@ function TimeTableManager({ onBack, user }) {
   const [employeeTimeRange, setEmployeeTimeRange] = useState('week'); // 'week', '2weeks', 'month'
   const [employeeData, setEmployeeData] = useState([]);
   const [projectData, setProjectData] = useState([]);
+  const [projectTimeRange, setProjectTimeRange] = useState('month');
 
 
   // Get default week (current week starting Monday)
@@ -915,15 +916,27 @@ const fetchEmployeeData = async (employeeName, timeRange) => {
   }
 };
 
-const fetchProjectData = async (projectId) => {
+// Update this function in your TimeTableManager component
+const fetchProjectData = async (projectId, range = 'month') => {
   try {
-    const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}`);
+    console.log(`Fetching project data for ${projectId} with range ${range}`);
+    
+    const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}`);
+    
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
     const data = await response.json();
+    console.log('Project data received:', data);
+    
     setProjectData(data);
   } catch (error) {
     console.error('Error fetching project data:', error);
+    setProjectData([]);
   }
 };
+
 
 // Add useEffect for calendar data
 useEffect(() => {
@@ -932,6 +945,53 @@ useEffect(() => {
   }
 }, [view, calendarDate]);
 
+// Day Details Modal Component
+const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
+  if (!selectedDay) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Details for {selectedDay.toLocaleDateString()}</h3>
+          <button className="modal-close-button" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="modal-body">
+          {selectedDayData.length === 0 ? (
+            <p>No hours logged for this day</p>
+          ) : (
+            <div className="day-breakdown">
+              <div className="day-summary">
+                <strong>Total Hours: {selectedDayData.reduce((sum, entry) => sum + entry.totalHours, 0)}</strong>
+              </div>
+              
+              {selectedDayData.map((entry, index) => (
+                <div key={index} className="employee-day-entry-modal">
+                  <div className="employee-header">
+                    <strong>{entry.employeeName}</strong>
+                    <span className="employee-total">{entry.totalHours}h</span>
+                  </div>
+                  <div className="project-breakdown">
+                    {entry.projects.map((project, pIndex) => (
+                      <div key={pIndex} className="project-hours">
+                        <span className="project-name">{project.projectName}</span>
+                        <span className="project-hours-value">{project.hours}h</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// Add the Calendar Dashboard component
 // Add the Calendar Dashboard component
 const AdminCalendarDashboard = () => {
   const days = getDaysInMonth(calendarDate);
@@ -953,12 +1013,21 @@ const AdminCalendarDashboard = () => {
   
   const handleEmployeeSelect = (employeeName) => {
     setSelectedEmployee(employeeName);
-    fetchEmployeeData(employeeName, employeeTimeRange);
+    if (employeeName) {
+      fetchEmployeeData(employeeName, employeeTimeRange);
+    }
   };
   
   const handleProjectSelect = (projectId) => {
     setSelectedProject(projectId);
-    fetchProjectData(projectId);
+    if (projectId) {
+      fetchProjectData(projectId);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedDay(null);
+    setSelectedDayData([]);
   };
   
   return (
@@ -969,7 +1038,7 @@ const AdminCalendarDashboard = () => {
         className="back-button"
         onClick={() => setView('list')}
       >
-        Back to Timesheet
+        ← Back to Timesheet
       </button>
       
       <div className="calendar-dashboard">
@@ -991,7 +1060,7 @@ const AdminCalendarDashboard = () => {
             {days.map((date, index) => (
               <div 
                 key={index} 
-                className={`calendar-day ${date ? 'active' : 'inactive'} ${selectedDay && date && date.toDateString() === selectedDay.toDateString() ? 'selected' : ''}`}
+                className={`calendar-day ${date ? 'active' : 'inactive'}`}
                 onClick={() => handleDayClick(date)}
               >
                 {date && (
@@ -1005,31 +1074,6 @@ const AdminCalendarDashboard = () => {
               </div>
             ))}
           </div>
-          
-          {/* Selected Day Details */}
-          {selectedDay && (
-            <div className="day-details">
-              <h4>Details for {selectedDay.toLocaleDateString()}</h4>
-              {selectedDayData.length === 0 ? (
-                <p>No hours logged for this day</p>
-              ) : (
-                <div className="day-breakdown">
-                  {selectedDayData.map((entry, index) => (
-                    <div key={index} className="employee-day-entry">
-                      <strong>{entry.employeeName}</strong>: {entry.totalHours}h
-                      <div className="project-breakdown">
-                        {entry.projects.map((project, pIndex) => (
-                          <div key={pIndex} className="project-hours">
-                            {project.projectName}: {project.hours}h
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
         
         {/* Right Side - Employee/Project Panel */}
@@ -1059,8 +1103,12 @@ const AdminCalendarDashboard = () => {
                   onChange={(e) => handleEmployeeSelect(e.target.value)}
                 >
                   <option value="">Select Employee</option>
-                  {/* Get unique employees from timesheet data */}
-                  {Array.from(new Set(timeEntries.map(entry => entry.employeeName))).map(name => (
+                  {/* Get unique employees from all time entries */}
+                  {Array.from(new Set(
+                    timeEntries
+                      .map(entry => entry.employeeName)
+                      .filter(name => name && name.trim())
+                  )).sort().map(name => (
                     <option key={name} value={name}>{name}</option>
                   ))}
                 </select>
@@ -1113,6 +1161,24 @@ const AdminCalendarDashboard = () => {
                   ))}
                 </select>
               </div>
+
+              {/* Use separate state for project time range */}
+              <div className="time-range-selector">
+                <label>Time Range:</label>
+                <select 
+                  value={projectTimeRange} 
+                  onChange={(e) => {
+                    setProjectTimeRange(e.target.value);
+                    if (selectedProject) {
+                      fetchProjectData(selectedProject, e.target.value);
+                    }
+                  }}
+                >
+                  <option value="week">This Week</option>
+                  <option value="2weeks">Last 2 Weeks</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
               
               {selectedProject && projectData.length > 0 && (
                 <div className="project-data">
@@ -1132,9 +1198,17 @@ const AdminCalendarDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Day Details Modal */}
+      <DayDetailsModal 
+        selectedDay={selectedDay}
+        selectedDayData={selectedDayData}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
+
 
 
 

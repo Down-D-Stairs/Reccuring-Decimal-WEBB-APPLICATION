@@ -1240,20 +1240,51 @@ app.get('/api/admin/employee-data', async (req, res) => {
 });
 
 // Get project data (all employees working on a specific project)
+// Update the project data endpoint to accept time range
 app.get('/api/admin/project-data', async (req, res) => {
   try {
-    const { projectId } = req.query;
+    const { projectId, range = 'month' } = req.query;
     
     if (!projectId) {
       return res.status(400).json({ error: 'Project ID is required' });
     }
     
-    // Get current month date range
+    // Calculate date range based on selection
+    let startDate, endDate;
     const today = new Date();
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     
-    // Get all time entries for this project in current month
+    switch (range) {
+      case 'week':
+        // Current week (Monday to Sunday)
+        const day = today.getDay();
+        const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(today.setDate(diff));
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+        
+      case '2weeks':
+        // Last 2 weeks
+        endDate = new Date();
+        startDate = new Date();
+        startDate.setDate(endDate.getDate() - 14);
+        break;
+        
+      case 'month':
+        // Current month
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        break;
+        
+      default:
+        // Default to current month
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    }
+    
+    console.log(`Fetching project data for project ${projectId}, range: ${range}, dates: ${startDate} to ${endDate}`);
+    
+    // Get all time entries for this project in the specified date range
     const timeEntries = await TimeEntry.find({
       projectId: projectId,
       'dayEntries.date': {
@@ -1261,6 +1292,8 @@ app.get('/api/admin/project-data', async (req, res) => {
         $lte: endDate
       }
     });
+    
+    console.log(`Found ${timeEntries.length} time entries for project`);
     
     // Group by employee
     const employeeData = {};
@@ -1282,13 +1315,19 @@ app.get('/api/admin/project-data', async (req, res) => {
       });
     });
     
-    const result = Object.values(employeeData).filter(employee => employee.totalHours > 0);
+    // Filter out employees with 0 hours and sort by hours descending
+    const result = Object.values(employeeData)
+      .filter(employee => employee.totalHours > 0)
+      .sort((a, b) => b.totalHours - a.totalHours);
+    
+    console.log(`Returning ${result.length} employees with hours for project`);
     res.json(result);
   } catch (error) {
     console.error('Error fetching project data:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Get all unique employees who have submitted timesheets
 app.get('/api/admin/employees', async (req, res) => {
