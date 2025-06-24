@@ -88,6 +88,7 @@ function TimeTableManager({ onBack, user }) {
   const [employeeData, setEmployeeData] = useState([]);
   const [projectData, setProjectData] = useState([]);
   const [projectTimeRange, setProjectTimeRange] = useState('month');
+  const [allEmployees, setAllEmployees] = useState([]);
 
 
   // Get default week (current week starting Monday)
@@ -906,13 +907,44 @@ const fetchDayDetails = async (date) => {
   }
 };
 
-const fetchEmployeeData = async (employeeName, timeRange) => {
+const fetchAllEmployees = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${employeeName}&range=${timeRange}`);
+    console.log('Fetching all employees...');
+    const response = await fetch(`${API_URL}/api/admin/employees`);
+    
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
     const data = await response.json();
+    console.log('All employees received:', data);
+    
+    setAllEmployees(data);
+  } catch (error) {
+    console.error('Error fetching employees:', error);
+    setAllEmployees([]);
+  }
+};
+
+// Update your fetchEmployeeData function to add more logging
+const fetchEmployeeData = async (employeeName, range = 'month') => {
+  try {
+    console.log(`Fetching employee data for ${employeeName} with range ${range}`);
+    
+    const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Server returned ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Employee data received:', data);
+    
     setEmployeeData(data);
   } catch (error) {
     console.error('Error fetching employee data:', error);
+    setEmployeeData([]);
   }
 };
 
@@ -992,8 +1024,12 @@ const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
 
 
 // Add the Calendar Dashboard component
-// Add the Calendar Dashboard component
 const AdminCalendarDashboard = () => {
+  // Fetch employees when component mounts
+  useEffect(() => {
+    fetchAllEmployees();
+  }, []);
+
   const days = getDaysInMonth(calendarDate);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
@@ -1012,16 +1048,21 @@ const AdminCalendarDashboard = () => {
   };
   
   const handleEmployeeSelect = (employeeName) => {
+    console.log('Employee selected:', employeeName); // Add logging
     setSelectedEmployee(employeeName);
     if (employeeName) {
       fetchEmployeeData(employeeName, employeeTimeRange);
+    } else {
+      setEmployeeData([]); // Clear data when no employee selected
     }
   };
   
   const handleProjectSelect = (projectId) => {
     setSelectedProject(projectId);
     if (projectId) {
-      fetchProjectData(projectId);
+      fetchProjectData(projectId, projectTimeRange);
+    } else {
+      setProjectData([]); // Clear data when no project selected
     }
   };
 
@@ -1103,12 +1144,8 @@ const AdminCalendarDashboard = () => {
                   onChange={(e) => handleEmployeeSelect(e.target.value)}
                 >
                   <option value="">Select Employee</option>
-                  {/* Get unique employees from all time entries */}
-                  {Array.from(new Set(
-                    timeEntries
-                      .map(entry => entry.employeeName)
-                      .filter(name => name && name.trim())
-                  )).sort().map(name => (
+                  {/* Use the fetched employees list */}
+                  {allEmployees.map(name => (
                     <option key={name} value={name}>{name}</option>
                   ))}
                 </select>
@@ -1131,70 +1168,29 @@ const AdminCalendarDashboard = () => {
                 </select>
               </div>
               
-              {selectedEmployee && employeeData.length > 0 && (
+              {selectedEmployee && (
                 <div className="employee-data">
                   <h5>{selectedEmployee} - {employeeTimeRange}</h5>
-                  <div className="total-hours">
-                    Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                  </div>
-                  {employeeData.map((entry, index) => (
-                    <div key={index} className="employee-entry">
-                      <div className="project-name">{entry.projectName}</div>
-                      <div className="hours">{entry.totalHours}h</div>
-                    </div>
-                  ))}
+                  {employeeData.length > 0 ? (
+                    <>
+                      <div className="total-hours">
+                        Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                      </div>
+                      {employeeData.map((entry, index) => (
+                        <div key={index} className="employee-entry">
+                          <div className="project-name">{entry.projectName}</div>
+                          <div className="hours">{entry.totalHours}h</div>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <p>No hours found for this employee in the selected time range.</p>
+                  )}
                 </div>
               )}
             </div>
           ) : (
-            <div className="project-panel">
-              <h4>Project Hours</h4>
-              
-              <div className="project-selector">
-                <select 
-                  value={selectedProject} 
-                  onChange={(e) => handleProjectSelect(e.target.value)}
-                >
-                  <option value="">Select Project</option>
-                  {projects.map(project => (
-                    <option key={project._id} value={project._id}>{project.projectName}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Use separate state for project time range */}
-              <div className="time-range-selector">
-                <label>Time Range:</label>
-                <select 
-                  value={projectTimeRange} 
-                  onChange={(e) => {
-                    setProjectTimeRange(e.target.value);
-                    if (selectedProject) {
-                      fetchProjectData(selectedProject, e.target.value);
-                    }
-                  }}
-                >
-                  <option value="week">This Week</option>
-                  <option value="2weeks">Last 2 Weeks</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
-              
-              {selectedProject && projectData.length > 0 && (
-                <div className="project-data">
-                  <h5>{projects.find(p => p._id === selectedProject)?.projectName}</h5>
-                  <div className="total-hours">
-                    Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                  </div>
-                  {projectData.map((entry, index) => (
-                    <div key={index} className="project-entry">
-                      <div className="employee-name">{entry.employeeName}</div>
-                      <div className="hours">{entry.totalHours}h</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            // ... rest of your project panel code
           )}
         </div>
       </div>
@@ -1208,6 +1204,7 @@ const AdminCalendarDashboard = () => {
     </div>
   );
 };
+
 
 
 
