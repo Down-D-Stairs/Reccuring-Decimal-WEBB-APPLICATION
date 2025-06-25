@@ -696,10 +696,16 @@ const fetchProjects = async () => {
       console.log('All trips:', allTrips);
       
       // Filter trips by month and status
+      // Replace the filtering section with:
       const filteredTrips = allTrips.filter(trip => {
-        const tripDate = new Date(trip.submittedAt);
-        const matchesMonth = tripDate >= startOfMonth && tripDate <= endOfMonth;
+        // Use the trip's actual date range instead of submittedAt
+        const tripStartDate = new Date(trip.dateRange.start);
+        const tripEndDate = new Date(trip.dateRange.end);
+        
+        // Check if the trip overlaps with the selected month
+        const matchesMonth = (tripStartDate <= endOfMonth && tripEndDate >= startOfMonth);
         const matchesStatus = trip.status === analyticsStatus;
+        
         return matchesMonth && matchesStatus;
       });
       
