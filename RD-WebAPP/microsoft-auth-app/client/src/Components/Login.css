@@ -1739,3 +1739,9 @@
 .approval-reason-section:has(h4[style*="dc3545"]) {
   border-left-color: #dc3545;
 }
+
+
+.header .actions {
+  margin-left: -30px; /* Adjust this value to move buttons more or less to the left */
+}
+
