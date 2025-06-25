@@ -13,6 +13,11 @@ function ExpenseManager({ onBack, user }) {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
 
+  const [analyticsMonth, setAnalyticsMonth] = useState(new Date());
+  const [analyticsStatus, setAnalyticsStatus] = useState('approved');
+  const [projectAnalytics, setProjectAnalytics] = useState([]);
+
+
 
   
   // Add these state variables at the top with your other state variables
@@ -1327,6 +1332,48 @@ const fetchProjects = async () => {
             </button>
           </div>
         </div>
+
+        ) : expenseView === 'analytics' ? (
+          <div className="analytics-container">
+            <div className="analytics-header">
+              <h2>Expense Analytics</h2>
+              
+              <div className="analytics-controls">
+                <div className="month-navigation">
+                  <button onClick={() => {
+                    const newMonth = new Date(analyticsMonth);
+                    newMonth.setMonth(newMonth.getMonth() - 1);
+                    setAnalyticsMonth(newMonth);
+                  }}>←</button>
+                  <span className="current-month">
+                    {analyticsMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button onClick={() => {
+                    const newMonth = new Date(analyticsMonth);
+                    newMonth.setMonth(newMonth.getMonth() + 1);
+                    setAnalyticsMonth(newMonth);
+                  }}>→</button>
+                </div>
+                
+                <div className="status-filter">
+                  <label>Status: </label>
+                  <select 
+                    value={analyticsStatus} 
+                    onChange={(e) => setAnalyticsStatus(e.target.value)}
+                  >
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="denied">Denied</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div className="analytics-content">
+              <p>Analytics view is working! Month: {analyticsMonth.toLocaleDateString()}, Status: {analyticsStatus}</p>
+            </div>
+          </div>
+
 
       ) : expenseView === 'edit' ? (
         <div className="create-trip-container">
