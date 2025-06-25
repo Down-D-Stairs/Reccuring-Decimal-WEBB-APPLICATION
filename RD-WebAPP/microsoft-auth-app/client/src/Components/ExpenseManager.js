@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './Login.css';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 
 function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
@@ -16,6 +26,10 @@ function ExpenseManager({ onBack, user }) {
   const [analyticsMonth, setAnalyticsMonth] = useState(new Date());
   const [analyticsStatus, setAnalyticsStatus] = useState('approved');
   const [projectAnalytics, setProjectAnalytics] = useState([]);
+  const [selectedProjectExpenses, setSelectedProjectExpenses] = useState([]);
+  const [showProjectExpensesModal, setShowProjectExpensesModal] = useState(false);
+  const [selectedProjectName, setSelectedProjectName] = useState('');
+
 
 
 
@@ -694,21 +708,24 @@ const fetchProjects = async () => {
       // Group expenses by project
       const projectData = {};
       
+      // In fetchAnalyticsData function, replace the grouping logic with:
       filteredTrips.forEach(trip => {
         const projectName = trip.projectName || 'No Project';
         
         if (!projectData[projectName]) {
           projectData[projectName] = {
             totalAmount: 0,
-            expenseCount: 0,
+            expenseCount: 0, // This will now represent report count
             expenses: []
           };
         }
         
+        // Count this as one report
+        projectData[projectName].expenseCount += 1;
+        projectData[projectName].totalAmount += trip.totalAmount;
+        
         if (trip.expenses && Array.isArray(trip.expenses)) {
           trip.expenses.forEach(expense => {
-            projectData[projectName].totalAmount += expense.amount;
-            projectData[projectName].expenseCount += 1;
             projectData[projectName].expenses.push({
               ...expense,
               employeeEmail: trip.email,
@@ -730,6 +747,16 @@ const fetchProjects = async () => {
       console.error('Error fetching analytics data:', error);
     }
   };
+
+  const handleProjectClick = (projectName) => {
+    const project = projectAnalytics.find(p => p.projectName === projectName);
+    if (project) {
+      setSelectedProjectExpenses(project.expenses);
+      setSelectedProjectName(projectName);
+      setShowProjectExpensesModal(true);
+    }
+  };
+
 
   useEffect(() => {
     if (expenseView === 'analytics') {
@@ -1447,7 +1474,7 @@ const fetchProjects = async () => {
                       <tr>
                         <th>Project</th>
                         <th>Total Amount</th>
-                        <th>Expense Count</th>
+                        <th>Report Count</th>
                       </tr>
                     </thead>
                     <tbody>
