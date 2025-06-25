@@ -669,6 +669,75 @@ const fetchProjects = async () => {
     }
   };
 
+  const fetchAnalyticsData = async () => {
+    try {
+      console.log('Fetching analytics data for:', analyticsMonth, analyticsStatus);
+      
+      const startOfMonth = new Date(analyticsMonth.getFullYear(), analyticsMonth.getMonth(), 1);
+      const endOfMonth = new Date(analyticsMonth.getFullYear(), analyticsMonth.getMonth() + 1, 0);
+      
+      const response = await fetch(`${API_URL}/api/trips?email=${user.username}`);
+      const allTrips = await response.json();
+      
+      console.log('All trips:', allTrips);
+      
+      // Filter trips by month and status
+      const filteredTrips = allTrips.filter(trip => {
+        const tripDate = new Date(trip.submittedAt);
+        const matchesMonth = tripDate >= startOfMonth && tripDate <= endOfMonth;
+        const matchesStatus = trip.status === analyticsStatus;
+        return matchesMonth && matchesStatus;
+      });
+      
+      console.log('Filtered trips:', filteredTrips);
+      
+      // Group expenses by project
+      const projectData = {};
+      
+      filteredTrips.forEach(trip => {
+        const projectName = trip.projectName || 'No Project';
+        
+        if (!projectData[projectName]) {
+          projectData[projectName] = {
+            totalAmount: 0,
+            expenseCount: 0,
+            expenses: []
+          };
+        }
+        
+        if (trip.expenses && Array.isArray(trip.expenses)) {
+          trip.expenses.forEach(expense => {
+            projectData[projectName].totalAmount += expense.amount;
+            projectData[projectName].expenseCount += 1;
+            projectData[projectName].expenses.push({
+              ...expense,
+              employeeEmail: trip.email,
+              tripName: trip.tripName
+            });
+          });
+        }
+      });
+      
+      const analyticsData = Object.entries(projectData).map(([name, data]) => ({
+        projectName: name,
+        ...data
+      }));
+      
+      console.log('Analytics data:', analyticsData);
+      setProjectAnalytics(analyticsData);
+      
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (expenseView === 'analytics') {
+      fetchAnalyticsData();
+    }
+  }, [analyticsMonth, analyticsStatus, expenseView]);
+
+
 
   return (
     <div className="expense-manager">
@@ -1370,10 +1439,33 @@ const fetchProjects = async () => {
             </div>
             
             <div className="analytics-content">
-              <p>Analytics view is working! Month: {analyticsMonth.toLocaleDateString()}, Status: {analyticsStatus}</p>
+              {projectAnalytics.length > 0 ? (
+                <div className="analytics-summary">
+                  <h3>Project Summary</h3>
+                  <table className="analytics-table">
+                    <thead>
+                      <tr>
+                        <th>Project</th>
+                        <th>Total Amount</th>
+                        <th>Expense Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {projectAnalytics.map((project, index) => (
+                        <tr key={index}>
+                          <td>{project.projectName}</td>
+                          <td>${project.totalAmount.toFixed(2)}</td>
+                          <td>{project.expenseCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p>No expense data found for the selected month and status.</p>
+              )}
             </div>
           </div>
-
 
       ) : expenseView === 'edit' ? (
         <div className="create-trip-container">
