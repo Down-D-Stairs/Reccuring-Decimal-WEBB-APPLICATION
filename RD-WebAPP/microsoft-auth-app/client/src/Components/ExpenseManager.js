@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './Login.css';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Pie } from 'react-chartjs-2';
 
 function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
@@ -53,6 +60,15 @@ function ExpenseManager({ onBack, user }) {
   const [showBatchConfirmation, setShowBatchConfirmation] = useState(false);
   const [pendingDecision, setPendingDecision] = useState(null); // Store trip info for single decision
 
+  // Add these to your existing state
+  const [analyticsMonth, setAnalyticsMonth] = useState(new Date());
+  const [analyticsStatus, setAnalyticsStatus] = useState('approved');
+  const [projectAnalytics, setProjectAnalytics] = useState([]);
+  const [selectedProjectExpenses, setSelectedProjectExpenses] = useState([]);
+  const [showProjectExpensesModal, setShowProjectExpensesModal] = useState(false);
+  const [selectedProjectName, setSelectedProjectName] = useState('');
+
+  ChartJS.register(ArcElement, Tooltip, Legend);
 
 
   const ADMIN_EMAILS = useMemo(() => [
@@ -72,6 +88,14 @@ function ExpenseManager({ onBack, user }) {
         .catch(err => console.error('Failed to check moderator status:', err));
     }
   }, [user]);
+
+  // Add this useEffect
+  useEffect(() => {
+    if (expenseView === 'analytics') {
+      fetchAnalyticsData();
+    }
+  }, [analyticsMonth, analyticsStatus, expenseView]);
+
  
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -664,6 +688,74 @@ const fetchProjects = async () => {
     }
   };
 
+  // Add these functions
+  const fetchAnalyticsData = async () => {
+    try {
+      const startOfMonth = new Date(analyticsMonth.getFullYear(), analyticsMonth.getMonth(), 1);
+      const endOfMonth = new Date(analyticsMonth.getFullYear(), analyticsMonth.getMonth() + 1, 0);
+      
+      const response = await fetch(`${API_URL}/api/trips?status=${analyticsStatus}`);
+      const allTrips = await response.json();
+      
+      // Filter trips by month
+      const monthTrips = allTrips.filter(trip => {
+        const tripDate = new Date(trip.submittedAt);
+        return tripDate >= startOfMonth && tripDate <= endOfMonth;
+      });
+      
+      // Group expenses by project
+      const projectData = {};
+      
+      for (const trip of monthTrips) {
+        const projectName = trip.projectName || 'No Project';
+        
+        if (!projectData[projectName]) {
+          projectData[projectName] = {
+            totalAmount: 0,
+            expenseCount: 0,
+            expenses: []
+          };
+        }
+        
+        if (trip.expenses) {
+          for (const expense of trip.expenses) {
+            projectData[projectName].totalAmount += expense.amount;
+            projectData[projectName].expenseCount += 1;
+            projectData[projectName].expenses.push({
+              ...expense,
+              employeeEmail: trip.email,
+              tripName: trip.tripName
+            });
+          }
+        }
+      }
+      
+      setProjectAnalytics(Object.entries(projectData).map(([name, data]) => ({
+        projectName: name,
+        ...data
+      })));
+      
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    }
+  };
+
+  const handleProjectClick = (projectName) => {
+    const project = projectAnalytics.find(p => p.projectName === projectName);
+    if (project) {
+      setSelectedProjectExpenses(project.expenses);
+      setSelectedProjectName(projectName);
+      setShowProjectExpensesModal(true);
+    }
+  };
+
+  const navigateMonth = (direction) => {
+    const newMonth = new Date(analyticsMonth);
+    newMonth.setMonth(newMonth.getMonth() + direction);
+    setAnalyticsMonth(newMonth);
+  };
+
+
 
   return (
     <div className="expense-manager">
@@ -695,6 +787,15 @@ const fetchProjects = async () => {
               onClick={() => setExpenseView('approve')}
             >
               Approve/Deny Reports
+            </button>
+          )}
+          // In your header buttons section, add this after the other admin buttons:
+          {(ADMIN_EMAILS.includes(user?.username)) (
+            <button
+              className="analytics-button"
+              onClick={() => setExpenseView('analytics')}
+            >
+              Expense Analytics
             </button>
           )}
         </div>
@@ -1319,6 +1420,163 @@ const fetchProjects = async () => {
             </button>
           </div>
         </div>
+
+        ) : expenseView === 'analytics' ? (
+          <div className="analytics-container">
+            <div className="analytics-header">
+              <h2>Expense Analytics</h2>
+              
+              <div className="analytics-controls">
+                <div className="month-navigation">
+                  <button onClick={() => navigateMonth(-1)}>←</button>
+                  <span className="current-month">
+                    {analyticsMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <button onClick={() => navigateMonth(1)}>→</button>
+                </div>
+                
+                <div className="status-filter">
+                  <label>Status: </label>
+                  <select 
+                    value={analyticsStatus} 
+                    onChange={(e) => setAnalyticsStatus(e.target.value)}
+                  >
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="denied">Denied</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div className="analytics-content">
+              {projectAnalytics.length > 0 ? (
+                <div className="chart-container">
+                  <Pie
+                    data={{
+                      labels: projectAnalytics.map(p => p.projectName),
+                      datasets: [{
+                        data: projectAnalytics.map(p => p.totalAmount),
+                        backgroundColor: [
+                          '#FF6384',
+                          '#36A2EB',
+                          '#FFCE56',
+                          '#4BC0C0',
+                          '#9966FF',
+                          '#FF9F40',
+                          '#FF6384',
+                          '#C9CBCF'
+                        ],
+                        borderWidth: 1
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          position: 'right',
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              const project = projectAnalytics[context.dataIndex];
+                              return `${context.label}: $${context.parsed.toFixed(2)} (${project.expenseCount} expenses)`;
+                            }
+                          }
+                        }
+                      },
+                      onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                          const index = elements[0].index;
+                          const projectName = projectAnalytics[index].projectName;
+                          handleProjectClick(projectName);
+                        }
+                      }
+                    }}
+                  />
+                  
+                  <div className="analytics-summary">
+                    <h3>Project Summary</h3>
+                    <table className="analytics-table">
+                      <thead>
+                        <tr>
+                          <th>Project</th>
+                          <th>Total Amount</th>
+                          <th>Expense Count</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projectAnalytics.map((project, index) => (
+                          <tr 
+                            key={index} 
+                            onClick={() => handleProjectClick(project.projectName)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td>{project.projectName}</td>
+                            <td>${project.totalAmount.toFixed(2)}</td>
+                            <td>{project.expenseCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <p>No expense data found for the selected month and status.</p>
+              )}
+            </div>
+
+            {/* Project Expenses Modal */}
+            {showProjectExpensesModal && (
+              <div className="expense-modal-overlay" onClick={() => setShowProjectExpensesModal(false)}>
+                <div className="expense-modal large-modal" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className="modal-close-btn"
+                    onClick={() => setShowProjectExpensesModal(false)}
+                  >
+                    ×
+                  </button>
+                  
+                  <div className="expense-modal-content">
+                    <h3>Expenses for {selectedProjectName}</h3>
+                    <div className="project-expenses-table">
+                      <table className="receipts-table">
+                        <thead>
+                          <tr>
+                            <th>Employee</th>
+                            <th>Trip</th>
+                            <th>Vendor</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Comments</th>
+                            <th>Receipt</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedProjectExpenses.map((expense, index) => (
+                            <tr key={index}>
+                              <td>{expense.employeeEmail}</td>
+                              <td>{expense.tripName}</td>
+                              <td>{expense.vendor}</td>
+                              <td>${expense.amount.toFixed(2)}</td>
+                              <td>{new Date(expense.date).toLocaleDateString()}</td>
+                              <td>{expense.comments || 'No comments'}</td>
+                              <td>
+                                {expense.receipt && (
+                                  <img src={expense.receipt} alt="Receipt" className="receipt-thumbnail" />
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
 
       ) : expenseView === 'edit' ? (
         <div className="create-trip-container">

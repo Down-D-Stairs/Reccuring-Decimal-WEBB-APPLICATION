@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@videogular/ngx-videogular": "^8.0.0",
+    "chart.js": "^4.5.0",
     "ngx-float-ui": "^18.0.1-rc.0",
+    "react-chartjs-2": "^5.3.0",
     "stream-chat-angular": "^5.0.0"
   },
   "devDependencies": {
