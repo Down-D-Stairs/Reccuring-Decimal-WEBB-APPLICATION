@@ -48,6 +48,8 @@ function ExpenseManager({ onBack, user }) {
   const [receipts, setReceipts] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+
 
   const ADMIN_EMAILS = useMemo(() => [
     'pgupta@recurringdecimal.com',
@@ -429,21 +431,18 @@ const fetchProjects = async () => {
   };
 
   const handleSubmit = async () => {
-    // Confirmation dialog
-    const confirmed = window.confirm(
-      `Are you sure you want to submit this expense report?\n\n` +
-      `Report Name: ${tripDetails.tripName}\n` +
-      `Total Amount: $${totalAmount.toFixed(2)}\n` +
-      `Number of Expenses: ${receipts.length}\n\n` 
-    );
+    // Show custom confirmation modal instead of browser confirm
+    setShowSubmitConfirmation(true);
+  };
 
-    if (!confirmed) return;
-
+  // Create a new function for the actual submission
+  const handleConfirmedSubmit = async () => {
+    setShowSubmitConfirmation(false);
     setIsSubmitting(true);
-    
+      
     try {
       await handleNewTripSubmit();
-    
+        
       // Reset form after successful submission
       setTripDetails({ tripName: '', dateRange: { start: '', end: '' } });
       setReceipts([]);
@@ -455,10 +454,9 @@ const fetchProjects = async () => {
         comments: '',
         receipt: null
       });
-
       // Success message
       alert(`✅ Report "${tripDetails.tripName}" submitted successfully!\nTotal: $${totalAmount.toFixed(2)}`);
-      
+        
     } catch (error) {
       console.error('Error submitting report:', error);
       alert('❌ Failed to submit report. Please try again.');
@@ -1759,6 +1757,55 @@ const fetchProjects = async () => {
           </div>
         </div>
       )}
+
+      {showSubmitConfirmation && (
+        <div className="expense-modal-overlay" onClick={() => setShowSubmitConfirmation(false)}>
+          <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowSubmitConfirmation(false)}
+            >
+              ×
+            </button>
+            
+            <div className="expense-modal-content">
+              <div className="expense-modal-details">
+                <h3>Confirm Report Submission</h3>
+                <p>Are you sure you want to submit this expense report?</p>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Report Name:</span>
+                  <span className="detail-value">{tripDetails.tripName}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Total Amount:</span>
+                  <span className="detail-value">${totalAmount.toFixed(2)}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Number of Expenses:</span>
+                  <span className="detail-value">{receipts.length}</span>
+                </div>
+                
+                <div className="modal-actions" style={{marginTop: '20px'}}>
+                  <button
+                    onClick={() => setShowSubmitConfirmation(false)}
+                    className="cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmedSubmit}
+                    className="save-expense-btn"
+                  >
+                    Submit Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isExpenseModalOpen && selectedExpense && (
         <div className="expense-modal-overlay" onClick={() => setIsExpenseModalOpen(false)}>
           <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
