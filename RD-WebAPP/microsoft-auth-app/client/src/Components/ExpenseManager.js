@@ -49,6 +49,10 @@ function ExpenseManager({ onBack, user }) {
   const [totalAmount, setTotalAmount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+  const [showDecisionConfirmation, setShowDecisionConfirmation] = useState(false);
+  const [showBatchConfirmation, setShowBatchConfirmation] = useState(false);
+  const [pendingDecision, setPendingDecision] = useState(null); // Store trip info for single decision
+
 
 
   const ADMIN_EMAILS = useMemo(() => [
@@ -314,13 +318,13 @@ const fetchProjects = async () => {
 
   const handleSubmitDecision = async (tripId) => {
     const trip = trips.find(t => t._id === tripId);
-    
-    // Simple confirmation dialog
-    const confirmed = window.confirm(
-      `Are you sure you want to ${trip.status} this report?`
-    );
-    
-    if (!confirmed) return;
+    setPendingDecision({ tripId, trip });
+    setShowDecisionConfirmation(true);
+  };
+
+  const handleConfirmedDecision = async () => {
+    setShowDecisionConfirmation(false);
+    const { tripId, trip } = pendingDecision;
     
     try {
       const response = await fetch(`${API_URL}/api/trips/${tripId}/status`, {
@@ -335,22 +339,22 @@ const fetchProjects = async () => {
       setTrips(trips.map(t =>
         t._id === tripId ? updatedTrip : t
       ));
-      
+          
       // Redirect to view reports
       setExpenseView('list');
-      
+        
     } catch (error) {
       console.error('Failed to submit decision:', error);
     }
+    setPendingDecision(null);
   };
 
   const handleSubmitBatchDecisions = async () => {
-    // Simple confirmation dialog for batch decisions
-    const confirmed = window.confirm(
-      `Are you sure you want to submit decisions for ${selectedTrips.length} selected reports?`
-    );
-    
-    if (!confirmed) return;
+    setShowBatchConfirmation(true);
+  };
+
+  const handleConfirmedBatchDecisions = async () => {
+    setShowBatchConfirmation(false);
     
     try {
       // Create an array of promises for each selected trip
@@ -365,21 +369,23 @@ const fetchProjects = async () => {
           })
         });
       });
-      
+          
       // Wait for all promises to resolve
       await Promise.all(updatePromises);
-      
+          
       // Fetch updated trips
       await fetchTrips();
-      
+          
       // Clear selections and redirect to list view
       setSelectedTrips([]);
       setExpenseView('list');
-      
+        
     } catch (error) {
       console.error('Failed to submit decisions:', error);
     }
   };
+
+  
   const handleNewTripSubmit = async () => {
     try {
       // First create the trip
@@ -1805,6 +1811,101 @@ const fetchProjects = async () => {
           </div>
         </div>
       )}
+
+            {showDecisionConfirmation && pendingDecision && (
+        <div className="expense-modal-overlay" onClick={() => setShowDecisionConfirmation(false)}>
+          <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowDecisionConfirmation(false)}
+            >
+              ×
+            </button>
+            
+            <div className="expense-modal-content">
+              <div className="expense-modal-details">
+                <h3>Confirm Decision</h3>
+                <p>Are you sure you want to <strong>{pendingDecision.trip.status}</strong> this report?</p>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Report Name:</span>
+                  <span className="detail-value">{pendingDecision.trip.tripName}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Total Amount:</span>
+                  <span className="detail-value">${pendingDecision.trip.totalAmount?.toFixed(2)}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Decision:</span>
+                  <span className="detail-value">{pendingDecision.trip.status}</span>
+                </div>
+                {pendingDecision.trip.reason && (
+                  <div className="detail-row">
+                    <span className="detail-label">Reason:</span>
+                    <span className="detail-value">{pendingDecision.trip.reason}</span>
+                  </div>
+                )}
+                
+                <div className="modal-actions" style={{marginTop: '20px'}}>
+                  <button
+                    onClick={() => setShowDecisionConfirmation(false)}
+                    className="cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmedDecision}
+                    className="save-expense-btn"
+                  >
+                    Confirm {pendingDecision.trip.status}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBatchConfirmation && (
+        <div className="expense-modal-overlay" onClick={() => setShowBatchConfirmation(false)}>
+          <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowBatchConfirmation(false)}
+            >
+              ×
+            </button>
+            
+            <div className="expense-modal-content">
+              <div className="expense-modal-details">
+                <h3>Confirm Batch Decisions</h3>
+                <p>Are you sure you want to submit decisions for <strong>{selectedTrips.length}</strong> selected reports?</p>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Selected Reports:</span>
+                  <span className="detail-value">{selectedTrips.length}</span>
+                </div>
+                
+                <div className="modal-actions" style={{marginTop: '20px'}}>
+                  <button
+                    onClick={() => setShowBatchConfirmation(false)}
+                    className="cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmedBatchDecisions}
+                    className="save-expense-btn"
+                  >
+                    Submit All Decisions
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {isExpenseModalOpen && selectedExpense && (
         <div className="expense-modal-overlay" onClick={() => setIsExpenseModalOpen(false)}>
