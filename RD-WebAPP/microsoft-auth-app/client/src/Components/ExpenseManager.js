@@ -8,6 +8,8 @@ import {
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false);
@@ -790,7 +792,7 @@ const fetchProjects = async () => {
             </button>
           )}
           // In your header buttons section, add this after the other admin buttons:
-          {(ADMIN_EMAILS.includes(user?.username)) (
+          {ADMIN_EMAILS.includes(user?.username) (
             <button
               className="analytics-button"
               onClick={() => setExpenseView('analytics')}
