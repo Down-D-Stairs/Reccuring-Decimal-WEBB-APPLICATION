@@ -1922,19 +1922,19 @@
 }
 
 .analytics-button {
-  background: #28a745;
+  background: #0066cc;
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   font-size: 14px;
-  font-weight: bold;
   transition: background-color 0.3s;
 }
 
 .analytics-button:hover {
-  background: #218838;
+  background: #0056b3;
 }
 
 /* Responsive design */

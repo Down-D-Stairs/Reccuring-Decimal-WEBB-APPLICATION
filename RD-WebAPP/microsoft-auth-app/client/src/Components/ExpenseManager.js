@@ -1473,26 +1473,78 @@ const fetchProjects = async () => {
             
             <div className="analytics-content">
               {projectAnalytics.length > 0 ? (
-                <div className="analytics-summary">
-                  <h3>Project Summary</h3>
-                  <table className="analytics-table">
-                    <thead>
-                      <tr>
-                        <th>Project</th>
-                        <th>Total Amount</th>
-                        <th>Report Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {projectAnalytics.map((project, index) => (
-                        <tr key={index}>
-                          <td>{project.projectName}</td>
-                          <td>${project.totalAmount.toFixed(2)}</td>
-                          <td>{project.expenseCount}</td>
+                <div className="chart-container">
+                  <div className="pie-chart-section">
+                    <h3>Project Spending Distribution</h3>
+                    <Pie
+                      data={{
+                        labels: projectAnalytics.map(p => p.projectName),
+                        datasets: [{
+                          data: projectAnalytics.map(p => p.totalAmount),
+                          backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40',
+                            '#FF6384',
+                            '#C9CBCF'
+                          ],
+                          borderWidth: 1
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'right',
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: function(context) {
+                                const project = projectAnalytics[context.dataIndex];
+                                return `${context.label}: $${context.parsed.toFixed(2)} (${project.expenseCount} reports)`;
+                              }
+                            }
+                          }
+                        },
+                        onClick: (event, elements) => {
+                          if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const projectName = projectAnalytics[index].projectName;
+                            handleProjectClick(projectName);
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="analytics-summary">
+                    <h3>Project Summary</h3>
+                    <table className="analytics-table">
+                      <thead>
+                        <tr>
+                          <th>Project</th>
+                          <th>Total Amount</th>
+                          <th>Report Count</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {projectAnalytics.map((project, index) => (
+                          <tr 
+                            key={index}
+                            onClick={() => handleProjectClick(project.projectName)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td>{project.projectName}</td>
+                            <td>${project.totalAmount.toFixed(2)}</td>
+                            <td>{project.expenseCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <p>No expense data found for the selected month and status.</p>
