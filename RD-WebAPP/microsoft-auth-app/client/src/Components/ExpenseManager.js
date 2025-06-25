@@ -1212,27 +1212,26 @@ const fetchProjects = async () => {
 
 
                             <h4>Expense Details</h4>
-                            <div className="expenses-grid">
-                              {trip.expenses?.map((expense, index) => (
-                                <div 
-                                  key={index} 
-                                  className="expense-detail-card clickable"
-                                  onClick={() => {
-                                    setSelectedExpense({...expense, tripProjectName: trip.projectName});
-                                    setIsExpenseModalOpen(true);
-                                  }}
-                                >
-                                  <img src={expense.receipt} alt="Receipt" className="receipt-image" />
-                                  <div className="expense-info">
-                                    <p><strong>Vendor:</strong> {expense.vendor}</p>
-                                    <p><strong>Amount:</strong> ${expense.amount.toFixed(2)}</p>
-                                    <p><strong>Date:</strong> {new Date(expense.date).toLocaleDateString()}</p>
-                                    {expense.comments && <p><strong>Comments:</strong> {expense.comments}</p>}
+                              <div className="expenses-list">
+                                {trip.expenses?.map((expense, index) => (
+                                  <div
+                                    key={index}
+                                    className="expense-item clickable"
+                                    onClick={() => {
+                                      setSelectedExpense({...expense, tripProjectName: trip.projectName});
+                                      setIsExpenseModalOpen(true);
+                                    }}
+                                  >
+                                    <img src={expense.receipt} alt="Receipt" className="receipt-thumbnail" />
+                                    <div className="expense-details">
+                                      <p>Amount: ${expense.amount.toFixed(2)}</p>
+                                      <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                                      <p>Vendor: {expense.vendor}</p>
+                                    </div>
+                                    <span className="click-to-view">Click to view details</span>
                                   </div>
-                                  <span className="click-to-view">Click to view details</span>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
                           </div>
                         </td>
                       </tr>
