@@ -1311,17 +1311,19 @@ const fetchProjects = async () => {
         </div>
 
       ) : expenseView === 'edit' ? (
-        <div className="edit-trip-container">
+        <div className="create-trip-container">
           <div className="fixed-section">
-            <input
-              type="text"
-              placeholder="Trip Name"
-              value={tripDetails.tripName}
-              onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
-              className="trip-name-input"
-            />
+            <div className="form-field">
+              <label className="field-label">Report Name</label>
+              <input
+                type="text"
+                placeholder="Enter Report Name"
+                value={tripDetails.tripName}
+                onChange={(e) => setTripDetails({...tripDetails, tripName: e.target.value})}
+                className="trip-name-input"
+              />
+            </div>
             
-            {/* ADD PROJECT DROPDOWN HERE */}
             <div className="form-field">
               <label className="field-label">Project (Optional)</label>
               <select
@@ -1340,40 +1342,84 @@ const fetchProjects = async () => {
                 ))}
               </select>
             </div>
-            
-            <p>Email: {user.username}</p>
-            <div className="date-inputs">
-              <input
-                type="date"
-                value={tripDetails.dateRange.start.split('T')[0]}
-                onChange={(e) => setTripDetails({
-                  ...tripDetails,
-                  dateRange: {...tripDetails.dateRange, start: e.target.value}
-                })}
-              />
-              <input
-                type="date"
-                value={tripDetails.dateRange.end.split('T')[0]}
-                onChange={(e) => setTripDetails({
-                  ...tripDetails,
-                  dateRange: {...tripDetails.dateRange, end: e.target.value}
-                })}
-              />
-            </div>
-                   
-            <div className="receipts-section">
-              <div className="receipts-header">
-                <h3>Expenses</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowAddExpenseForm(true)}
-                  className="add-expense-btn"
-                >
-                  + Add Expense
-                </button>
+
+            <div className="form-field">
+              <label className="field-label">Date Range</label>
+              <div className="date-inputs">
+                <div className="date-field">
+                  <label className="date-label">Start</label>
+                  <input
+                    type="date"
+                    value={tripDetails.dateRange.start.split('T')[0]}
+                    onChange={(e) => setTripDetails({
+                      ...tripDetails,
+                      dateRange: {...tripDetails.dateRange, start: e.target.value}
+                    })}
+                  />
+                </div>
+                
+                <div className="date-field">
+                  <label className="date-label">End</label>
+                  <input
+                    type="date"
+                    value={tripDetails.dateRange.end.split('T')[0]}
+                    onChange={(e) => setTripDetails({
+                      ...tripDetails,
+                      dateRange: {...tripDetails.dateRange, end: e.target.value}
+                    })}
+                  />
+                </div>
               </div>
-              
-              {/* Display receipts in table format */}
+            </div>
+            
+            <p className="total">Total: ${totalAmount.toFixed(2)}</p>
+            
+            <button
+              className="submit-trip"
+              onClick={() => handleEditSubmit(tripDetails._id)}
+              disabled={
+                !tripDetails.tripName ||
+                !tripDetails.dateRange.start ||
+                !tripDetails.dateRange.end ||
+                receipts.length === 0 ||
+                isSubmitting
+              }
+              style={{
+                backgroundColor: (!tripDetails.tripName ||
+                  !tripDetails.dateRange.start ||
+                  !tripDetails.dateRange.end ||
+                  receipts.length === 0 ||
+                  isSubmitting) ? '#cccccc' : '#0066cc',
+                cursor: (!tripDetails.tripName ||
+                  !tripDetails.dateRange.start ||
+                  !tripDetails.dateRange.end ||
+                  receipts.length === 0 ||
+                  isSubmitting) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+            </button>
+          </div>
+          
+          <div className="scrollable-section">
+            <button
+              className="add-expense-btn"
+              onClick={() => {
+                setExpenseDetails({
+                  vendor: '',
+                  amount: '',
+                  date: '',
+                  comments: '',
+                  receipt: null
+                });
+                setExpenseView('add-expense');
+              }}
+            >
+              Add Expense
+            </button>
+            
+            <div className="receipts-section">
+              <h3>Expenses</h3>
               {receipts.length > 0 ? (
                 <table className="receipts-table">
                   <thead>
@@ -1399,9 +1445,9 @@ const fetchProjects = async () => {
                           )}
                         </td>
                         <td>
-                          <button 
+                          <button
                             onClick={() => {
-                              setTotalAmount(prev => prev - receipts[index].amount);
+                              setTotalAmount(prev => prev - receipt.amount);
                               setReceipts(prev => prev.filter((_, i) => i !== index));
                             }}
                             className="remove-receipt-btn"
@@ -1417,108 +1463,7 @@ const fetchProjects = async () => {
                 <p className="no-expenses">No expenses added yet. Click "Add Expense" to get started.</p>
               )}
             </div>
-            
-            <p className="total">Total: ${totalAmount.toFixed(2)}</p>
-            
-            <div className="edit-actions">
-              <button
-                className="cancel-edit-btn"
-                onClick={() => setExpenseView('list')}
-              >
-                Cancel
-              </button>
-              <button
-                className="save-changes-btn"
-                onClick={() => handleEditSubmit(tripDetails._id)}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-              </button>
-            </div>
           </div>
-
-          {/* Pop-up form for adding expenses - same as new report view */}
-          {showAddExpenseForm && (
-            <div className="modal-overlay">
-              <div className="add-expense-modal">
-                <div className="modal-header">
-                  <h3>Add New Expense</h3>
-                  <button 
-                    className="close-modal-btn"
-                    onClick={() => setShowAddExpenseForm(false)}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="ai-prompt">
-                  <p>💡 <strong>Tip:</strong> Upload a receipt and our AI will automatically fill in the vendor, amount, and date for you!</p>
-                </div>
-                
-                <div className="expense-form">
-                  <input
-                    type="text"
-                    placeholder="Vendor Name"
-                    value={expenseDetails.vendor}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
-                    className="form-input"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Amount"
-                    value={expenseDetails.amount}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
-                    className="form-input"
-                  />
-                  <input
-                    type="date"
-                    value={expenseDetails.date}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
-                    className="form-input"
-                  />
-                  <textarea
-                    placeholder="Comments (optional)"
-                    value={expenseDetails.comments}
-                    onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
-                    className="form-textarea"
-                    rows="3"
-                  />
-                  
-                  <div className="receipt-upload">
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.pdf"
-                      onChange={(e) => handleReceiptUpload(e.target.files[0])}
-                      className="receipt-input"
-                      disabled={isProcessingReceipt}
-                    />
-                    {isProcessingReceipt && (
-                      <span className="processing-text">Processing receipt...</span>
-                    )}
-                    {expenseDetails.receipt && renderReceiptPreview(
-                      <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
-                    )}
-                  </div>
-                  
-                  <div className="modal-actions">
-                    <button 
-                      onClick={() => setShowAddExpenseForm(false)}
-                      className="cancel-btn"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      onClick={() => handleAddExpenseInEdit()}
-                      disabled={!expenseDetails.vendor || !expenseDetails.amount || !expenseDetails.date || !expenseDetails.receipt}
-                      className="save-expense-btn"
-                    >
-                      Save Expense
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>       
       ) : (
         <div className="create-trip-container">
