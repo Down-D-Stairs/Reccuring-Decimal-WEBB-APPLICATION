@@ -851,11 +851,11 @@ const fetchProjects = async () => {
 
                             {trip.approvedBy && (
                               <>
-                                <div className="detail-row">
+                                <div className={`detail-row ${trip.status === 'approved' ? 'approved-status' : trip.status === 'denied' ? 'denied-status' : ''}`}>
                                   <span className="detail-label">{trip.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
                                   <span className="detail-value">{trip.approvedBy}</span>
                                 </div>
-                                <div className="detail-row">
+                                <div className={`detail-row ${trip.status === 'approved' ? 'approved-status' : trip.status === 'denied' ? 'denied-status' : ''}`}>
                                   <span className="detail-label">{trip.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
                                   <span className="detail-value">{new Date(trip.approvedAt).toLocaleDateString()}</span>
                                 </div>
@@ -1194,17 +1194,17 @@ const fetchProjects = async () => {
                         <td colSpan="9">
                           <div className="trip-details-expanded">
                             
-                            {trip.projectName && (
-                              <div className="project-info">
-                                <h4>
-                                  Project: {trip.projectName}
-                                  {trip.submittedAt && (
-                                    <span style={{marginLeft: '20px', color: '#666', fontSize: '0.8em', fontWeight: 'normal'}}>
-                                      (Report Submitted at: {new Date(trip.submittedAt).toLocaleDateString()})
-                                    </span>
-                                  )}
-                                </h4>
-                              </div>
+                            {trip.approvedBy && (
+                              <>
+                                <div className={`detail-row ${trip.status === 'approved' ? 'approved-status' : trip.status === 'denied' ? 'denied-status' : ''}`}>
+                                  <span className="detail-label">{trip.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                  <span className="detail-value">{trip.approvedBy}</span>
+                                </div>
+                                <div className={`detail-row ${trip.status === 'approved' ? 'approved-status' : trip.status === 'denied' ? 'denied-status' : ''}`}>
+                                  <span className="detail-label">{trip.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                  <span className="detail-value">{new Date(trip.approvedAt).toLocaleDateString()}</span>
+                                </div>
+                              </>
                             )}
 
                             {trip.approvedBy && (

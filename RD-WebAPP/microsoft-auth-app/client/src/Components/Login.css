@@ -1740,6 +1740,19 @@
   border-left-color: #dc3545;
 }
 
+.detail-row.approved-status {
+  background-color: rgba(144, 238, 144, 0.3); /* Light green with transparency */
+  padding: 8px;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.detail-row.denied-status {
+  background-color: rgba(255, 182, 193, 0.3); /* Light red with transparency */
+  padding: 8px;
+  border-radius: 4px;
+  margin: 4px 0;
+}
 
 
 
