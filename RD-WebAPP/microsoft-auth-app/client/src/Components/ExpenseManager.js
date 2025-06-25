@@ -1412,7 +1412,7 @@ const fetchProjects = async () => {
                   comments: '',
                   receipt: null
                 });
-                setExpenseView('add-expense');
+                setShowAddExpenseForm(true); // Keep the modal for edit mode
               }}
             >
               Add Expense
@@ -1464,6 +1464,88 @@ const fetchProjects = async () => {
               )}
             </div>
           </div>
+
+          {/* Keep the modal for adding expenses in edit mode */}
+          {showAddExpenseForm && (
+            <div className="modal-overlay">
+              <div className="add-expense-modal">
+                <div className="modal-header">
+                  <h3>Add New Expense</h3>
+                  <button
+                    className="close-modal-btn"
+                    onClick={() => setShowAddExpenseForm(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="ai-prompt">
+                  <p>💡 <strong>Tip:</strong> Upload a receipt and our AI will automatically fill in the vendor, amount, and date for you!</p>
+                </div>
+                
+                <div className="expense-form">
+                  <input
+                    type="text"
+                    placeholder="Vendor Name"
+                    value={expenseDetails.vendor}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, vendor: e.target.value})}
+                    className="form-input"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={expenseDetails.amount}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, amount: e.target.value})}
+                    className="form-input"
+                  />
+                  <input
+                    type="date"
+                    value={expenseDetails.date}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, date: e.target.value})}
+                    className="form-input"
+                  />
+                  <textarea
+                    placeholder="Comments (optional)"
+                    value={expenseDetails.comments}
+                    onChange={(e) => setExpenseDetails({...expenseDetails, comments: e.target.value})}
+                    className="form-textarea"
+                    rows="3"
+                  />
+                  
+                  <div className="receipt-upload">
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      onChange={(e) => handleReceiptUpload(e.target.files[0])}
+                      className="receipt-input"
+                      disabled={isProcessingReceipt}
+                    />
+                    {isProcessingReceipt && (
+                      <span className="processing-text">Processing receipt...</span>
+                    )}
+                    {expenseDetails.receipt && renderReceiptPreview(
+                      <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
+                    )}
+                  </div>
+                  
+                  <div className="modal-actions">
+                    <button
+                      onClick={() => setShowAddExpenseForm(false)}
+                      className="cancel-btn"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleAddExpenseInEdit()}
+                      disabled={!expenseDetails.vendor || !expenseDetails.amount || !expenseDetails.date || !expenseDetails.receipt}
+                      className="save-expense-btn"
+                    >
+                      Save Expense
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>       
       ) : (
         <div className="create-trip-container">
