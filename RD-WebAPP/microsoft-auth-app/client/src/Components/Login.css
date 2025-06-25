@@ -350,6 +350,7 @@
 
 /* Button Styling */
 .add-expense-btn {
+  width: 200px;
   background: #28a745;
   color: white;
   border: none;
