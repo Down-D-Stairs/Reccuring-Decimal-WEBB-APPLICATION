@@ -1742,6 +1742,6 @@
 
 
 .header .actions {
-  margin-left: -30px; /* Adjust this value to move buttons more or less to the left */
+  margin-left: -30px !important; /* Adjust this value to move buttons more or less to the left */
 }
 
