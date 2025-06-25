@@ -60,6 +60,14 @@ const tripSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  approvedBy: {
+    type: String,  // Email of who approved/denied
+    default: ''
+  },
+  approvedAt: {
+    type: Date,    // When it was approved/denied
+    default: null
+  },
   expenses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Expense'

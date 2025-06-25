@@ -332,7 +332,8 @@ const fetchProjects = async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: trip.status,
-          reason: trip.reason
+          reason: trip.reason,
+          approvedBy: user.username  // ADD THIS LINE
         })
       });
       const updatedTrip = await response.json();
@@ -365,7 +366,8 @@ const fetchProjects = async () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             status: trip.status,
-            reason: trip.reason
+            reason: trip.reason,
+            approvedBy: user.username
           })
         });
       });
@@ -847,15 +849,17 @@ const fetchProjects = async () => {
                               </div>
                             )}
 
-                            {trip.reason && (trip.status === 'approved' || trip.status === 'denied') && (
-                              <div className="approval-reason-section">
-                                <h4 style={{color: trip.status === 'approved' ? '#28a745' : '#dc3545'}}>
-                                  {trip.status === 'approved' ? 'Approval' : 'Denial'} Reason:
-                                </h4>
-                                <div className="reason-display">
-                                  {trip.reason}
+                            {trip.approvedBy && (
+                              <>
+                                <div className="detail-row">
+                                  <span className="detail-label">{trip.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                  <span className="detail-value">{trip.approvedBy}</span>
                                 </div>
-                              </div>
+                                <div className="detail-row">
+                                  <span className="detail-label">{trip.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                  <span className="detail-value">{new Date(trip.approvedAt).toLocaleDateString()}</span>
+                                </div>
+                              </>
                             )}
 
 
@@ -1203,16 +1207,19 @@ const fetchProjects = async () => {
                               </div>
                             )}
 
-                            {trip.reason && (trip.status === 'approved' || trip.status === 'denied') && (
-                              <div className="approval-reason-section">
-                                <h4 style={{color: trip.status === 'approved' ? '#28a745' : '#dc3545'}}>
-                                  {trip.status === 'approved' ? 'Approval' : 'Denial'} Reason:
-                                </h4>
-                                <div className="reason-display">
-                                  {trip.reason}
+                            {trip.approvedBy && (
+                              <>
+                                <div className="detail-row">
+                                  <span className="detail-label">{trip.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                  <span className="detail-value">{trip.approvedBy}</span>
                                 </div>
-                              </div>
+                                <div className="detail-row">
+                                  <span className="detail-label">{trip.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                  <span className="detail-value">{new Date(trip.approvedAt).toLocaleDateString()}</span>
+                                </div>
+                              </>
                             )}
+
 
 
                             <h4>Expense Details</h4>

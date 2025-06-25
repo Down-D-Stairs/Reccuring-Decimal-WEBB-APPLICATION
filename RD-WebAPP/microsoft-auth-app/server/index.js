@@ -109,7 +109,9 @@ app.put('/api/trips/:tripId/status', async (req, res) => {
       req.params.tripId,
       {
         status: req.body.status,
-        reason: req.body.reason
+        reason: req.body.reason,
+        approvedBy: req.body.approvedBy,  // ADD THIS
+        approvedAt: new Date()            // ADD THIS
       },
       { new: true }
     ).populate('expenses');
