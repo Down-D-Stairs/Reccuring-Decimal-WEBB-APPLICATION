@@ -2201,6 +2201,69 @@ const fetchProjects = async () => {
       )}
 
 
+      {showTripDetailsModal && (
+        <div className="modal-overlay" onClick={() => setShowTripDetailsModal(false)}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Trip Details: {selectedTripDetails?.tripName}</h3>
+              <button 
+                className="close-button"
+                onClick={() => setShowTripDetailsModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="trip-info">
+              <div className="trip-meta">
+                <p><strong>Employee:</strong> {selectedTripDetails?.email}</p>
+                <p><strong>Date Range:</strong> {new Date(selectedTripDetails?.dateRange.start).toLocaleDateString()} - {new Date(selectedTripDetails?.dateRange.end).toLocaleDateString()}</p>
+                <p><strong>Submitted:</strong> {new Date(selectedTripDetails?.submittedAt).toLocaleDateString()}</p>
+                <p><strong>Total Amount:</strong> ${selectedTripDetails?.totalAmount.toFixed(2)}</p>
+              </div>
+            </div>
+            
+            <div className="project-expenses-table">
+              <h4>Expenses</h4>
+              <table className="receipts-table">
+                <thead>
+                  <tr>
+                    <th>Receipt</th>
+                    <th>Vendor</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Comments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedTripDetails?.expenses?.map((expense, index) => (
+                    <tr key={index}>
+                      <td>
+                        {expense.receipt ? (
+                          <img 
+                            src={expense.receipt} 
+                            alt="Receipt" 
+                            className="receipt-thumbnail"
+                            onClick={() => window.open(expense.receipt, '_blank')}
+                          />
+                        ) : (
+                          'No receipt'
+                        )}
+                      </td>
+                      <td>{expense.vendor}</td>
+                      <td>${expense.amount.toFixed(2)}</td>
+                      <td>{new Date(expense.date).toLocaleDateString()}</td>
+                      <td>{expense.comments || 'No comments'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {isExpenseModalOpen && selectedExpense && (
         <div className="expense-modal-overlay" onClick={() => setIsExpenseModalOpen(false)}>
           <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
