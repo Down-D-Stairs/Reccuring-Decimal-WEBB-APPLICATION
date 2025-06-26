@@ -700,13 +700,10 @@ const fetchProjects = async () => {
       console.log('All trips:', allTrips);
       
       // Filter trips by month and status
-      // Replace the filtering section with:
       const filteredTrips = allTrips.filter(trip => {
-        // Use the trip's actual date range instead of submittedAt
         const tripStartDate = new Date(trip.dateRange.start);
         const tripEndDate = new Date(trip.dateRange.end);
         
-        // Check if the trip overlaps with the selected month
         const matchesMonth = (tripStartDate <= endOfMonth && tripEndDate >= startOfMonth);
         const matchesStatus = trip.status === analyticsStatus;
         
@@ -715,17 +712,16 @@ const fetchProjects = async () => {
       
       console.log('Filtered trips:', filteredTrips);
       
-      // Group expenses by project
+      // Group trips by project
       const projectData = {};
       
-      // In fetchAnalyticsData function, replace the grouping logic with:
       filteredTrips.forEach(trip => {
         const projectName = trip.projectName || 'No Project';
         
         if (!projectData[projectName]) {
           projectData[projectName] = {
             totalAmount: 0,
-            expenseCount: 0, // This will now represent report count
+            expenseCount: 0,
             trips: []
           };
         }
@@ -734,21 +730,13 @@ const fetchProjects = async () => {
         projectData[projectName].expenseCount += 1;
         projectData[projectName].totalAmount += trip.totalAmount;
         projectData[projectName].trips.push(trip);
-        
-        if (trip.expenses && Array.isArray(trip.expenses)) {
-          trip.expenses.forEach(expense => {
-            projectData[projectName].expenses.push({
-              ...expense,
-              employeeEmail: trip.email,
-              tripName: trip.tripName
-            });
-          });
-        }
       });
       
       const analyticsData = Object.entries(projectData).map(([name, data]) => ({
         projectName: name,
-        ...data
+        totalAmount: data.totalAmount,
+        expenseCount: data.expenseCount,
+        trips: data.trips
       }));
       
       console.log('Analytics data:', analyticsData);
@@ -758,6 +746,7 @@ const fetchProjects = async () => {
       console.error('Error fetching analytics data:', error);
     }
   };
+
 
   const handleProjectClick = (projectName) => {
     const project = projectAnalytics.find(p => p.projectName === projectName);
