@@ -29,7 +29,11 @@ function ExpenseManager({ onBack, user }) {
   const [selectedProjectExpenses, setSelectedProjectExpenses] = useState([]);
   const [showProjectExpensesModal, setShowProjectExpensesModal] = useState(false);
   const [selectedProjectName, setSelectedProjectName] = useState('');
+  const [selectedTripDetails, setSelectedTripDetails] = useState(null);
+  const [showTripDetailsModal, setShowTripDetailsModal] = useState(false);
 
+
+  
 
 
 
@@ -722,13 +726,14 @@ const fetchProjects = async () => {
           projectData[projectName] = {
             totalAmount: 0,
             expenseCount: 0, // This will now represent report count
-            expenses: []
+            trips: []
           };
         }
         
         // Count this as one report
         projectData[projectName].expenseCount += 1;
         projectData[projectName].totalAmount += trip.totalAmount;
+        projectData[projectName].trips.push(trip);
         
         if (trip.expenses && Array.isArray(trip.expenses)) {
           trip.expenses.forEach(expense => {
@@ -757,10 +762,15 @@ const fetchProjects = async () => {
   const handleProjectClick = (projectName) => {
     const project = projectAnalytics.find(p => p.projectName === projectName);
     if (project) {
-      setSelectedProjectExpenses(project.expenses);
+      setSelectedProjectExpenses(project.trips); // We'll store trips here instead of expenses
       setSelectedProjectName(projectName);
       setShowProjectExpensesModal(true);
     }
+  };
+
+  const handleTripClick = (trip) => {
+    setSelectedTripDetails(trip);
+    setShowTripDetailsModal(true);
   };
 
 
