@@ -749,7 +749,9 @@ const fetchProjects = async () => {
 
 
   const handleProjectClick = (projectName) => {
+    console.log('Project clicked:', projectName); // Add this debug line
     const project = projectAnalytics.find(p => p.projectName === projectName);
+    console.log('Found project:', project); // Add this debug line
     if (project) {
       setSelectedProjectExpenses(project.trips); // We'll store trips here instead of expenses
       setSelectedProjectName(projectName);
