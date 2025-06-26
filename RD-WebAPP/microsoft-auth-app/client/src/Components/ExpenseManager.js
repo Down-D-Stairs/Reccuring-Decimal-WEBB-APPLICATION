@@ -2146,6 +2146,60 @@ const fetchProjects = async () => {
         </div>
       )}
 
+      
+      {showProjectExpensesModal && (
+        <div className="modal-overlay" onClick={() => setShowProjectExpensesModal(false)}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Trips for {selectedProjectName}</h3>
+              <button 
+                className="close-button"
+                onClick={() => setShowProjectExpensesModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="project-expenses-table">
+              <table className="receipts-table">
+                <thead>
+                  <tr>
+                    <th>Trip Name</th>
+                    <th>Employee</th>
+                    <th>Date Range</th>
+                    <th>Total Amount</th>
+                    <th>Submitted Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProjectExpenses.map((trip, index) => (
+                    <tr key={index}>
+                      <td>{trip.tripName}</td>
+                      <td>{trip.email}</td>
+                      <td>
+                        {new Date(trip.dateRange.start).toLocaleDateString()} - 
+                        {new Date(trip.dateRange.end).toLocaleDateString()}
+                      </td>
+                      <td>${trip.totalAmount.toFixed(2)}</td>
+                      <td>{new Date(trip.submittedAt).toLocaleDateString()}</td>
+                      <td>
+                        <button 
+                          className="view-details-button"
+                          onClick={() => handleTripClick(trip)}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {isExpenseModalOpen && selectedExpense && (
         <div className="expense-modal-overlay" onClick={() => setIsExpenseModalOpen(false)}>
