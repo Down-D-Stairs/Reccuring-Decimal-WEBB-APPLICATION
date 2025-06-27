@@ -89,7 +89,6 @@ function TimeTableManager({ onBack, user }) {
   const [projectData, setProjectData] = useState([]);
   const [projectTimeRange, setProjectTimeRange] = useState('month');
   const [allEmployees, setAllEmployees] = useState([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
 
   // Get default week (current week starting Monday)
@@ -562,8 +561,6 @@ const handleBackToList = useCallback(() => {
 }, []);
 
 const handleViewTimesheets = useCallback((projectId) => {
-  console.log('Button clicked, projectId:', projectId); // Add this
-  console.time('fetchUserProjectTimesheets'); // Add this
   fetchUserProjectTimesheets(projectId);
 }, []);
 
@@ -693,32 +690,17 @@ const fetchUserHistoryProjects = async () => {
   }
 };
 
+// Fetch user's timesheets for a specific project
 const fetchUserProjectTimesheets = async (projectId) => {
-  if (isLoadingHistory) {
-    console.log('Already loading, ignoring click');
-    return;
-  }
-  
   try {
-    setIsLoadingHistory(true);
-    console.log('🚀 Starting API call at:', new Date().toLocaleTimeString());
-    console.time('API_CALL_DURATION');
-    
     const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
     const data = await response.json();
-    
-    console.timeEnd('API_CALL_DURATION');
-    console.log('✅ API call finished at:', new Date().toLocaleTimeString());
-    
     setUserHistoryTimesheets(data);
     setSelectedHistoryProjectId(projectId);
   } catch (error) {
-    console.error('❌ Error:', error);
-  } finally {
-    setIsLoadingHistory(false);
+    console.error('Error fetching user project timesheets:', error);
   }
 };
-
 
 const HistoryView = () => {
   useEffect(() => {
@@ -847,32 +829,23 @@ const HistoryView = () => {
                 <th>Action</th>
               </tr>
             </thead>
-              <div className="projects-simple-list">
-                {userHistoryProjects.map(project => (
-                  <div key={project._id} className="project-row-simple">
-                    <span>{project.projectName}</span>
-                    <span>{project.clientName}</span>
-                    <span>{project.timesheetCount} timesheets</span>
+            <tbody>
+              {userHistoryProjects.map(project => (
+                <tr key={project._id}>
+                  <td>{project.projectName}</td>
+                  <td>{project.clientName}</td>
+                  <td>{project.timesheetCount}</td>
+                  <td>
                     <button
-                      onClick={() => {
-                        console.log('Simple button clicked!');
-                        fetchUserProjectTimesheets(project._id);
-                      }}
-                      style={{
-                        padding: '10px 20px',
-                        background: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginLeft: '10px'
-                      }}
+                      className="view-timesheets-button-table"
+                      onClick={() => fetchUserProjectTimesheets(project._id)}
                     >
                       View Timesheets
                     </button>
-                  </div>
-                ))}
-              </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}
@@ -1897,7 +1870,7 @@ return (
                         <td>
                           <button
                             className="view-timesheets-button-table"
-                            onClick={() => fetchUserProjectTimesheets(project._id)}
+                            onClick={() => handleViewProjectTimesheets(project._id)}
                           >
                             View Timesheets
                           </button>

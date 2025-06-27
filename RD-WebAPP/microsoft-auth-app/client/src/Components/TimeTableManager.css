@@ -65,9 +65,25 @@
   border-bottom: 1px solid #dee2e6;
 }
 
+.projects-table tr:hover {
+  background: #f8f9fa;
+}
 
+.view-timesheets-button-table {
+  padding: 8px 16px;
+  background: #007bff !important;
+  color: white !important;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease; /* Add smooth transition */
+}
 
-
+.view-timesheets-button-table:hover {
+  background: #0056b3 !important;
+  color: white !important;
+}
 
 
 .action-buttons {
@@ -376,6 +392,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.timesheet-history-btn {
+  padding: 10px 20px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.timesheet-history-btn:hover {
+  background: #138496;
 }
 
 
@@ -722,8 +752,9 @@
   font-size: 14px;
 }
 
-
-
+.timesheets-table tr:hover {
+  background: #f8f9fa;
+}
 
 /* Status badge in table */
 .timesheets-table .status-badge {
@@ -785,6 +816,9 @@
   cursor: not-allowed;
 }
 
+.submit-decision-button-table:hover:not(:disabled) {
+  background-color: #218838 !important;
+}
 
 /* Expanded row details */
 .expanded-timesheet-details {
@@ -826,7 +860,22 @@
   font-size: 13px;
 }
 
+/* Replace the existing button hover rules with these cleaner ones */
+.timesheets-table button {
+  min-width: 30px;
+  min-height: 30px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  transition: background-color 0.2s ease; /* Smooth transition */
+}
 
+.timesheets-table button:hover {
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+  transform: none; /* Remove any transforms that cause positioning issues */
+}
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
@@ -1342,22 +1391,67 @@
   font-weight: bold;
 }
 
-
-
+/* Fix double-click issues by ensuring proper button states */
+.timesheets-table button,
+.back-button,
+.submit-decision-button-table,
 .view-timesheets-button-table {
+  pointer-events: auto;
+  touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+  user-select: none; /* Prevents text selection interfering with clicks */
+}
+
+
+
+/* Ensure buttons are properly clickable */
+.timesheets-table td button {
+  min-width: 30px;
+  min-height: 30px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  padding: 4px 8px;
+}
+
+.timesheets-table td button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Back button styling - make them red */
+.back-button {
+  background-color: #dc3545 !important; /* Bootstrap red */
+  color: white !important;
+  border: 1px solid #dc3545 !important;
   padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s ease;
 }
 
-.project-row-simple {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  gap: 20px;
+.back-button:hover {
+  background-color: #c82333 !important; /* Darker red on hover */
+  border-color: #bd2130 !important;
+  color: white !important;
+}
+
+.back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+/* Specific overrides for history section back buttons */
+.history-timesheets-container .back-button,
+.history-projects-container .back-button {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: 1px solid #dc3545 !important;
+}
+
+.history-timesheets-container .back-button:hover,
+.history-projects-container .back-button:hover {
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+  color: white !important;
 }
