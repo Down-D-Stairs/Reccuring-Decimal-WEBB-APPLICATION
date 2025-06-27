@@ -90,6 +90,7 @@ function TimeTableManager({ onBack, user }) {
   const [projectTimeRange, setProjectTimeRange] = useState('month');
   const [allEmployees, setAllEmployees] = useState([]);
   const [clickDebug, setClickDebug] = useState([]);
+  const [lastClickTime, setLastClickTime] = useState(0);
 
 
   // Get default week (current week starting Monday)
@@ -852,33 +853,23 @@ const HistoryView = () => {
                     <button
                       type="button"
                       className="view-timesheets-button-table"
-                      onMouseDown={(e) => {
-                        const timestamp = Date.now();
-                        console.log('🔥 MOUSE DOWN:', timestamp);
-                        setClickDebug(prev => [...prev, `MouseDown-${timestamp}`]);
-                      }}
-                      onMouseUp={(e) => {
-                        const timestamp = Date.now();
-                        console.log('🔥 MOUSE UP:', timestamp);
-                        setClickDebug(prev => [...prev, `MouseUp-${timestamp}`]);
-                      }}
                       onClick={(e) => {
-                        const timestamp = Date.now();
-                        console.log('🔥 CLICK EVENT:', timestamp, 'Project:', project._id);
-                        setClickDebug(prev => [...prev, `Click-${timestamp}-${project._id}`]);
+                        const now = Date.now();
+                        console.log('🔥 Click registered at:', now);
+                        console.log('🔥 Last click was at:', lastClickTime);
+                        console.log('🔥 Time difference:', now - lastClickTime, 'ms');
                         
-                        // Call the function IMMEDIATELY
-                        console.log('🚀 CALLING FUNCTION NOW');
+                        if (now - lastClickTime < 500) { // Ignore clicks within 500ms
+                          console.log('🚫 DUPLICATE CLICK IGNORED - too soon!');
+                          return;
+                        }
+                        
+                        setLastClickTime(now);
+                        console.log('✅ VALID CLICK ACCEPTED - calling function');
                         fetchUserProjectTimesheets(project._id);
                       }}
-                      onTouchStart={(e) => {
-                        console.log('📱 TOUCH START');
-                      }}
-                      onTouchEnd={(e) => {
-                        console.log('📱 TOUCH END');
-                      }}
                     >
-                      View Timesheets (Debug: {clickDebug.length})
+                      View Timesheets
                     </button>
                   </td>
                 </tr>
