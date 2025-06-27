@@ -847,31 +847,32 @@ const HistoryView = () => {
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody>
-              {userHistoryProjects.map(project => (
-                <tr 
-                  key={project._id}
-                  // DELETE THIS LINE: onClick={() => console.log('Row clicked!')}
-                >
-                  <td>{project.projectName}</td>
-                  <td>{project.clientName}</td>
-                  <td>{project.timesheetCount}</td>
-                  <td>
+              <div className="projects-simple-list">
+                {userHistoryProjects.map(project => (
+                  <div key={project._id} className="project-row-simple">
+                    <span>{project.projectName}</span>
+                    <span>{project.clientName}</span>
+                    <span>{project.timesheetCount} timesheets</span>
                     <button
-                      className="view-timesheets-button-table"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Button clicked!');
+                      onClick={() => {
+                        console.log('Simple button clicked!');
                         fetchUserProjectTimesheets(project._id);
+                      }}
+                      style={{
+                        padding: '10px 20px',
+                        background: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginLeft: '10px'
                       }}
                     >
                       View Timesheets
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                  </div>
+                ))}
+              </div>
           </table>
         </div>
       )}
