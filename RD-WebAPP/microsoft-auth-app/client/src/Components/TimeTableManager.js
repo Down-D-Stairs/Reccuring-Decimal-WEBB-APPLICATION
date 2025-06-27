@@ -842,10 +842,17 @@ const HistoryView = () => {
                   <td>
                     <button
                       className="view-timesheets-button-table"
-                      onClick={() => {
-                      alert('Button clicked!'); // This will tell us if the click registers
-                      fetchUserProjectTimesheets(project._id);
-                    }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        alert('Button clicked!');
+                        fetchUserProjectTimesheets(project._id);
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      type="button"
                     >
                       View Timesheets
                     </button>
