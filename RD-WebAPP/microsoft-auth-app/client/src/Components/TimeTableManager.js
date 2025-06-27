@@ -64,7 +64,7 @@ function TimeTableManager({ onBack, user }) {
 
   const ADMIN_EMAILS = useMemo(() => [
     'pgupta@recurringdecimal.com',
-    
+    'kkarumudi@recurringdecimal.com',
     'sn@recurringdecimal.com'
   ], []);
 
