@@ -80,10 +80,6 @@
   transition: background-color 0.2s ease; /* Add smooth transition */
 }
 
-.view-timesheets-button-table:hover {
-  background: #0056b3 !important;
-  color: white !important;
-}
 
 
 .action-buttons {
@@ -752,18 +748,7 @@
   font-size: 14px;
 }
 
-.timesheets-table tr:hover {
-  background: #f8f9fa;
-}
 
-/* Prevent row hover from affecting buttons */
-.timesheets-table tr:hover button {
-  background: #f8f9fa !important;
-}
-
-.timesheets-table tr:hover button:hover {
-  background: #e9ecef !important;
-}
 
 
 /* Status badge in table */
@@ -826,9 +811,6 @@
   cursor: not-allowed;
 }
 
-.submit-decision-button-table:hover:not(:disabled) {
-  background-color: #218838 !important;
-}
 
 /* Expanded row details */
 .expanded-timesheet-details {
@@ -1464,4 +1446,12 @@
   background-color: #c82333 !important;
   border-color: #bd2130 !important;
   color: white !important;
+}
+
+
+/* Disable all hover effects on table elements */
+.timesheets-table *:hover {
+  background: inherit !important;
+  border-color: inherit !important;
+  color: inherit !important;
 }
