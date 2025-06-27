@@ -1707,7 +1707,7 @@ return (
                           <th>Decision</th>
                           <th>Comments</th>
                           <th>Action</th>
-                          <th></th>
+                          <th>Details</th>
                         </tr>
                       </thead>
                       <tbody>

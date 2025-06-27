@@ -1280,7 +1280,7 @@ const fetchProjects = async () => {
                       </td>
                       <td>
                         <textarea
-                          placeholder="Reason for decision..."
+                          placeholder="* Reason for decision... *"
                           value={trip.reason || ''}
                           onChange={(e) => handleReasonChange(trip._id, e.target.value)}
                           className="reason-textarea"
