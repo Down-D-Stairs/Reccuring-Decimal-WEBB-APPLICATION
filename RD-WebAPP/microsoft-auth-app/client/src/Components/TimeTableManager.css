@@ -1486,12 +1486,48 @@
   color: white !important;
 }
 
+
+
+
 /* Add this to ensure buttons respond immediately */
+/* NUCLEAR OPTION - Remove ALL hover effects from history sections */
+.history-projects-container *,
+.history-projects-container *:hover,
+.history-projects-container *:focus,
+.history-timesheets-container *,
+.history-timesheets-container *:hover,
+.history-timesheets-container *:focus {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  background: inherit !important;
+  border-color: inherit !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
+/* Force specific button colors back */
+.history-projects-container .back-button {
+  background: #dc3545 !important;
+  color: white !important;
+}
+
+.history-projects-container .view-timesheets-button-table {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.history-timesheets-container .back-button {
+  background: #dc3545 !important;
+  color: white !important;
+}
+
+/* Make sure buttons are immediately clickable */
 .history-projects-container button,
 .history-timesheets-container button {
   pointer-events: auto !important;
-  user-select: none !important;
-  touch-action: manipulation !important;
+  cursor: pointer !important;
 }
+
 
 
