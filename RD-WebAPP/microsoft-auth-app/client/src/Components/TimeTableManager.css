@@ -446,6 +446,10 @@
   margin-top: 20px;
 }
 
+.approvals-button:hover {
+  background-color: #106ebe;
+}
+
 .back-button {
   position: sticky;
   top: 0;
