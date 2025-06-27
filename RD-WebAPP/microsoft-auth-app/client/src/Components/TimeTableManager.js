@@ -682,15 +682,25 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
 };
 
 // Fetch projects that user has submitted timesheets for
-const fetchUserHistoryProjects = async () => {
+const fetchUserProjectTimesheets = async (projectId) => {
   try {
-    const response = await fetch(`${API_URL}/api/timeentries/user-projects/${user.username}`);
+    console.log('🚀 Starting API call at:', new Date().toLocaleTimeString());
+    console.time('API_CALL_DURATION');
+    
+    const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
     const data = await response.json();
-    setUserHistoryProjects(data);
+    
+    console.timeEnd('API_CALL_DURATION');
+    console.log('✅ API call finished at:', new Date().toLocaleTimeString());
+    console.log('📊 Data received:', data.length, 'timesheets');
+    
+    setUserHistoryTimesheets(data);
+    setSelectedHistoryProjectId(projectId);
   } catch (error) {
-    console.error('Error fetching user history projects:', error);
+    console.error('❌ Error fetching user project timesheets:', error);
   }
 };
+
 
 // Fetch user's timesheets for a specific project
 const fetchUserProjectTimesheets = async (projectId) => {
