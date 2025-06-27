@@ -1455,3 +1455,33 @@
   border-color: inherit !important;
   color: inherit !important;
 }
+
+/* Fix projects table hover blinking */
+.projects-table tr:hover {
+  background: none !important;
+}
+
+.projects-table button {
+  background: #007bff !important;
+  color: white !important;
+  transition: none !important;
+}
+
+.projects-table button:hover {
+  background: #007bff !important;
+  color: white !important;
+}
+
+/* Disable all hover effects on projects table */
+.projects-table *:hover {
+  background: inherit !important;
+  border-color: inherit !important;
+  color: inherit !important;
+  transition: none !important;
+}
+
+/* Force button styling */
+.projects-table .view-timesheets-button-table {
+  background: #007bff !important;
+  color: white !important;
+}
