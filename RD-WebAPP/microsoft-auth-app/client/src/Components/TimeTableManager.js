@@ -859,7 +859,19 @@ const HistoryView = () => {
                   <td>
                     <button
                       className="view-timesheets-button-table"
-                      onClick={() => fetchUserProjectTimesheets(project._id)}
+                      onMouseDown={() => console.log('🖱️ Mouse DOWN')}
+                      onMouseUp={() => console.log('🖱️ Mouse UP')}
+                      onClick={(e) => {
+                        console.log('🎯 CLICK EVENT FIRED!', {
+                          target: e.target,
+                          currentTarget: e.currentTarget,
+                          timeStamp: e.timeStamp,
+                          projectId: project._id
+                        });
+                        fetchUserProjectTimesheets(project._id);
+                      }}
+                      onPointerDown={() => console.log('👆 Pointer DOWN')}
+                      onPointerUp={() => console.log('👆 Pointer UP')}
                       disabled={isLoadingHistory}
                     >
                       {isLoadingHistory ? 'Loading...' : 'View Timesheets'}
