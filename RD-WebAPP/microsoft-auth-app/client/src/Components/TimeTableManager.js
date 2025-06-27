@@ -1884,7 +1884,7 @@ return (
                         <td>
                           <button
                             className="view-timesheets-button-table"
-                            onClick={() => handleViewProjectTimesheets(project._id)}
+                            onClick={() => fetchUserProjectTimesheets(project._id)}
                           >
                             View Timesheets
                           </button>
