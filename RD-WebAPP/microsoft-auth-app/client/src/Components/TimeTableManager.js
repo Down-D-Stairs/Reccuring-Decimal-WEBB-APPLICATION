@@ -691,16 +691,20 @@ const fetchUserHistoryProjects = async () => {
 };
 
 // Fetch user's timesheets for a specific project
-const fetchUserProjectTimesheets = async (projectId) => {
+// Wrap in useCallback and add loading state
+const fetchUserProjectTimesheets = useCallback(async (projectId) => {
+  if (selectedHistoryProjectId === projectId) return; // Prevent duplicate calls
+  
   try {
     const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
     const data = await response.json();
     setUserHistoryTimesheets(data);
     setSelectedHistoryProjectId(projectId);
   } catch (error) {
-    console.error('Error fetching user project timesheets:', error);
+    console.error('Error:', error);
   }
-};
+}, [selectedHistoryProjectId, user.username]);
+
 
 const HistoryView = () => {
   useEffect(() => {
@@ -837,10 +841,12 @@ const HistoryView = () => {
                   <td>{project.timesheetCount}</td>
                   <td>
                     <button
+                      type="button"
                       className="view-timesheets-button-table"
                       onClick={() => fetchUserProjectTimesheets(project._id)}
+                      disabled={selectedHistoryProjectId === project._id} // Prevent multiple clicks on same project
                     >
-                      View Timesheets
+                      {selectedHistoryProjectId === project._id ? 'Loading...' : 'View Timesheets'}
                     </button>
                   </td>
                 </tr>
