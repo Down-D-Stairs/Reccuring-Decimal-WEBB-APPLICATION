@@ -851,7 +851,7 @@ const HistoryView = () => {
               {userHistoryProjects.map(project => (
                 <tr 
                   key={project._id}
-                  onClick={() => console.log('Row clicked!')} // Add this temporarily
+                  // DELETE THIS LINE: onClick={() => console.log('Row clicked!')}
                 >
                   <td>{project.projectName}</td>
                   <td>{project.clientName}</td>
@@ -859,22 +859,14 @@ const HistoryView = () => {
                   <td>
                     <button
                       className="view-timesheets-button-table"
-                      onMouseDown={() => console.log('🖱️ Mouse DOWN')}
-                      onMouseUp={() => console.log('🖱️ Mouse UP')}
                       onClick={(e) => {
-                        console.log('🎯 CLICK EVENT FIRED!', {
-                          target: e.target,
-                          currentTarget: e.currentTarget,
-                          timeStamp: e.timeStamp,
-                          projectId: project._id
-                        });
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Button clicked!');
                         fetchUserProjectTimesheets(project._id);
                       }}
-                      onPointerDown={() => console.log('👆 Pointer DOWN')}
-                      onPointerUp={() => console.log('👆 Pointer UP')}
-                      disabled={isLoadingHistory}
                     >
-                      {isLoadingHistory ? 'Loading...' : 'View Timesheets'}
+                      View Timesheets
                     </button>
                   </td>
                 </tr>
