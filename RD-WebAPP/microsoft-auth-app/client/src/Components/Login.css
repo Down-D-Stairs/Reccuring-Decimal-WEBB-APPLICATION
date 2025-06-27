@@ -1764,7 +1764,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #e0e0e0;
 }
@@ -1921,22 +1921,7 @@
   z-index: 1;
 }
 
-.analytics-button {
-  background: #0066cc;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  font-size: 14px;
-  transition: background-color 0.3s;
-  margin-top: 10px;
-}
 
-.analytics-button:hover {
-  background: #0056b3;
-}
 
 
 /* Responsive design */
