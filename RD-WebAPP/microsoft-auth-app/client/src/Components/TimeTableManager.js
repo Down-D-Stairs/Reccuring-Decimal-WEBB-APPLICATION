@@ -561,6 +561,8 @@ const handleBackToList = useCallback(() => {
 }, []);
 
 const handleViewTimesheets = useCallback((projectId) => {
+  console.log('Button clicked, projectId:', projectId); // Add this
+  console.time('fetchUserProjectTimesheets'); // Add this
   fetchUserProjectTimesheets(projectId);
 }, []);
 
@@ -693,8 +695,10 @@ const fetchUserHistoryProjects = async () => {
 // Fetch user's timesheets for a specific project
 const fetchUserProjectTimesheets = async (projectId) => {
   try {
+    console.log('Starting API call...'); // Add this
     const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
     const data = await response.json();
+    console.timeEnd('fetchUserProjectTimesheets'); // Add this
     setUserHistoryTimesheets(data);
     setSelectedHistoryProjectId(projectId);
   } catch (error) {

@@ -1486,5 +1486,12 @@
   color: white !important;
 }
 
+/* Add this to ensure buttons respond immediately */
+.history-projects-container button,
+.history-timesheets-container button {
+  pointer-events: auto !important;
+  user-select: none !important;
+  touch-action: manipulation !important;
+}
 
 
