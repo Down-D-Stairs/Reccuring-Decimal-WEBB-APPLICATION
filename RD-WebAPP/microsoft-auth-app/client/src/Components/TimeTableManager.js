@@ -845,7 +845,6 @@ const HistoryView = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        alert('Button clicked!');
                         fetchUserProjectTimesheets(project._id);
                       }}
                       onMouseDown={(e) => {
