@@ -17,6 +17,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .home-button {
@@ -69,6 +70,7 @@
   background: #f8f9fa;
 }
 
+/* Fixed button hover - removed conflicting transitions */
 .view-timesheets-button-table {
   padding: 8px 16px;
   background: #007bff !important;
@@ -77,14 +79,13 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s ease; /* Add smooth transition */
+  transition: none; /* Remove transition to prevent blinking */
 }
 
 .view-timesheets-button-table:hover {
   background: #0056b3 !important;
   color: white !important;
 }
-
 
 .action-buttons {
   display: flex;
@@ -99,6 +100,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: none;
 }
 
 .add-time-button:hover {
@@ -113,6 +115,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: none;
 }
 
 .show-details-button:hover {
@@ -136,7 +139,6 @@
   max-width: 800px;
   margin: 0 auto;
 }
-
 
 .time-form-container {
   padding: 20px;
@@ -213,6 +215,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
+  transition: none;
 }
 
 .form-buttons button:first-child {
@@ -285,6 +288,7 @@
   cursor: pointer;
   font-size: 16px;
   margin-top: 20px;
+  transition: none;
 }
 
 .details-container button:hover {
@@ -316,6 +320,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: none;
 }
 
 .week-selector button:hover {
@@ -371,6 +376,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: none;
 }
 
 .new-entry-row button:hover {
@@ -402,12 +408,12 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: none;
 }
 
 .timesheet-history-btn:hover {
   background: #138496;
 }
-
 
 .submit-timesheet-button {
   padding: 12px 24px;
@@ -415,13 +421,14 @@
   color: white;
   border: none;
   border-radius: 4px;
-  cursor: pointer;   
+  cursor: pointer;
   font-size: 16px;
   font-weight: bold;
+  transition: none;
 }
 
 .submit-timesheet-button:hover {
-  background-color: #28a745;
+  background-color: #218838;
 }
 
 .submit-timesheet-button:disabled {
@@ -444,29 +451,35 @@
   border-radius: 4px;
   cursor: pointer;
   margin-top: 20px;
+  transition: none;
 }
 
 .approvals-button:hover {
   background-color: #106ebe;
 }
 
+/* Fixed back button - removed conflicting transitions */
 .back-button {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: 1px solid #dc3545 !important;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   margin-bottom: 20px;
-  transition: background-color 0.3s;
+  transition: none; /* Remove transition to prevent blinking */
 }
 
 .back-button:hover {
-  background-color: #c0392b;
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+  color: white !important;
+}
+
+.back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
 }
 
 .projects-for-approval {
@@ -491,6 +504,7 @@
   border-radius: 4px;
   cursor: pointer;
   margin-top: 10px;
+  transition: none;
 }
 
 .project-timesheets-container {
@@ -558,6 +572,7 @@
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  transition: none;
 }
 
 .deny-button {
@@ -567,6 +582,7 @@
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  transition: none;
 }
 
 .approval-info {
@@ -580,7 +596,6 @@
   color: #d9534f;
   font-style: italic;
 }
-
 
 .timesheet-approval-section {
   margin-top: 15px;
@@ -628,6 +643,7 @@
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  transition: none;
 }
 
 .submit-decision-button:disabled {
@@ -756,6 +772,7 @@
   font-size: 14px;
 }
 
+/* Fixed table row hover - removed transform that causes blinking */
 .timesheets-table tr:hover {
   background: #f8f9fa;
 }
@@ -804,6 +821,7 @@
   font-family: inherit;
 }
 
+/* Fixed submit decision button - removed conflicting transitions */
 .submit-decision-button-table {
   padding: 6px 12px;
   background-color: #28a745 !important;
@@ -813,6 +831,7 @@
   cursor: pointer;
   font-size: 12px;
   white-space: nowrap;
+  transition: none; /* Remove transition to prevent blinking */
 }
 
 .submit-decision-button-table:disabled {
@@ -864,7 +883,7 @@
   font-size: 13px;
 }
 
-/* Replace the existing button hover rules with these cleaner ones */
+/* Fixed all button hover issues - removed transforms and conflicting transitions */
 .timesheets-table button {
   min-width: 30px;
   min-height: 30px;
@@ -872,13 +891,24 @@
   border: 1px solid #ccc;
   background: #f8f9fa;
   padding: 4px 8px;
-  transition: background-color 0.2s ease; /* Smooth transition */
+  transition: none; /* Remove all transitions */
+  position: relative; /* Ensure proper positioning */
 }
 
 .timesheets-table button:hover {
   background: #e9ecef !important;
   border-color: #adb5bd !important;
-  transform: none; /* Remove any transforms that cause positioning issues */
+  /* Removed transform to prevent positioning issues */
+}
+
+/* Ensure buttons are properly clickable without interference */
+.timesheets-table button,
+.back-button,
+.submit-decision-button-table,
+.view-timesheets-button-table {
+  pointer-events: auto;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 /* Responsive adjustments */
@@ -900,18 +930,20 @@
   justify-content: flex-start;
 }
 
-.timesheet-history-btn {
-  padding: 10px 20px;
-  background: #17a2b8;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
+/* History section specific back button fixes */
+.history-timesheets-container .back-button,
+.history-projects-container .back-button {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: 1px solid #dc3545 !important;
+  transition: none; /* Remove transition */
 }
 
-.timesheet-history-btn:hover {
-  background: #138496;
+.history-timesheets-container .back-button:hover,
+.history-projects-container .back-button:hover {
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+  color: white !important;
 }
 
 /* Admin Calendar Dashboard Styles */
@@ -933,7 +965,7 @@
   cursor: pointer;
   font-size: 14px;
   margin: 0 10px;
-  transition: background-color 0.3s;
+  transition: none;
 }
 
 .admin-calendar-button:hover {
@@ -973,6 +1005,7 @@
   cursor: pointer;
   font-size: 18px;
   font-weight: bold;
+  transition: none;
 }
 
 .calendar-header button:hover {
@@ -1003,12 +1036,13 @@
   font-size: 14px;
 }
 
+/* Fixed calendar day hover - removed transform that causes blinking */
 .calendar-day {
   background-color: white;
   min-height: 80px;
   padding: 8px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: none; /* Remove transition */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1016,7 +1050,7 @@
 
 .calendar-day.active:hover {
   background-color: #ecf0f1;
-  transform: scale(1.02);
+  /* Removed transform to prevent blinking */
 }
 
 .calendar-day.inactive {
@@ -1098,143 +1132,137 @@
   height: fit-content;
 }
 
+/* Continuing from where we left off... */
+
 .panel-tabs {
   display: flex;
   margin-bottom: 20px;
-  border-bottom: 2px solid #ecf0f1;
+  border-bottom: 1px solid #ecf0f1;
 }
 
-.panel-tabs button {
+.panel-tab {
   flex: 1;
   padding: 12px;
-  border: none;
-  background-color: transparent;
+  text-align: center;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  color: #7f8c8d;
-  transition: all 0.3s;
+  background-color: #f8f9fa;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+  transition: none;
 }
 
-.panel-tabs button.active {
+.panel-tab.active {
+  background-color: white;
+  border-bottom-color: #3498db;
   color: #3498db;
-  border-bottom: 3px solid #3498db;
 }
 
-.panel-tabs button:hover {
-  color: #2980b9;
+.panel-tab:hover:not(.active) {
+  background-color: #e9ecef;
 }
 
-/* Employee Panel */
-.employee-panel h4,
-.project-panel h4 {
-  margin-top: 0;
-  color: #2c3e50;
-  border-bottom: 1px solid #ecf0f1;
-  padding-bottom: 10px;
+.panel-content {
+  max-height: 500px;
+  overflow-y: auto;
 }
 
-.employee-selector,
-.project-selector,
-.time-range-selector {
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
   margin-bottom: 20px;
 }
 
-.employee-selector select,
-.project-selector select,
-.time-range-selector select {
-  width: 100%;
-  padding: 10px;
-  border: 2px solid #bdc3c7;
-  border-radius: 5px;
-  font-size: 14px;
-  background-color: white;
-}
-
-.employee-selector select:focus,
-.project-selector select:focus,
-.time-range-selector select:focus {
-  border-color: #3498db;
-  outline: none;
-}
-
-.time-range-selector label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-/* Employee/Project Data Display */
-.employee-data,
-.project-data {
+.stat-card {
   background-color: #f8f9fa;
   padding: 15px;
   border-radius: 8px;
-  border-left: 4px solid #27ae60;
-}
-
-.employee-data h5,
-.project-data h5 {
-  margin-top: 0;
-  color: #2c3e50;
-  font-size: 16px;
-}
-
-.total-hours {
-  background-color: #3498db;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
   text-align: center;
-  font-weight: bold;
-  margin-bottom: 15px;
+  border-left: 4px solid #3498db;
 }
 
-.employee-entry,
-.project-entry {
+.stat-number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.employee-list {
+  margin-top: 20px;
+}
+
+.employee-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 10px;
   margin-bottom: 8px;
-  background-color: white;
+  background-color: #f8f9fa;
   border-radius: 5px;
-  border-left: 3px solid #e74c3c;
+  border-left: 3px solid #27ae60;
 }
 
-.project-name,
 .employee-name {
-  font-weight: bold;
+  font-weight: 500;
   color: #2c3e50;
 }
 
-.hours {
+.employee-hours {
+  font-size: 14px;
+  color: #7f8c8d;
   background-color: #e74c3c;
   color: white;
-  padding: 4px 8px;
+  padding: 2px 8px;
   border-radius: 10px;
+}
+
+.project-list {
+  margin-top: 20px;
+}
+
+.project-item {
+  margin-bottom: 15px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 3px solid #9b59b6;
+}
+
+.project-name {
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.project-stats {
+  display: flex;
+  justify-content: space-between;
   font-size: 12px;
-  font-weight: bold;
+  color: #7f8c8d;
 }
 
 /* Responsive Design */
 @media (max-width: 1200px) {
   .calendar-dashboard {
     flex-direction: column;
+    gap: 20px;
   }
   
-  .calendar-section {
-    margin-bottom: 20px;
+  .info-panel {
+    order: -1;
   }
   
-  .calendar-grid {
-    gap: 1px;
-  }
-  
-  .calendar-day {
-    min-height: 60px;
-    padding: 5px;
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -1248,9 +1276,13 @@
     gap: 10px;
   }
   
+  .calendar-header h3 {
+    font-size: 20px;
+  }
+  
   .calendar-day {
-    min-height: 50px;
-    padding: 3px;
+    min-height: 60px;
+    padding: 5px;
   }
   
   .day-number {
@@ -1261,201 +1293,319 @@
     font-size: 10px;
   }
   
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
   .panel-tabs {
     flex-direction: column;
   }
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+/* Loading and Error States */
+.loading-spinner {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 10px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 2px solid #ecf0f1;
-  background-color: #f8f9fa;
-  border-radius: 10px 10px 0 0;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #2c3e50;
-}
-
-.modal-close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #7f8c8d;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s;
-}
-
-.modal-close-button:hover {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.day-summary {
-  background-color: #3498db;
-  color: white;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  margin-bottom: 20px;
+  height: 200px;
   font-size: 18px;
+  color: #7f8c8d;
 }
 
-.employee-day-entry-modal {
-  margin-bottom: 20px;
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
   padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #27ae60;
-}
-
-.employee-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #bdc3c7;
-}
-
-.employee-total {
-  background-color: #e74c3c;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.project-breakdown {
-  margin-top: 10px;
-}
-
-.project-hours {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  margin: 5px 0;
-  background-color: white;
   border-radius: 5px;
-  border-left: 3px solid #3498db;
+  border: 1px solid #f5c6cb;
+  margin: 20px 0;
+  text-align: center;
 }
 
-.project-name {
-  font-weight: 500;
+/* Additional utility classes */
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: #7f8c8d;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.p-10 {
+  padding: 10px;
+}
+
+/* Fix for any remaining button hover issues */
+button:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Ensure all interactive elements are properly styled */
+.timetable-container button,
+.timetable-container select,
+.timetable-container input[type="button"],
+.timetable-container input[type="submit"] {
+  transition: none;
+  transform: none;
+}
+
+.timetable-container button:hover,
+.timetable-container select:hover,
+.timetable-container input[type="button"]:hover,
+.timetable-container input[type="submit"]:hover {
+  transform: none !important;
+}
+
+/* Final fixes for table interactions */
+.timesheets-table tr,
+.timesheets-table td,
+.timesheets-table th {
+  transition: none;
+  transform: none;
+}
+
+.timesheets-table tr:hover {
+  transform: none !important;
+}
+
+/* History view specific styles */
+.history-projects-container,
+.history-timesheets-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.history-projects-container h2,
+.history-timesheets-container h2 {
   color: #2c3e50;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ecf0f1;
 }
 
-.project-hours-value {
-  background-color: #3498db;
+.projects-table-container {
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.projects-table th {
+  background: #34495e;
   color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: bold;
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-/* Fix double-click issues by ensuring proper button states */
-.timesheets-table button,
-.back-button,
-.submit-decision-button-table,
-.view-timesheets-button-table {
-  pointer-events: auto;
-  touch-action: manipulation; /* Prevents double-tap zoom on mobile */
-  user-select: none; /* Prevents text selection interfering with clicks */
+.projects-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ecf0f1;
+  font-size: 14px;
 }
 
-
-
-/* Ensure buttons are properly clickable */
-.timesheets-table td button {
-  min-width: 30px;
-  min-height: 30px;
-  cursor: pointer;
-  border: 1px solid #ccc;
+.projects-table tr:hover {
   background: #f8f9fa;
-  padding: 4px 8px;
+  transform: none !important;
 }
 
-.timesheets-table td button:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-}
-
-/* Back button styling - make them red */
-.back-button {
-  background-color: #dc3545 !important; /* Bootstrap red */
+.view-timesheets-button-table {
+  background-color: #3498db !important;
   color: white !important;
-  border: 1px solid #dc3545 !important;
+  border: none;
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 12px;
+  transition: none;
+}
+
+.view-timesheets-button-table:hover {
+  background-color: #2980b9 !important;
+}
+
+/* Timesheet history button */
+.timesheet-history-btn {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s ease;
+  margin-right: 10px;
+  transition: none;
 }
 
-.back-button:hover {
-  background-color: #c82333 !important; /* Darker red on hover */
-  border-color: #bd2130 !important;
-  color: white !important;
+.timesheet-history-btn:hover {
+  background-color: #138496;
 }
 
-.back-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+/* Status badges for history view */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
-/* Specific overrides for history section back buttons */
-.history-timesheets-container .back-button,
-.history-projects-container .back-button {
-  background-color: #dc3545 !important;
-  color: white !important;
-  border: 1px solid #dc3545 !important;
+.status-badge.submitted {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
 }
 
-.history-timesheets-container .back-button:hover,
-.history-projects-container .back-button:hover {
-  background-color: #c82333 !important;
-  border-color: #bd2130 !important;
-  color: white !important;
+.status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }
+
+.status-badge.denied {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-badge.draft {
+  background: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
+/* Expanded timesheet details styling */
+.expanded-timesheet-details {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px 0;
+  border: 1px solid #dee2e6;
+}
+
+.day-entries-table {
+  margin-top: 15px;
+}
+
+.day-entries-table h4 {
+  color: #495057;
+  margin-bottom: 10px;
+  font-size: 16px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 5px;
+}
+
+.day-entry-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 14px;
+}
+
+.day-entry-row:last-child {
+  border-bottom: none;
+}
+
+/* Comments sections in expanded view */
+.week-comments-table,
+.approval-comments-display {
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.week-comments-table {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+}
+
+.week-comments-table h4 {
+  color: #1565c0;
+  margin: 0 0 10px 0;
+}
+
+.approval-comments-display {
+  background: #e8f5e8;
+  border: 1px solid #4caf50;
+}
+
+.approval-comments-display h4 {
+  color: #2e7d32;
+  margin: 0 0 10px 0;
+}
+
+.week-comments-table p,
+.approval-comments-display p {
+  margin: 0;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Mobile responsiveness for history views */
+@media (max-width: 768px) {
+  .history-projects-container,
+  .history-timesheets-container {
+    padding: 10px;
+  }
+  
+  .projects-table,
+  .timesheets-table {
+    font-size: 12px;
+  }
+  
+  .projects-table th,
+  .projects-table td,
+  .timesheets-table th,
+  .timesheets-table td {
+    padding: 8px 6px;
+  }
+  
+  .view-timesheets-button-table,
+  .submit-decision-button-table {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .expanded-timesheet-details {
+    padding: 15px;
+  }
+  
+  .day-entry-row {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+/* Final cleanup - ensure no unwanted animations */
+* {
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Allow only specific, controlled transitions */
+.controlled-transition {
+  transition: background-color 0.2s ease !important;
+}
+
+/* End of TimeTableManager.css */
+
