@@ -682,6 +682,16 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
 };
 
 // Fetch projects that user has submitted timesheets for
+const fetchUserHistoryProjects = async () => {
+  try {
+    const response = await fetch(`${API_URL}/api/timeentries/user-projects/${user.username}`);
+    const data = await response.json();
+    setUserHistoryProjects(data);
+  } catch (error) {
+    console.error('Error fetching user history projects:', error);
+  }
+};
+
 const fetchUserProjectTimesheets = async (projectId) => {
   try {
     console.log('🚀 Starting API call at:', new Date().toLocaleTimeString());
@@ -701,20 +711,6 @@ const fetchUserProjectTimesheets = async (projectId) => {
   }
 };
 
-
-// Fetch user's timesheets for a specific project
-const fetchUserProjectTimesheets = async (projectId) => {
-  try {
-    console.log('Starting API call...'); // Add this
-    const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
-    const data = await response.json();
-    console.timeEnd('fetchUserProjectTimesheets'); // Add this
-    setUserHistoryTimesheets(data);
-    setSelectedHistoryProjectId(projectId);
-  } catch (error) {
-    console.error('Error fetching user project timesheets:', error);
-  }
-};
 
 const HistoryView = () => {
   useEffect(() => {
