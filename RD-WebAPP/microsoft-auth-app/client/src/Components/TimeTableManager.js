@@ -89,6 +89,7 @@ function TimeTableManager({ onBack, user }) {
   const [projectData, setProjectData] = useState([]);
   const [projectTimeRange, setProjectTimeRange] = useState('month');
   const [allEmployees, setAllEmployees] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
 
   // Get default week (current week starting Monday)
@@ -693,7 +694,13 @@ const fetchUserHistoryProjects = async () => {
 };
 
 const fetchUserProjectTimesheets = async (projectId) => {
+  if (isLoadingHistory) {
+    console.log('Already loading, ignoring click');
+    return;
+  }
+  
   try {
+    setIsLoadingHistory(true);
     console.log('🚀 Starting API call at:', new Date().toLocaleTimeString());
     console.time('API_CALL_DURATION');
     
@@ -702,12 +709,13 @@ const fetchUserProjectTimesheets = async (projectId) => {
     
     console.timeEnd('API_CALL_DURATION');
     console.log('✅ API call finished at:', new Date().toLocaleTimeString());
-    console.log('📊 Data received:', data.length, 'timesheets');
     
     setUserHistoryTimesheets(data);
     setSelectedHistoryProjectId(projectId);
   } catch (error) {
-    console.error('❌ Error fetching user project timesheets:', error);
+    console.error('❌ Error:', error);
+  } finally {
+    setIsLoadingHistory(false);
   }
 };
 
@@ -851,13 +859,10 @@ const HistoryView = () => {
                   <td>
                     <button
                       className="view-timesheets-button-table"
-                      onClick={(e) => {
-                        console.log('Button clicked!'); // Add this
-                        e.stopPropagation(); // Add this to prevent row click
-                        fetchUserProjectTimesheets(project._id);
-                      }}
+                      onClick={() => fetchUserProjectTimesheets(project._id)}
+                      disabled={isLoadingHistory}
                     >
-                      View Timesheets
+                      {isLoadingHistory ? 'Loading...' : 'View Timesheets'}
                     </button>
                   </td>
                 </tr>
