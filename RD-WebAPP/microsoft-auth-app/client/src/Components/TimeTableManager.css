@@ -756,6 +756,16 @@
   background: #f8f9fa;
 }
 
+/* Prevent row hover from affecting buttons */
+.timesheets-table tr:hover button {
+  background: #f8f9fa !important;
+}
+
+.timesheets-table tr:hover button:hover {
+  background: #e9ecef !important;
+}
+
+
 /* Status badge in table */
 .timesheets-table .status-badge {
   padding: 4px 8px;
