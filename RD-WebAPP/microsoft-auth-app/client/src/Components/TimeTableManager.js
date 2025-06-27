@@ -708,108 +708,6 @@ const fetchUserProjectTimesheets = useCallback(async (projectId) => {
 }, [selectedHistoryProjectId, user.username]);
 
 
-const HistoryView = () => {
-  useEffect(() => {
-    fetchUserHistoryProjects();
-  }, []);
-
-  if (selectedHistoryProjectId) {
-    const project = projects.find(p => p._id === selectedHistoryProjectId);
-    
-    return (
-      <div className="history-timesheets-container">
-        <h2>Your Timesheets for {project?.projectName}</h2>
-        
-        <button 
-          className="back-button"
-          onClick={() => {
-            setSelectedHistoryProjectId(null);
-            setUserHistoryTimesheets([]);
-          }}
-        >
-          Back to Projects
-        </button>
-        
-        {userHistoryTimesheets.length === 0 ? (
-          <p>No timesheets found for this project.</p>
-        ) : (
-          <div className="timesheets-table-container">
-            <table className="timesheets-table">
-              <thead>
-                <tr>
-                  <th>Week</th>
-                  <th>Total Hours</th>
-                  <th>Status</th>
-                  <th>Submitted Date</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userHistoryTimesheets.map(timesheet => (
-                  <React.Fragment key={timesheet._id}>
-                    <tr>
-                      <td>{new Date(timesheet.weekStartDate).toLocaleDateString()} - {new Date(timesheet.weekEndDate).toLocaleDateString()}</td>
-                      <td>{timesheet.totalHours}</td>
-                      <td><span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></td>
-                      <td>{new Date(timesheet.submittedDate).toLocaleDateString()}</td>
-                      <td>
-                        <button 
-                          onClick={() => handleExpandTimesheet(timesheet._id)}
-                          type="button"
-                        >
-                          {expandedTimesheet === timesheet._id ? '▲' : '▼'}
-                        </button>
-                      </td>
-                    </tr>
-                    {expandedTimesheet === timesheet._id && (
-                      <tr>
-                        <td colSpan="5">
-                          <div className="expanded-timesheet-details">
-                            {timesheet.comments && (
-                              <div className="week-comments-table">
-                                <h4>Week Comments:</h4>
-                                <p>{timesheet.comments}</p>
-                              </div>
-                            )}
-                            
-                            {timesheet.approvalComments && (
-                              <div className="approval-comments-display">
-                                <h4>Approval Comments:</h4>
-                                <p>{timesheet.approvalComments}</p>
-                                {timesheet.approverEmail && (
-                                  <p className="approver-info">
-                                    <strong>Approved by:</strong> {timesheet.approverEmail}
-                                    {timesheet.approvedDate && (
-                                      <span> on {new Date(timesheet.approvedDate).toLocaleDateString()}</span>
-                                    )}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-
-                            
-                            <div className="day-entries-table">
-                              <h4>Daily Breakdown:</h4>
-                              {timesheet.dayEntries.map((day, index) => (
-                                <div key={index} className="day-entry-row">
-                                  <span>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</span>
-                                  {day.notes && <span> - Notes: {day.notes}</span>}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="history-projects-container">
@@ -821,14 +719,6 @@ const HistoryView = () => {
       >
         Back to Timesheet
       </button>
-
-      <div style={{background: 'yellow', padding: '10px', margin: '10px'}}>
-        <strong>Click Debug Log:</strong>
-        {clickDebug.slice(-10).map((event, i) => (
-          <div key={i}>{event}</div>
-        ))}
-      </div>
-
       
       {userHistoryProjects.length === 0 ? (
         <p>You haven't submitted any timesheets yet.</p>
@@ -1311,7 +1201,145 @@ const AdminCalendarDashboard = () => {
 };
 
 
+const HistoryView = () => {
+  useEffect(() => {
+    fetchUserHistoryProjects();
+  }, []);
 
+  if (selectedHistoryProjectId) {
+    const project = projects.find(p => p._id === selectedHistoryProjectId);
+    
+    return (
+      <div className="history-timesheets-container">
+        <h2>Your Timesheets for {project?.projectName}</h2>
+        
+        <button 
+          className="back-button"
+          onClick={() => {
+            setSelectedHistoryProjectId(null);
+            setUserHistoryTimesheets([]);
+          }}
+        >
+          Back to Projects
+        </button>
+        
+        {userHistoryTimesheets.length === 0 ? (
+          <p>No timesheets found for this project.</p>
+        ) : (
+          <div className="timesheets-table-container">
+            <table className="timesheets-table">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Total Hours</th>
+                  <th>Status</th>
+                  <th>Submitted Date</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userHistoryTimesheets.map(timesheet => (
+                  <React.Fragment key={timesheet._id}>
+                    <tr>
+                      <td>{new Date(timesheet.weekStartDate).toLocaleDateString()} - {new Date(timesheet.weekEndDate).toLocaleDateString()}</td>
+                      <td>{timesheet.totalHours}</td>
+                      <td><span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></td>
+                      <td>{new Date(timesheet.submittedDate).toLocaleDateString()}</td>
+                      <td>
+                        <button onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}>
+                          {expandedTimesheet === timesheet._id ? '▲' : '▼'}
+                        </button>
+                      </td>
+                    </tr>
+                    {expandedTimesheet === timesheet._id && (
+                      <tr>
+                        <td colSpan="5">
+                          <div className="expanded-timesheet-details">
+                            {timesheet.comments && (
+                              <div className="week-comments-table">
+                                <h4>Week Comments:</h4>
+                                <p>{timesheet.comments}</p>
+                              </div>
+                            )}
+                            
+                            {timesheet.approvalComments && (
+                              <div className="approval-comments-display">
+                                <h4>Approval Comments:</h4>
+                                <p>{timesheet.approvalComments}</p>
+                              </div>
+                            )}
+                            
+                            <div className="day-entries-table">
+                              <h4>Daily Breakdown:</h4>
+                              {timesheet.dayEntries.map((day, index) => (
+                                <div key={index} className="day-entry-row">
+                                  <span>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</span>
+                                  {day.notes && <span> - Notes: {day.notes}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="history-projects-container">
+      <h2>Your Timesheet History</h2>
+      
+      <button 
+        className="back-button"
+        onClick={() => setView('list')}
+      >
+        Back to Timesheet
+      </button>
+      
+      {userHistoryProjects.length === 0 ? (
+        <p>You haven't submitted any timesheets yet.</p>
+      ) : (
+        <div className="projects-table-container">
+          <table className="projects-table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Client</th>
+                <th>Total Timesheets</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userHistoryProjects.map(project => (
+                <tr key={project._id}>
+                  <td>{project.projectName}</td>
+                  <td>{project.clientName}</td>
+                  <td>{project.timesheetCount}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="view-timesheets-button-table"
+                      onClick={() => fetchUserProjectTimesheets(project._id)}
+                    >
+                      View Timesheets
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 
@@ -1924,7 +1952,7 @@ return (
 
 
 
-}
+
 
 export default TimeTableManager;
 
