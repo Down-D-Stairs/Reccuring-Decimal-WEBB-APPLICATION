@@ -89,6 +89,7 @@ function TimeTableManager({ onBack, user }) {
   const [projectData, setProjectData] = useState([]);
   const [projectTimeRange, setProjectTimeRange] = useState('month');
   const [allEmployees, setAllEmployees] = useState([]);
+  const [clickDebug, setClickDebug] = useState([]);
 
 
   // Get default week (current week starting Monday)
@@ -819,6 +820,14 @@ const HistoryView = () => {
       >
         Back to Timesheet
       </button>
+
+      <div style={{background: 'yellow', padding: '10px', margin: '10px'}}>
+        <strong>Click Debug Log:</strong>
+        {clickDebug.slice(-10).map((event, i) => (
+          <div key={i}>{event}</div>
+        ))}
+      </div>
+
       
       {userHistoryProjects.length === 0 ? (
         <p>You haven't submitted any timesheets yet.</p>
@@ -843,10 +852,33 @@ const HistoryView = () => {
                     <button
                       type="button"
                       className="view-timesheets-button-table"
-                      onClick={() => fetchUserProjectTimesheets(project._id)}
-                      disabled={selectedHistoryProjectId === project._id} // Prevent multiple clicks on same project
+                      onMouseDown={(e) => {
+                        const timestamp = Date.now();
+                        console.log('🔥 MOUSE DOWN:', timestamp);
+                        setClickDebug(prev => [...prev, `MouseDown-${timestamp}`]);
+                      }}
+                      onMouseUp={(e) => {
+                        const timestamp = Date.now();
+                        console.log('🔥 MOUSE UP:', timestamp);
+                        setClickDebug(prev => [...prev, `MouseUp-${timestamp}`]);
+                      }}
+                      onClick={(e) => {
+                        const timestamp = Date.now();
+                        console.log('🔥 CLICK EVENT:', timestamp, 'Project:', project._id);
+                        setClickDebug(prev => [...prev, `Click-${timestamp}-${project._id}`]);
+                        
+                        // Call the function IMMEDIATELY
+                        console.log('🚀 CALLING FUNCTION NOW');
+                        fetchUserProjectTimesheets(project._id);
+                      }}
+                      onTouchStart={(e) => {
+                        console.log('📱 TOUCH START');
+                      }}
+                      onTouchEnd={(e) => {
+                        console.log('📱 TOUCH END');
+                      }}
                     >
-                      {selectedHistoryProjectId === project._id ? 'Loading...' : 'View Timesheets'}
+                      View Timesheets (Debug: {clickDebug.length})
                     </button>
                   </td>
                 </tr>
