@@ -841,7 +841,10 @@ const HistoryView = () => {
             </thead>
             <tbody>
               {userHistoryProjects.map(project => (
-                <tr key={project._id}>
+                <tr 
+                  key={project._id}
+                  onClick={() => console.log('Row clicked!')} // Add this temporarily
+                >
                   <td>{project.projectName}</td>
                   <td>{project.clientName}</td>
                   <td>{project.timesheetCount}</td>
@@ -849,15 +852,10 @@ const HistoryView = () => {
                     <button
                       className="view-timesheets-button-table"
                       onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                        console.log('Button clicked!'); // Add this
+                        e.stopPropagation(); // Add this to prevent row click
                         fetchUserProjectTimesheets(project._id);
                       }}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      type="button"
                     >
                       View Timesheets
                     </button>
