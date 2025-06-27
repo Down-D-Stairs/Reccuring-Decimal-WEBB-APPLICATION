@@ -1344,19 +1344,15 @@
 
 
 
-
-
-
-
-
-
 .view-timesheets-button-table {
-  padding: 8px 16px;
+  padding: 15px 25px; /* Make it bigger */
   background: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px; /* Bigger text */
+  min-width: 150px; /* Ensure minimum size */
 }
+
 
