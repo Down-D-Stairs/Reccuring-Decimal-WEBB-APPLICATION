@@ -840,22 +840,7 @@
   font-size: 13px;
 }
 
-/* Replace the existing button hover rules with these cleaner ones */
-.timesheets-table button {
-  min-width: 30px;
-  min-height: 30px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background: #f8f9fa;
-  padding: 4px 8px;
-  transition: background-color 0.2s ease; /* Smooth transition */
-}
 
-.timesheets-table button:hover {
-  background: #e9ecef !important;
-  border-color: #adb5bd !important;
-  transform: none; /* Remove any transforms that cause positioning issues */
-}
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
@@ -1373,43 +1358,6 @@
 
 
 
-
-
-/* Ensure buttons are properly clickable */
-.timesheets-table td button {
-  min-width: 30px;
-  min-height: 30px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background: #f8f9fa;
-  padding: 4px 8px;
-}
-
-.timesheets-table td button:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-}
-
-
-
-
-/* Disable all hover effects on table elements */
-.timesheets-table *:hover {
-  background: inherit !important;
-  border-color: inherit !important;
-  color: inherit !important;
-}
-
-/* Fix projects table hover blinking */
-.projects-table tr:hover {
-  background: none !important;
-}
-
-.projects-table button {
-  background: #007bff !important;
-  color: white !important;
-  transition: none !important;
-}
 
 
 
