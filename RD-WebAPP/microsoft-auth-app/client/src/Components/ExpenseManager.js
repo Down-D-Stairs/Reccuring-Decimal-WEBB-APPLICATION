@@ -31,6 +31,8 @@ function ExpenseManager({ onBack, user }) {
   const [selectedProjectName, setSelectedProjectName] = useState('');
   const [selectedTripDetails, setSelectedTripDetails] = useState(null);
   const [showTripDetailsModal, setShowTripDetailsModal] = useState(false);
+  const [isProcessingDecision, setIsProcessingDecision] = useState(false);
+
 
 
   
@@ -347,6 +349,8 @@ const fetchProjects = async () => {
 
   const handleConfirmedDecision = async () => {
     setShowDecisionConfirmation(false);
+    setIsProcessingDecision(true); // Add this line
+    
     const { tripId, trip } = pendingDecision;
     
     try {
@@ -356,7 +360,7 @@ const fetchProjects = async () => {
         body: JSON.stringify({
           status: trip.status,
           reason: trip.reason,
-          approvedBy: user.username  // ADD THIS LINE
+          approvedBy: user.username
         })
       });
       const updatedTrip = await response.json();
@@ -369,9 +373,12 @@ const fetchProjects = async () => {
         
     } catch (error) {
       console.error('Failed to submit decision:', error);
+    } finally {
+      setIsProcessingDecision(false); // Add this line
     }
     setPendingDecision(null);
   };
+
 
   const handleSubmitBatchDecisions = async () => {
     setShowBatchConfirmation(true);
@@ -379,6 +386,7 @@ const fetchProjects = async () => {
 
   const handleConfirmedBatchDecisions = async () => {
     setShowBatchConfirmation(false);
+    setIsProcessingDecision(true); // Add this line
     
     try {
       // Create an array of promises for each selected trip
@@ -407,8 +415,11 @@ const fetchProjects = async () => {
         
     } catch (error) {
       console.error('Failed to submit decisions:', error);
+    } finally {
+      setIsProcessingDecision(false); // Add this line
     }
   };
+
 
   
   const handleNewTripSubmit = async () => {
@@ -2003,6 +2014,23 @@ const fetchProjects = async () => {
           </div>
         </div>
       )}
+
+      {isProcessingDecision && (
+        <div className="processing-overlay">
+          <div className="processing-popup">
+            <div className="processing-spinner">⏳</div>
+            <h3>Processing Decision...</h3>
+            <p>
+              {selectedTrips.length > 1 
+                ? `Updating ${selectedTrips.length} reports` 
+                : 'Updating report status'
+              }
+            </p>
+            <p>Please wait, do not close this window.</p>
+          </div>
+        </div>
+      )}
+
 
       {showSubmitConfirmation && (
         <div className="expense-modal-overlay" onClick={() => setShowSubmitConfirmation(false)}>
