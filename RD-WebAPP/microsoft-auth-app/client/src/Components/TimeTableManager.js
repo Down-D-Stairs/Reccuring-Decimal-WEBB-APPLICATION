@@ -695,14 +695,11 @@ const handleConfirmedDecision = async () => {
     if (response.ok) {
       const updatedTimesheet = await response.json();
       
-      // Refresh the timesheets list to show updated data
-      await handleViewProjectTimesheets(selectedProjectId);
-      
-      // Clear the status updates for this timesheet
-      setTimesheetStatusUpdates(prev => ({
-        ...prev,
-        [timesheetId]: { status: updatedTimesheet.status, approvalComments: '' }
-      }));
+      // Clear selections and go back to main view
+      setSelectedProjectId(null);
+      setSelectedProjectTimesheets([]);
+      setTimesheetStatusUpdates({});
+      setView('list'); // Go back to main timesheet view
     }
   } catch (error) {
     console.error('Error updating timesheet status:', error);
@@ -713,6 +710,7 @@ const handleConfirmedDecision = async () => {
   
   setPendingDecision(null);
 };
+
 
 
 
@@ -1270,11 +1268,12 @@ const handleConfirmedBatchDecisions = async () => {
     
     await Promise.all(updatePromises);
     
-    // Refresh the timesheets
-    await handleViewProjectTimesheets(selectedProjectId);
-    
-    // Clear selections
+    // Clear all selections and go back to main view
     setSelectedTimesheets([]);
+    setSelectedProjectId(null);
+    setSelectedProjectTimesheets([]);
+    setTimesheetStatusUpdates({});
+    setView('list'); // Go back to main timesheet view
     
   } catch (error) {
     console.error('Failed to submit batch decisions:', error);
@@ -1283,6 +1282,7 @@ const handleConfirmedBatchDecisions = async () => {
     setIsProcessingDecision(false);
   }
 };
+
 
 
 
