@@ -1693,3 +1693,21 @@
 .timetable-container .confirm-button:hover {
   background-color: #0056b3;
 }
+
+.status-filter-selector {
+  margin-bottom: 15px;
+}
+
+.status-filter-selector label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.status-filter-selector select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}

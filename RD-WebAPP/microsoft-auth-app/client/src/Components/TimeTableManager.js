@@ -1534,7 +1534,7 @@ const AdminCalendarDashboard = () => {
                 </select>
               </div>
 
-              <div className="time-range-selector">
+              <div className="status-filter-selector">
                 <label>Status Filter:</label>
                 <select 
                   value={employeeStatusFilter} 
@@ -1606,7 +1606,7 @@ const AdminCalendarDashboard = () => {
                 </select>
               </div>
 
-              <div className="time-range-selector">
+              <div className="status-filter-selector">
                 <label>Status Filter:</label>
                 <select 
                   value={projectStatusFilter} 
