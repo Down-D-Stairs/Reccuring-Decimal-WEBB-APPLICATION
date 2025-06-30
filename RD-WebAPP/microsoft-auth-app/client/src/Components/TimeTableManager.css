@@ -1612,3 +1612,84 @@
 .timetable-container .modal-close-button:hover {
   background-color: #5a6268;
 }
+
+/* TimeTable Decision Confirmation Styles */
+.timetable-container .confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.timetable-container .confirmation-popup {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.timetable-container .timesheet-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 15px 0;
+}
+
+.timetable-container .batch-summary {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 15px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.timetable-container .batch-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.timetable-container .batch-item:last-child {
+  border-bottom: none;
+}
+
+.timetable-container .confirmation-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.timetable-container .cancel-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.timetable-container .cancel-button:hover {
+  background-color: #5a6268;
+}
+
+.timetable-container .confirm-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.timetable-container .confirm-button:hover {
+  background-color: #0056b3;
+}

@@ -99,6 +99,11 @@ function TimeTableManager({ onBack, user }) {
   const historyProjectsPerPage = 2;
   const historyTimesheetsPerPage = 4;
   const [selectedProjectDetails, setSelectedProjectDetails] = useState(null);
+  const [isProcessingDecision, setIsProcessingDecision] = useState(false);
+  const [showDecisionConfirmation, setShowDecisionConfirmation] = useState(false);
+  const [pendingDecision, setPendingDecision] = useState(null);
+  const [showBatchConfirmation, setShowBatchConfirmation] = useState(false);
+
 
 
 
@@ -654,10 +659,26 @@ const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
 
 
 const handleSubmitTimesheetDecision = async (timesheetId) => {
+  const update = timesheetStatusUpdates[timesheetId];
+  if (!update) return;
+  
+  // Set up the pending decision for confirmation
+  setPendingDecision({
+    timesheetId,
+    update,
+    timesheet: selectedProjectTimesheets.find(t => t._id === timesheetId)
+  });
+  setShowDecisionConfirmation(true);
+};
+
+
+const handleConfirmedDecision = async () => {
+  setShowDecisionConfirmation(false);
+  setIsProcessingDecision(true);
+  
+  const { timesheetId, update } = pendingDecision;
+  
   try {
-    const update = timesheetStatusUpdates[timesheetId];
-    if (!update) return;
-    
     const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
       method: 'PUT',
       headers: {
@@ -682,14 +703,18 @@ const handleSubmitTimesheetDecision = async (timesheetId) => {
         ...prev,
         [timesheetId]: { status: updatedTimesheet.status, approvalComments: '' }
       }));
-      
-      alert('Timesheet status updated successfully!');
     }
   } catch (error) {
     console.error('Error updating timesheet status:', error);
     alert('Failed to update timesheet status');
+  } finally {
+    setIsProcessingDecision(false);
   }
+  
+  setPendingDecision(null);
 };
+
+
 
 // Fetch projects that user has submitted timesheets for
 const fetchUserHistoryProjects = async () => {
@@ -1219,6 +1244,15 @@ const getPaginatedHistoryTimesheets = (timesheets) => {
 
 
 const handleSubmitBatchDecisions = async () => {
+  if (selectedTimesheets.length === 0) return;
+  
+  setShowBatchConfirmation(true);
+};
+
+const handleConfirmedBatchDecisions = async () => {
+  setShowBatchConfirmation(false);
+  setIsProcessingDecision(true);
+  
   try {
     const updatePromises = selectedTimesheets.map(timesheetId => {
       const updates = timesheetStatusUpdates[timesheetId];
@@ -1242,13 +1276,14 @@ const handleSubmitBatchDecisions = async () => {
     // Clear selections
     setSelectedTimesheets([]);
     
-    alert(`${selectedTimesheets.length} timesheets updated successfully!`);
-    
   } catch (error) {
     console.error('Failed to submit batch decisions:', error);
     alert('Failed to submit decisions. Please try again.');
+  } finally {
+    setIsProcessingDecision(false);
   }
 };
+
 
 
 
@@ -2351,6 +2386,97 @@ return (
         project={selectedProjectDetails} 
         onClose={() => setSelectedProjectDetails(null)} 
       />
+    )}
+    {/* Decision Confirmation Dialog */}
+    {showDecisionConfirmation && pendingDecision && (
+      <div className="confirmation-overlay">
+        <div className="confirmation-popup">
+          <h3>Confirm Decision</h3>
+          <p>
+            Are you sure you want to <strong>{pendingDecision.update.status}</strong> this timesheet?
+          </p>
+          <div className="timesheet-info">
+            <p><strong>Employee:</strong> {pendingDecision.timesheet.employeeName}</p>
+            <p><strong>Week:</strong> {new Date(pendingDecision.timesheet.weekStartDate).toLocaleDateString()} - {new Date(pendingDecision.timesheet.weekEndDate).toLocaleDateString()}</p>
+            <p><strong>Hours:</strong> {pendingDecision.timesheet.totalHours} hrs</p>
+            {pendingDecision.update.approvalComments && (
+              <p><strong>Comments:</strong> {pendingDecision.update.approvalComments}</p>
+            )}
+          </div>
+          <div className="confirmation-buttons">
+            <button 
+              className="cancel-button" 
+              onClick={() => {
+                setShowDecisionConfirmation(false);
+                setPendingDecision(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button 
+              className="confirm-button" 
+              onClick={handleConfirmedDecision}
+            >
+              Confirm {pendingDecision.update.status === 'approved' ? 'Approval' : 'Denial'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Batch Decision Confirmation Dialog */}
+    {showBatchConfirmation && (
+      <div className="confirmation-overlay">
+        <div className="confirmation-popup">
+          <h3>Confirm Batch Decisions</h3>
+          <p>
+            Are you sure you want to submit decisions for <strong>{selectedTimesheets.length}</strong> selected timesheets?
+          </p>
+          <div className="batch-summary">
+            {selectedTimesheets.map(timesheetId => {
+              const timesheet = selectedProjectTimesheets.find(t => t._id === timesheetId);
+              const update = timesheetStatusUpdates[timesheetId];
+              return (
+                <div key={timesheetId} className="batch-item">
+                  <span>{timesheet.employeeName}: </span>
+                  <strong>{update?.status || 'No change'}</strong>
+                </div>
+              );
+            })}
+          </div>
+          <div className="confirmation-buttons">
+            <button 
+              className="cancel-button" 
+              onClick={() => setShowBatchConfirmation(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="confirm-button" 
+              onClick={handleConfirmedBatchDecisions}
+            >
+              Confirm All Decisions
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Processing Decision Loading Overlay */}
+    {isProcessingDecision && (
+      <div className="processing-overlay">
+        <div className="processing-popup">
+          <div className="processing-spinner">⏳</div>
+          <h3>Processing Decision...</h3>
+          <p>
+            {selectedTimesheets.length > 1 
+              ? `Updating ${selectedTimesheets.length} timesheets` 
+              : 'Updating timesheet status'
+            }
+          </p>
+          <p>Please wait, do not close this window.</p>
+        </div>
+      </div>
     )}
   </div>
 );
