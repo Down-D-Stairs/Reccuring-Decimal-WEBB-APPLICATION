@@ -1455,3 +1455,52 @@
   border-color: #bd2130 !important;
   color: white !important;
 }
+
+.approval-info-display,
+.approval-info-section {
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+}
+
+.approval-info-section h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 5px 0;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.detail-value {
+  color: #333;
+}
+
+.approved-status {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+.approved-status .detail-label {
+  color: #155724;
+}
+
+.denied-status {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.denied-status .detail-label {
+  color: #721c24;
+}
