@@ -1539,6 +1539,9 @@ const AdminCalendarDashboard = () => {
                 <select 
                   value={employeeStatusFilter} 
                   onChange={(e) => {
+                    console.log('Employee status changed to:', e.target.value);
+                    console.log('Selected employee:', selectedEmployee);
+                    console.log('Employee time range:', employeeTimeRange);
                     setEmployeeStatusFilter(e.target.value);
                     if (selectedEmployee) {
                       fetchEmployeeData(selectedEmployee, employeeTimeRange, e.target.value);
@@ -1611,6 +1614,9 @@ const AdminCalendarDashboard = () => {
                 <select 
                   value={projectStatusFilter} 
                   onChange={(e) => {
+                    console.log('Project status changed to:', e.target.value);
+                    console.log('Selected project:', selectedProject);
+                    console.log('Project time range:', projectTimeRange);
                     setProjectStatusFilter(e.target.value);
                     if (selectedProject) {
                       fetchProjectData(selectedProject, projectTimeRange, e.target.value);
