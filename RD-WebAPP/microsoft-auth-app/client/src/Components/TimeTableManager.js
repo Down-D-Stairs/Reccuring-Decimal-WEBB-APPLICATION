@@ -931,6 +931,12 @@ const HistoryView = () => {
                       >
                         View Timesheets
                       </button>
+                      <button
+                        className="details-button"
+                        onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
+                      >
+                        Details
+                      </button>
                     </td>
                   </tr>
                 ))}
