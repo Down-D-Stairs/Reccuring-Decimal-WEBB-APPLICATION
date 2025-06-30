@@ -98,6 +98,8 @@ function TimeTableManager({ onBack, user }) {
   const [currentHistoryTimesheetPage, setCurrentHistoryTimesheetPage] = useState(1);
   const historyProjectsPerPage = 2;
   const historyTimesheetsPerPage = 4;
+  const [selectedProjectDetails, setSelectedProjectDetails] = useState(null);
+
 
 
 
@@ -1244,6 +1246,106 @@ const handleSubmitBatchDecisions = async () => {
 
 
 
+// Project Details Modal Component
+const ProjectDetailsModal = ({ project, onClose }) => {
+  if (!project) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Project Details</h2>
+          <button className="modal-close-btn" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="modal-body">
+          <div className="project-details-grid">
+            <div className="detail-row">
+              <span className="detail-label">Project Name:</span>
+              <span className="detail-value">{project.projectName}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Client Name:</span>
+              <span className="detail-value">{project.clientName}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Project Type:</span>
+              <span className="detail-value">{project.projectType}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">PO Number:</span>
+              <span className="detail-value">{project.poNumber || 'N/A'}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Contract Number:</span>
+              <span className="detail-value">{project.contractNumber || 'N/A'}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Date Range:</span>
+              <span className="detail-value">
+                {new Date(project.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - 
+                {new Date(project.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+              </span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Max Hours:</span>
+              <span className="detail-value">{project.maxHours} hrs</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Max Budget:</span>
+              <span className="detail-value">${project.maxBudget?.toLocaleString() || 'N/A'}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Total Hours Used:</span>
+              <span className="detail-value">{project.projectTotalHours || 0} hrs</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Total Billed Hours:</span>
+              <span className="detail-value">{project.projectTotalBilledHours || 0} hrs</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Location:</span>
+              <span className="detail-value">{project.location || 'N/A'}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Is Hybrid:</span>
+              <span className="detail-value">{project.isHybrid ? 'Yes' : 'No'}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Approvers:</span>
+              <span className="detail-value">{project.approvers || 'N/A'}</span>
+            </div>
+            
+            <div className="detail-row">
+              <span className="detail-label">Project Members:</span>
+              <span className="detail-value">{project.projectMembers || 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="modal-footer">
+          <button className="modal-close-button" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
 
 // Add the Calendar Dashboard component
 // Add the Calendar Dashboard component
@@ -2171,6 +2273,12 @@ return (
                             >
                               View Timesheets
                             </button>
+                            <button
+                              className="details-button"
+                              onClick={() => setSelectedProjectDetails(project)}
+                            >
+                              Details
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -2232,6 +2340,12 @@ return (
     ) : view === 'admin-calendar' ? (
       <AdminCalendarDashboard />
     ) : null}
+    {selectedProjectDetails && (
+      <ProjectDetailsModal 
+        project={selectedProjectDetails} 
+        onClose={() => setSelectedProjectDetails(null)} 
+      />
+    )}
   </div>
 );
 
