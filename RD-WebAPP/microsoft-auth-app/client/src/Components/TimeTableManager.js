@@ -89,6 +89,8 @@ function TimeTableManager({ onBack, user }) {
   const [projectData, setProjectData] = useState([]);
   const [projectTimeRange, setProjectTimeRange] = useState('month');
   const [allEmployees, setAllEmployees] = useState([]);
+  const [selectedTimesheets, setSelectedTimesheets] = useState([]);
+
 
 
   // Get default week (current week starting Monday)
@@ -1058,6 +1060,40 @@ const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
 };
 
 
+const handleSubmitBatchDecisions = async () => {
+  try {
+    const updatePromises = selectedTimesheets.map(timesheetId => {
+      const updates = timesheetStatusUpdates[timesheetId];
+      return fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: updates.status,
+          comments: updates.approvalComments,
+          approverEmail: user.username,
+          approvedDate: new Date()
+        })
+      });
+    });
+    
+    await Promise.all(updatePromises);
+    
+    // Refresh the timesheets
+    await handleViewProjectTimesheets(selectedProjectId);
+    
+    // Clear selections
+    setSelectedTimesheets([]);
+    
+    alert(`${selectedTimesheets.length} timesheets updated successfully!`);
+    
+  } catch (error) {
+    console.error('Failed to submit batch decisions:', error);
+    alert('Failed to submit decisions. Please try again.');
+  }
+};
+
+
+
 // Add the Calendar Dashboard component
 // Add the Calendar Dashboard component
 const AdminCalendarDashboard = () => {
@@ -1676,196 +1712,229 @@ return (
       </div>
     ) : view === 'approvals' ? (
       selectedProjectId ? (
+        // LEVEL 2: Timesheets Table for Selected Project
         <div className="project-timesheets-container">
-          <h2>Timesheets for {projects.find(p => p._id === selectedProjectId)?.projectName}</h2>
-          
-          <button 
-            className="back-button"
-            onClick={handleBackToProjectsFromApprovals}  // NEW
-            type="button"  // NEW
-          >
-            Back to Projects
-          </button>
+          <div className="approval-header">
+            <h2>Timesheets for {projects.find(p => p._id === selectedProjectId)?.projectName}</h2>
+            <button 
+              className="back-button"
+              onClick={() => {
+                setSelectedProjectId(null);
+                setSelectedProjectTimesheets([]);
+                setSelectedTimesheets([]);
+              }}
+            >
+              Back to Projects
+            </button>
+          </div>
           
           {selectedProjectTimesheets.length === 0 ? (
-            <p>No submitted timesheets found for this project.</p>
+            <div className="no-timesheets">
+              <p>No submitted timesheets found for this project.</p>
+            </div>
           ) : (
-            <div>
-              {/* Group timesheets by employee */}
-              {Object.entries(
-                selectedProjectTimesheets.reduce((acc, timesheet) => {
-                  if (!acc[timesheet.employeeName]) {
-                    acc[timesheet.employeeName] = [];
-                  }
-                  acc[timesheet.employeeName].push(timesheet);
-                  return acc;
-                }, {})
-              ).map(([employeeName, timesheets]) => (
-                <div key={employeeName} className="employee-timesheets">
-                  <h3>{employeeName}</h3>
-                  
-                  <div className="timesheets-table-container">
-                    <table className="timesheets-table">
-                      <thead>
-                        <tr>
-                          <th>Employee</th>
-                          <th>Week</th>
-                          <th>Total Hours</th>
-                          <th>Status</th>
-                          <th>Decision</th>
-                          <th>Comments</th>
-                          <th>Action</th>
-                          <th>Details</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {timesheets.map(timesheet => (
-                          <>
-                            <tr key={timesheet._id}>
-                              <td>{timesheet.employeeName}</td>
-                              <td>{new Date(timesheet.weekStartDate).toLocaleDateString()} - {new Date(timesheet.weekEndDate).toLocaleDateString()}</td>
-                              <td>{timesheet.totalHours}</td>
-                              <td><span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span></td>
-                              <td>
-                                <select
-                                  value={timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}
-                                  onChange={(e) => setTimesheetStatusUpdates({
-                                    ...timesheetStatusUpdates,
-                                    [timesheet._id]: {
-                                      ...timesheetStatusUpdates[timesheet._id],
-                                      status: e.target.value
-                                    }
-                                  })}
-                                  className={`status-select ${timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}`}
-                                >
-                                  <option value="submitted">Submitted</option>
-                                  <option value="approved">Approved</option>
-                                  <option value="denied">Denied</option>
-                                </select>
-                              </td>
-                              <td>
-                                <textarea
-                                  placeholder="Approval comments *"
-                                  value={timesheetStatusUpdates[timesheet._id]?.approvalComments || timesheet.approvalComments || ''}
-                                  onChange={(e) => setTimesheetStatusUpdates({
-                                    ...timesheetStatusUpdates,
-                                    [timesheet._id]: {
-                                      ...timesheetStatusUpdates[timesheet._id],
-                                      approvalComments: e.target.value
-                                    }
-                                  })}
-                                  className="approval-comments-table"
-                                  rows={2}
-                                />                              
-                              </td>
-                              <td>
-                                <button
-                                  className="submit-decision-button-table"
-                                  onClick={() => handleSubmitTimesheetDecision(timesheet._id)}
-                                  disabled={
-                                    !timesheetStatusUpdates[timesheet._id] ||
-                                    timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
-                                    ((timesheetStatusUpdates[timesheet._id]?.status === 'approved' || 
-                                      timesheetStatusUpdates[timesheet._id]?.status === 'denied') &&
-                                    !timesheetStatusUpdates[timesheet._id]?.approvalComments)
-                                  }
+            <div className="approval-table-container">
+              <table className="timesheets-table">
+                <thead>
+                  <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedTimesheets(selectedProjectTimesheets.map(timesheet => timesheet._id));
+                          } else {
+                            setSelectedTimesheets([]);
+                          }
+                        }}
+                        checked={selectedTimesheets.length === selectedProjectTimesheets.length && selectedProjectTimesheets.length > 0}
+                      />
+                    </th>
+                    <th>Employee</th>
+                    <th>Week</th>
+                    <th>Total Hours</th>
+                    <th>Current Status</th>
+                    <th>Decision</th>
+                    <th>Comments</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProjectTimesheets.map(timesheet => (
+                    <React.Fragment key={timesheet._id}>
+                      <tr className="approval-row">
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedTimesheets.includes(timesheet._id)}
+                            onChange={() => {
+                              if (selectedTimesheets.includes(timesheet._id)) {
+                                setSelectedTimesheets(selectedTimesheets.filter(id => id !== timesheet._id));
+                              } else {
+                                setSelectedTimesheets([...selectedTimesheets, timesheet._id]);
+                              }
+                            }}
+                          />
+                        </td>
+                        <td>{timesheet.employeeName}</td>
+                        <td className="date-range">
+                          {new Date(timesheet.weekStartDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(timesheet.weekEndDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                        </td>
+                        <td className="total-hours">{timesheet.totalHours.toFixed(1)} hrs</td>
+                        <td>
+                          <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span>
+                        </td>
+                        <td>
+                          <select
+                            value={timesheetStatusUpdates[timesheet._id]?.status || timesheet.status}
+                            onChange={(e) => setTimesheetStatusUpdates({
+                              ...timesheetStatusUpdates,
+                              [timesheet._id]: {
+                                ...timesheetStatusUpdates[timesheet._id],
+                                status: e.target.value
+                              }
+                            })}
+                            className="status-select"
+                          >
+                            <option value="submitted">Submitted</option>
+                            <option value="approved">Approved</option>
+                            <option value="denied">Denied</option>
+                          </select>
+                        </td>
+                        <td>
+                          <textarea
+                            placeholder="* Comments for decision... *"
+                            value={timesheetStatusUpdates[timesheet._id]?.approvalComments || timesheet.approvalComments || ''}
+                            onChange={(e) => setTimesheetStatusUpdates({
+                              ...timesheetStatusUpdates,
+                              [timesheet._id]: {
+                                ...timesheetStatusUpdates[timesheet._id],
+                                approvalComments: e.target.value
+                              }
+                            })}
+                            className="approval-comments-table"
+                            rows="2"
+                          />
+                        </td>
+                        <td className="actions-cell">
+                          <button
+                            className="submit-decision-button-table"
+                            onClick={() => handleSubmitTimesheetDecision(timesheet._id)}
+                            disabled={
+                              !timesheetStatusUpdates[timesheet._id] ||
+                              timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
+                              ((timesheetStatusUpdates[timesheet._id]?.status === 'approved' || 
+                                timesheetStatusUpdates[timesheet._id]?.status === 'denied') &&
+                              !timesheetStatusUpdates[timesheet._id]?.approvalComments)
+                            }
+                          >
+                            Submit
+                          </button>
+                          <button
+                            className="details-button"
+                            onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
+                          >
+                            {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
+                          </button>
+                        </td>
+                      </tr>
 
-                                >
-                                  Submit
-                                </button>
-                              </td>
-                              <td>
-                                <button onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}>
-                                  {expandedTimesheet === timesheet._id ? '▲' : '▼'}
-                                </button>
-                              </td>
-                            </tr>
-                            {expandedTimesheet === timesheet._id && (
-                              <tr>
-                                <td colSpan="8">
-                                  <div className="expanded-timesheet-details">
-                                    
-                                    {/* Employee's week comments */}
-                                    {timesheet.comments && (
-                                      <div className="week-comments-table">
-                                        <h4>Employee Week Comments:</h4>
-                                        <p>{timesheet.comments}</p>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Approver's comments */}
-                                    {timesheet.approvalComments && (
-                                      <div className="approval-comments-display">
-                                        <h4>Approval Comments:</h4>
-                                        <p>{timesheet.approvalComments}</p>
-                                      </div>
-                                    )}
-
-                                    {/* Approval information */}
-                                    {timesheet.approverEmail && (
-                                      <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
-                                        <h4>Approval Details:</h4>
-                                        <div className="detail-row">
-                                          <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
-                                          <span className="detail-value">{timesheet.approverEmail}</span>
-                                        </div>
-                                        {timesheet.approvedDate && (
-                                          <div className="detail-row">
-                                            <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
-                                            <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                    
-                                    {/* Your existing day entries code */}
-                                    <div className="day-entries-table">
-                                      <h4>Daily Breakdown:</h4>
-                                      {timesheet.dayEntries.map((day, index) => (
-                                        <div key={index} className="day-entry-row">
-                                          <span>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</span>
-                                          {day.notes && <span> - Notes: {day.notes}</span>}
-                                        </div>
-                                      ))}
-                                    </div>
-                                    
+                      {/* Expandable Details Row */}
+                      {expandedTimesheet === timesheet._id && (
+                        <tr className="expanded-row">
+                          <td colSpan="8">
+                            <div className="expanded-timesheet-details">
+                              
+                              {/* Approval information */}
+                              {timesheet.approverEmail && (
+                                <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
+                                  <h4>Approval Details:</h4>
+                                  <div className="detail-row">
+                                    <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                    <span className="detail-value">{timesheet.approverEmail}</span>
                                   </div>
-                                </td>
-                              </tr>
-                            )}
-                          </>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
+                                  {timesheet.approvedDate && (
+                                    <div className="detail-row">
+                                      <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                      <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Employee's week comments */}
+                              {timesheet.comments && (
+                                <div className="week-comments-table">
+                                  <h4>Employee Week Comments:</h4>
+                                  <p>{timesheet.comments}</p>
+                                </div>
+                              )}
+                              
+                              {/* Approver's comments */}
+                              {timesheet.approvalComments && (
+                                <div className="approval-comments-display">
+                                  <h4>Approval Comments:</h4>
+                                  <p>{timesheet.approvalComments}</p>
+                                </div>
+                              )}
+                              
+                              {/* Daily breakdown */}
+                              <div className="day-entries-table">
+                                <h4>Daily Breakdown:</h4>
+                                {timesheet.dayEntries.map((day, index) => (
+                                  <div key={index} className="day-entry-row">
+                                    <span>{new Date(day.date).toLocaleDateString()}: {day.hours} hours</span>
+                                    {day.notes && <span> - Notes: {day.notes}</span>}
+                                  </div>
+                                ))}
+                              </div>
+                              
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Batch Actions */}
+              <div className="batch-approval-actions">
+                <button
+                  className="submit-all-decisions"
+                  disabled={selectedTimesheets.length === 0}
+                  onClick={handleSubmitBatchDecisions}
+                >
+                  Submit Selected Decisions ({selectedTimesheets.length})
+                </button>
+              </div>
             </div>
           )}
         </div>
       ) : (
+        // LEVEL 1: Projects Table
         <div className="approvals-container">
-          <h2>Timesheets Pending Your Approval</h2>
+          <div className="approval-header">
+            <h2>Projects for Approval</h2>
+            <button 
+              className="back-button"
+              onClick={() => setView('list')}
+            >
+              Back to Timesheet
+            </button>
+          </div>
           
-          <button 
-            className="back-button"
-            onClick={handleBackToList}  // NEW
-            type="button"  // NEW
-          >
-            Back to Timesheet
-          </button>
-          
-          {/* Get projects where user is an approver */}
           {(() => {
             const approverProjects = projects.filter(project => {
               if (!project.approvers) return false;
               const approversList = project.approvers.split(',').map(email => email.trim());
               return approversList.includes(user.username);
             });
-
             
             return approverProjects.length === 0 ? (
-              <p>You are not assigned as an approver for any projects.</p>
+              <div className="no-projects">
+                <p>You are not assigned as an approver for any projects.</p>
+              </div>
             ) : (
               <div className="projects-table-container">
                 <table className="projects-table">
@@ -1873,25 +1942,23 @@ return (
                     <tr>
                       <th>Project Name</th>
                       <th>Client</th>
+                      <th>Project Type</th>
                       <th>Date Range</th>
-                      <th>Pending Timesheets</th> {/* Add this column */}
-                      <th>Action</th>
+                      <th>Max Hours</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {approverProjects.map(project => (
                       <tr key={project._id}>
-                        <td>{project.projectName}</td>
+                        <td className="project-name">{project.projectName}</td>
                         <td>{project.clientName}</td>
-                        <td>
+                        <td>{project.projectType}</td>
+                        <td className="date-range">
                           {new Date(project.dateRange.start).toLocaleDateString()} - 
                           {new Date(project.dateRange.end).toLocaleDateString()}
                         </td>
-                        <td>
-                          <span className="timesheet-count-badge">
-                            {projectTimesheetCounts[project._id] || 0}
-                          </span>
-                        </td>
+                        <td>{project.maxHours} hrs</td>
                         <td>
                           <button
                             className="view-timesheets-button-table"
