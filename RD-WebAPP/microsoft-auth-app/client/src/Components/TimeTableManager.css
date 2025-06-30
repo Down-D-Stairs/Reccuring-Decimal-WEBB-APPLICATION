@@ -1505,8 +1505,26 @@
   color: #721c24;
 }
 
-/* Modal Styles */
-.modal-overlay {
+/* TimeTableManager specific styles - add these to Login.css */
+
+/* Make actions-cell specific to timetable only */
+.timetable-container .actions-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
+
+/* Keep ExpenseManager actions-cell as horizontal */
+.expense-manager .actions-cell {
+  white-space: nowrap;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+/* TimeTable specific modal styles */
+.timetable-container .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -1519,7 +1537,7 @@
   z-index: 1000;
 }
 
-.modal-content {
+.timetable-container .modal-content {
   background: white;
   border-radius: 8px;
   max-width: 600px;
@@ -1529,7 +1547,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.modal-header {
+.timetable-container .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1537,12 +1555,12 @@
   border-bottom: 1px solid #eee;
 }
 
-.modal-header h2 {
+.timetable-container .modal-header h2 {
   margin: 0;
   color: #333;
 }
 
-.modal-close-btn {
+.timetable-container .modal-close-btn {
   background: none;
   border: none;
   font-size: 28px;
@@ -1558,12 +1576,29 @@
   line-height: 1;
 }
 
-.modal-close-btn:hover {
+.timetable-container .modal-close-btn:hover {
   color: #333;
   background-color: #f0f0f0;
 }
 
-.modal-close-button {
+.timetable-container .modal-body {
+  padding: 20px;
+}
+
+.timetable-container .project-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timetable-container .modal-footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timetable-container .modal-close-button {
   background-color: #6c757d;
   color: white;
   border: none;
@@ -1574,33 +1609,6 @@
   min-width: 80px;
 }
 
-.modal-close-button:hover {
+.timetable-container .modal-close-button:hover {
   background-color: #5a6268;
 }
-
-
-.modal-body {
-  padding: 20px;
-}
-
-.project-details-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.modal-footer {
-  padding: 20px;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* Update actions cell to stack buttons vertically */
-.actions-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  align-items: center;
-}
-
