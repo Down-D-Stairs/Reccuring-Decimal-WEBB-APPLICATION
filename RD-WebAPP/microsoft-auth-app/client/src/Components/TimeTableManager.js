@@ -103,7 +103,8 @@ function TimeTableManager({ onBack, user }) {
   const [showDecisionConfirmation, setShowDecisionConfirmation] = useState(false);
   const [pendingDecision, setPendingDecision] = useState(null);
   const [showBatchConfirmation, setShowBatchConfirmation] = useState(false);
-
+  const [employeeStatusFilter, setEmployeeStatusFilter] = useState('all');
+  const [projectStatusFilter, setProjectStatusFilter] = useState('all');
 
 
 
@@ -1118,11 +1119,11 @@ const fetchAllEmployees = async () => {
 };
 
 // Update your fetchEmployeeData function to add more logging
-const fetchEmployeeData = async (employeeName, range = 'month') => {
+const fetchEmployeeData = async (employeeName, range = 'month', status = 'all') => {
   try {
-    console.log(`Fetching employee data for ${employeeName} with range ${range}`);
+    console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
     
-    const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}`);
+    const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -1139,12 +1140,13 @@ const fetchEmployeeData = async (employeeName, range = 'month') => {
   }
 };
 
+
 // Update this function in your TimeTableManager component
-const fetchProjectData = async (projectId, range = 'month') => {
+const fetchProjectData = async (projectId, range = 'month', status = 'all') => {
   try {
-    console.log(`Fetching project data for ${projectId} with range ${range}`);
+    console.log(`Fetching project data for ${projectId} with range ${range} and status ${status}`);
     
-    const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}`);
+    const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
     
     if (!response.ok) {
       throw new Error(`Server returned ${response.status}`);
@@ -1159,6 +1161,7 @@ const fetchProjectData = async (projectId, range = 'month') => {
     setProjectData([]);
   }
 };
+
 
 
 // Add useEffect for calendar data
@@ -1414,7 +1417,7 @@ const AdminCalendarDashboard = () => {
     console.log('Employee selected:', employeeName);
     setSelectedEmployee(employeeName);
     if (employeeName) {
-      fetchEmployeeData(employeeName, employeeTimeRange);
+      fetchEmployeeData(employeeName, employeeTimeRange, employeeStatusFilter);
     } else {
       setEmployeeData([]);
     }
@@ -1423,11 +1426,12 @@ const AdminCalendarDashboard = () => {
   const handleProjectSelect = (projectId) => {
     setSelectedProject(projectId);
     if (projectId) {
-      fetchProjectData(projectId, projectTimeRange);
+      fetchProjectData(projectId, projectTimeRange, projectStatusFilter);
     } else {
       setProjectData([]);
     }
   };
+
 
   const handleCloseModal = () => {
     setSelectedDay(null);
@@ -1529,6 +1533,24 @@ const AdminCalendarDashboard = () => {
                   <option value="month">This Month</option>
                 </select>
               </div>
+
+              <div className="time-range-selector">
+                <label>Status Filter:</label>
+                <select 
+                  value={employeeStatusFilter} 
+                  onChange={(e) => {
+                    setEmployeeStatusFilter(e.target.value);
+                    if (selectedEmployee) {
+                      fetchEmployeeData(selectedEmployee, employeeTimeRange, e.target.value);
+                    }
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="approved">Approved</option>
+                  <option value="denied">Denied</option>
+                </select>
+              </div>
               
               {selectedEmployee && (
                 <div className="employee-data">
@@ -1581,6 +1603,24 @@ const AdminCalendarDashboard = () => {
                   <option value="week">This Week</option>
                   <option value="2weeks">Last 2 Weeks</option>
                   <option value="month">This Month</option>
+                </select>
+              </div>
+
+              <div className="time-range-selector">
+                <label>Status Filter:</label>
+                <select 
+                  value={projectStatusFilter} 
+                  onChange={(e) => {
+                    setProjectStatusFilter(e.target.value);
+                    if (selectedProject) {
+                      fetchProjectData(selectedProject, projectTimeRange, e.target.value);
+                    }
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="approved">Approved</option>
+                  <option value="denied">Denied</option>
                 </select>
               </div>
               
