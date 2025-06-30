@@ -1531,6 +1531,157 @@ app.post('/api/timeentries/counts', async (req, res) => {
   }
 });
 
+// Get employee timesheet data with status filtering for admin calendar
+app.get('/api/admin/employee-data', async (req, res) => {
+  try {
+    const { employee, range, status } = req.query;
+    
+    if (!employee) {
+      return res.status(400).json({ error: 'Employee parameter is required' });
+    }
+    
+    // Calculate date range
+    let startDate, endDate;
+    const now = new Date();
+    
+    switch (range) {
+      case 'week':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+      case '2weeks':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+        endDate = new Date(now);
+        break;
+      case 'month':
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+    }
+    
+    // Build query
+    let query = {
+      employeeName: employee,
+      weekStartDate: { $gte: startDate },
+      weekEndDate: { $lte: endDate }
+    };
+    
+    // Add status filter if not 'all'
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    const timeEntries = await TimeEntry.find(query).populate('projectId');
+    
+    // Group by project and calculate totals
+    const projectBreakdown = {};
+    let totalHours = 0;
+    
+    timeEntries.forEach(entry => {
+      const projectName = entry.projectId ? entry.projectId.projectName : 'Unknown Project';
+      
+      if (!projectBreakdown[projectName]) {
+        projectBreakdown[projectName] = 0;
+      }
+      
+      projectBreakdown[projectName] += entry.totalHours;
+      totalHours += entry.totalHours;
+    });
+    
+    res.json({
+      employee,
+      totalHours,
+      projectBreakdown,
+      timeEntries,
+      dateRange: { startDate, endDate },
+      statusFilter: status || 'all'
+    });
+    
+  } catch (error) {
+    console.error('Error fetching employee data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get project timesheet data with status filtering for admin calendar
+app.get('/api/admin/project-data', async (req, res) => {
+  try {
+    const { projectId, range, status } = req.query;
+    
+    if (!projectId) {
+      return res.status(400).json({ error: 'ProjectId parameter is required' });
+    }
+    
+    // Calculate date range
+    let startDate, endDate;
+    const now = new Date();
+    
+    switch (range) {
+      case 'week':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        break;
+      case '2weeks':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+        endDate = new Date(now);
+        break;
+      case 'month':
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+    }
+    
+    // Build query
+    let query = {
+      projectId: projectId,
+      weekStartDate: { $gte: startDate },
+      weekEndDate: { $lte: endDate }
+    };
+    
+    // Add status filter if not 'all'
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    const timeEntries = await TimeEntry.find(query).populate('projectId');
+    
+    // Group by employee and calculate totals
+    const employeeBreakdown = {};
+    let totalHours = 0;
+    
+    timeEntries.forEach(entry => {
+      const employeeName = entry.employeeName;
+      
+      if (!employeeBreakdown[employeeName]) {
+        employeeBreakdown[employeeName] = 0;
+      }
+      
+      employeeBreakdown[employeeName] += entry.totalHours;
+      totalHours += entry.totalHours;
+    });
+    
+    const project = await Project.findById(projectId);
+    
+    res.json({
+      project: project ? project.projectName : 'Unknown Project',
+      totalHours,
+      employeeBreakdown,
+      timeEntries,
+      dateRange: { startDate, endDate },
+      statusFilter: status || 'all'
+    });
+    
+  } catch (error) {
+    console.error('Error fetching project data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 
 // Start the server
