@@ -775,19 +775,18 @@ const HistoryView = () => {
 
                             {/* Add approval information */}
                             {timesheet.approverEmail && (
-                              <div className={`detail-row ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
-                                <div className="approval-info-display">
-                                  <div className="detail-row">
-                                    <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
-                                    <span className="detail-value">{timesheet.approverEmail}</span>
-                                  </div>
-                                  {timesheet.approvedDate && (
-                                    <div className="detail-row">
-                                      <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
-                                      <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
-                                    </div>
-                                  )}
+                              <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
+                                <h4>Approval Details:</h4>
+                                <div className="detail-row">
+                                  <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                  <span className="detail-value">{timesheet.approverEmail}</span>
                                 </div>
+                                {timesheet.approvedDate && (
+                                  <div className="detail-row">
+                                    <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                    <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
+                                  </div>
+                                )}
                               </div>
                             )}
                             
