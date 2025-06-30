@@ -1545,20 +1545,39 @@
 .modal-close-btn {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 28px;
   cursor: pointer;
   color: #666;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  padding: 5px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  line-height: 1;
 }
 
 .modal-close-btn:hover {
   color: #333;
+  background-color: #f0f0f0;
 }
+
+.modal-close-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+.modal-close-button:hover {
+  background-color: #5a6268;
+}
+
 
 .modal-body {
   padding: 20px;
@@ -1575,19 +1594,6 @@
   border-top: 1px solid #eee;
   display: flex;
   justify-content: flex-end;
-}
-
-.modal-close-button {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.modal-close-button:hover {
-  background-color: #5a6268;
 }
 
 /* Update actions cell to stack buttons vertically */
