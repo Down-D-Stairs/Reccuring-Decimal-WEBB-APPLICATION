@@ -2179,7 +2179,7 @@ const fetchProjects = async () => {
         <div className="modal-overlay" onClick={() => setShowProjectExpensesModal(false)}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Trips for {selectedProjectName}</h3>
+              <h3>Reports for {selectedProjectName}</h3>
               <button 
                 className="close-button"
                 onClick={() => setShowProjectExpensesModal(false)}
@@ -2192,7 +2192,7 @@ const fetchProjects = async () => {
               <table className="receipts-table">
                 <thead>
                   <tr>
-                    <th>Trip Name</th>
+                    <th>Report Name</th>
                     <th>Employee</th>
                     <th>Date Range</th>
                     <th>Total Amount</th>
@@ -2233,7 +2233,7 @@ const fetchProjects = async () => {
         <div className="modal-overlay" onClick={() => setShowTripDetailsModal(false)}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Trip Details: {selectedTripDetails?.tripName}</h3>
+              <h3>Report Details: {selectedTripDetails?.tripName}</h3>
               <button 
                 className="close-button"
                 onClick={() => setShowTripDetailsModal(false)}
