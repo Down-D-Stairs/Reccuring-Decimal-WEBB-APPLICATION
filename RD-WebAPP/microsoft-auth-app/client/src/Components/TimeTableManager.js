@@ -111,6 +111,10 @@ function TimeTableManager({ onBack, user }) {
   // Add this with your other useState declarations
   const [isLoadingCalendarData, setIsLoadingCalendarData] = useState(false);
   const [calendarDataCache, setCalendarDataCache] = useState({});
+  // Add these state variables with your other useState declarations
+  const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+  const [isSubmittingTimesheet, setIsSubmittingTimesheet] = useState(false);
+
 
   
 
@@ -410,7 +414,7 @@ const fetchTimeEntries = async () => {
 
   const handleSubmitTimesheet = async () => {
     try {
-      setIsSubmitting(true);
+      setIsSubmittingTimesheet(true);
       
       // Convert weekly entries to the format expected by the API
       const timeEntriesToSubmit = weeklyEntries
@@ -453,15 +457,15 @@ const fetchTimeEntries = async () => {
             totalHours: dayEntries.reduce((sum, day) => sum + day.hours, 0),
             status: 'submitted',
             submittedDate: new Date().toISOString(),
-            comments: weekComments // Add this line
+            comments: weekComments
           };
         });
       
       console.log('Submitting timesheet entries:', timeEntriesToSubmit);
       
       if (timeEntriesToSubmit.length === 0) {
-        alert('No hours to submit. Please add hours to at least one project.');
-        setIsSubmitting(false);
+        setIsSubmittingTimesheet(false);
+        // You could show an error modal here instead of alert
         return;
       }
       
@@ -480,17 +484,37 @@ const fetchTimeEntries = async () => {
       }
       
       await response.json();
-      alert('Timesheet submitted successfully!');
       
-      // Refresh time entries
+      // Success - close modal and refresh
+      setShowSubmitConfirmation(false);
       fetchTimeEntries();
       setWeekComments('');
+      
+      // You could show a success modal here instead of alert
+      
     } catch (error) {
       console.error('Error submitting timesheet:', error);
-      alert(`Failed to submit timesheet: ${error.message}`);
+      // You could show an error modal here instead of alert
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingTimesheet(false);
     }
+  };
+
+  // Create a function to show the confirmation modal
+  const handleSubmitClick = () => {
+    // Check if there are entries to submit
+    const hasEntries = weeklyEntries.some(entry => {
+      return entry.monday > 0 || entry.tuesday > 0 || entry.wednesday > 0 || 
+            entry.thursday > 0 || entry.friday > 0 || entry.saturday > 0 || 
+            entry.sunday > 0;
+    });
+    
+    if (!hasEntries) {
+      // Show error modal instead of alert
+      return;
+    }
+    
+    setShowSubmitConfirmation(true);
   };
   
 
@@ -1945,12 +1969,13 @@ return (
             </button>
           )}
           
+          
           <button
             className="submit-timesheet-button"
-            onClick={handleSubmitTimesheet}
-            disabled={isSubmitting || weeklyEntries.length === 0}
+            onClick={handleSubmitClick} // Changed from handleSubmitTimesheet
+            disabled={isSubmittingTimesheet || weeklyEntries.length === 0}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Timesheet'}
+            {isSubmittingTimesheet ? 'Submitting...' : 'Submit Timesheet'}
           </button>
         </div>
       </div>
@@ -2585,6 +2610,53 @@ return (
             }
           </p>
           <p>Please wait, do not close this window.</p>
+        </div>
+      </div>
+    )}
+    {showSubmitConfirmation && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>Confirm Timesheet Submission</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p>Are you sure you want to submit your timesheet for the week of:</p>
+            <p><strong>{new Date(selectedWeek.start).toLocaleDateString()} - {new Date(selectedWeek.end).toLocaleDateString()}</strong></p>
+            
+            <div className="submission-summary">
+              <p>Total Hours: <strong>{totalHours.total}</strong></p>
+              <p>Projects: <strong>{weeklyEntries.length}</strong></p>
+            </div>
+            
+            <p className="warning-text">
+              Are you sure you want to submit this timesheet?
+            </p>
+          </div>
+          
+          <div className="modal-actions">
+            <button 
+              className="cancel-button"
+              onClick={() => setShowSubmitConfirmation(false)}
+              disabled={isSubmittingTimesheet}
+            >
+              Cancel
+            </button>
+            <button 
+              className="confirm-submit-button"
+              onClick={handleSubmitTimesheet}
+              disabled={isSubmittingTimesheet}
+            >
+              {isSubmittingTimesheet ? (
+                <>
+                  <div className="processing-spinner"></div>
+                  Submitting...
+                </>
+              ) : (
+                'Submit Timesheet'
+              )}
+            </button>
+          </div>
         </div>
       </div>
     )}

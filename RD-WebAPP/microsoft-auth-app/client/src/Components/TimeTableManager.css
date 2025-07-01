@@ -1783,3 +1783,66 @@
   vertical-align: middle;
   padding: 8px;
 }
+
+/* Timesheet submission specific styles */
+.submission-summary {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  border-left: 4px solid #007bff;
+}
+
+.submission-summary p {
+  margin: 4px 0;
+  color: #333;
+}
+
+.warning-text {
+  color: #856404;
+  background-color: #fff3cd;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #ffeaa7;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+.confirm-submit-button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.confirm-submit-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.confirm-submit-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.processing-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
