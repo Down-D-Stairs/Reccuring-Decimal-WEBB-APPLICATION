@@ -64,7 +64,7 @@ function TimeTableManager({ onBack, user }) {
 
   const ADMIN_EMAILS = useMemo(() => [
     'pgupta@recurringdecimal.com',
-    'kkarumudi@recurringdecimal.com',
+    
     'sn@recurringdecimal.com'
   ], []);
 
@@ -215,27 +215,45 @@ function TimeTableManager({ onBack, user }) {
   }, [view, selectedProjectId, projects, user.username]);
 
   // Update the fetchProjects function
-const fetchProjects = async () => {
-  try {
-    // Fetch projects where the current user is a member or all projects if admin
-    const url = isAdmin 
-      ? `${API_URL}/api/projects` 
-      : `${API_URL}/api/projects?projectMember=${user.id}`;
+  // Update the fetchProjects function
+  const fetchProjects = async () => {
+    try {
+      // Fetch all projects first
+      const response = await fetch(`${API_URL}/api/projects`);
+      const data = await response.json();
       
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    // Also include system projects (PTO, Holiday) for all users
-    const systemProjects = data.filter(p => p.isSystemProject);
-    const userProjects = isAdmin 
-      ? data 
-      : data.filter(p => p.projectMembers.includes(user.id) || p.isSystemProject);
-    
-    setProjects(userProjects);
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-  }
-};
+      // Filter projects based on user role
+      let userProjects;
+      
+      if (isAdmin) {
+        // Admins can see all projects
+        userProjects = data;
+      } else {
+        // Regular users can only see projects where they are members
+        userProjects = data.filter(project => {
+          // Check if user is in projectMembers (comma-separated string)
+          if (project.projectMembers) {
+            const membersList = project.projectMembers.split(',').map(email => email.trim());
+            const isProjectMember = membersList.includes(user.username);
+            
+            // Also include system projects (PTO, Holiday) for everyone
+            const isSystemProject = project.isSystemProject;
+            
+            return isProjectMember || isSystemProject;
+          }
+          
+          // Include system projects even if projectMembers is empty
+          return project.isSystemProject;
+        });
+      }
+      
+      console.log(`User ${user.username} can see ${userProjects.length} projects out of ${data.length} total`);
+      setProjects(userProjects);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
 
 
 const fetchTimeEntries = async () => {
@@ -1867,7 +1885,7 @@ return (
                     <option value="">Select Project</option>
                     {projects.map(project => (
                       <option key={project._id} value={project._id}>
-                        {project.projectName}
+                        {project.projectName} {project.isSystemProject ? '' : `(${project.clientName})`}
                       </option>
                     ))}
                     <option value="holiday">Holiday</option>
