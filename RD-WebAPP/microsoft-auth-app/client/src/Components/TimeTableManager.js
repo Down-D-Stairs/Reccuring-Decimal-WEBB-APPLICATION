@@ -105,8 +105,25 @@ function TimeTableManager({ onBack, user }) {
   const [showBatchConfirmation, setShowBatchConfirmation] = useState(false);
   const [employeeStatusFilter, setEmployeeStatusFilter] = useState('all');
   const [projectStatusFilter, setProjectStatusFilter] = useState('all');
+  // Add these state variables
+  const [isLoadingEmployeeData, setIsLoadingEmployeeData] = useState(false);
+  const [isLoadingProjectData, setIsLoadingProjectData] = useState(false);
+  // Add debouncing to prevent rapid API calls
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
 
-
+  // Create debounced versions of your fetch functions
+  const debouncedFetchEmployeeData = debounce(fetchEmployeeData, 300);
+  const debouncedFetchProjectData = debounce(fetchProjectData, 300);
 
 
   // Get default week (current week starting Monday)
@@ -1121,6 +1138,7 @@ const fetchAllEmployees = async () => {
 // Update your fetchEmployeeData function to add more logging
 const fetchEmployeeData = async (employeeName, range = 'month', status = 'all') => {
   try {
+    setIsLoadingEmployeeData(true); // Show loading
     console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
     
     const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
@@ -1137,6 +1155,8 @@ const fetchEmployeeData = async (employeeName, range = 'month', status = 'all') 
   } catch (error) {
     console.error('Error fetching employee data:', error);
     setEmployeeData([]);
+  } finally {
+    setIsLoadingEmployeeData(false); // Hide loading
   }
 };
 
@@ -1144,6 +1164,7 @@ const fetchEmployeeData = async (employeeName, range = 'month', status = 'all') 
 // Update this function in your TimeTableManager component
 const fetchProjectData = async (projectId, range = 'month', status = 'all') => {
   try {
+    setIsLoadingProjectData(true); // Show loading
     console.log(`Fetching project data for ${projectId} with range ${range} and status ${status}`);
     
     const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
@@ -1159,6 +1180,8 @@ const fetchProjectData = async (projectId, range = 'month', status = 'all') => {
   } catch (error) {
     console.error('Error fetching project data:', error);
     setProjectData([]);
+  } finally {
+    setIsLoadingProjectData(false); // Hide loading
   }
 };
 
@@ -1433,6 +1456,9 @@ const AdminCalendarDashboard = () => {
   };
 
 
+
+
+
   const handleCloseModal = () => {
     setSelectedDay(null);
     setSelectedDayData([]);
@@ -1539,12 +1565,9 @@ const AdminCalendarDashboard = () => {
                 <select 
                   value={employeeStatusFilter} 
                   onChange={(e) => {
-                    console.log('Employee status changed to:', e.target.value);
-                    console.log('Selected employee:', selectedEmployee);
-                    console.log('Employee time range:', employeeTimeRange);
                     setEmployeeStatusFilter(e.target.value);
                     if (selectedEmployee) {
-                      fetchEmployeeData(selectedEmployee, employeeTimeRange, e.target.value);
+                      debouncedFetchEmployeeData(selectedEmployee, employeeTimeRange, e.target.value);
                     }
                   }}
                 >
@@ -1558,20 +1581,27 @@ const AdminCalendarDashboard = () => {
               {selectedEmployee && (
                 <div className="employee-data">
                   <h5>{selectedEmployee} - {employeeTimeRange}</h5>
-                  {employeeData.length > 0 ? (
-                    <>
-                      <div className="total-hours">
-                        Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                      </div>
-                      {employeeData.map((entry, index) => (
-                        <div key={index} className="employee-entry">
-                          <div className="project-name">{entry.projectName}</div>
-                          <div className="hours">{entry.totalHours}h</div>
-                        </div>
-                      ))}
-                    </>
+                  {isLoadingEmployeeData ? (
+                    <div className="loading-indicator">
+                      <div className="processing-spinner">⏳</div>
+                      <p>Loading employee data...</p>
+                    </div>
                   ) : (
-                    <p>No hours found for this employee in the selected time range.</p>
+                    employeeData.length > 0 ? (
+                      <>
+                        <div className="total-hours">
+                          Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                        </div>
+                        {employeeData.map((entry, index) => (
+                          <div key={index} className="employee-entry">
+                            <div className="project-name">{entry.projectName}</div>
+                            <div className="hours">{entry.totalHours}h</div>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <p>No hours found for this employee in the selected time range.</p>
+                    )
                   )}
                 </div>
               )}
@@ -1614,12 +1644,9 @@ const AdminCalendarDashboard = () => {
                 <select 
                   value={projectStatusFilter} 
                   onChange={(e) => {
-                    console.log('Project status changed to:', e.target.value);
-                    console.log('Selected project:', selectedProject);
-                    console.log('Project time range:', projectTimeRange);
                     setProjectStatusFilter(e.target.value);
                     if (selectedProject) {
-                      fetchProjectData(selectedProject, projectTimeRange, e.target.value);
+                      debouncedFetchProjectData(selectedProject, projectTimeRange, e.target.value);
                     }
                   }}
                 >
@@ -1632,21 +1659,28 @@ const AdminCalendarDashboard = () => {
               
               {selectedProject && (
                 <div className="project-data">
-                  <h5>{projects.find(p => p._id === selectedProject)?.projectName}</h5>
-                  {projectData.length > 0 ? (
-                    <>
-                      <div className="total-hours">
-                        Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                      </div>
-                      {projectData.map((entry, index) => (
-                        <div key={index} className="project-entry">
-                          <div className="employee-name">{entry.employeeName}</div>
-                          <div className="hours">{entry.totalHours}h</div>
-                        </div>
-                      ))}
-                    </>
+                  <h5>{projects.find(p => p._id === selectedProject)?.projectName} - {projectTimeRange}</h5>
+                  {isLoadingProjectData ? (
+                    <div className="loading-indicator">
+                      <div className="processing-spinner">⏳</div>
+                      <p>Loading project data...</p>
+                    </div>
                   ) : (
-                    <p>No hours found for this project in the selected time range.</p>
+                    projectData.length > 0 ? (
+                      <>
+                        <div className="total-hours">
+                          Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                        </div>
+                        {projectData.map((entry, index) => (
+                          <div key={index} className="project-entry">
+                            <div className="employee-name">{entry.employeeName}</div>
+                            <div className="hours">{entry.totalHours}h</div>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <p>No hours found for this project in the selected time range.</p>
+                    )
                   )}
                 </div>
               )}

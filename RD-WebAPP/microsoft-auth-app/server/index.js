@@ -1145,15 +1145,18 @@ app.get('/api/admin/day-details', async (req, res) => {
 
 // Get employee data for specified time range
 // Get employee timesheet data with status filtering for admin calendar
+// Optimize the employee data endpoint
 app.get('/api/admin/employee-data', async (req, res) => {
   try {
+    const startTime = Date.now(); // Performance tracking
+    
     const { employee, range, status } = req.query;
     
     if (!employee) {
       return res.status(400).json({ error: 'Employee parameter is required' });
     }
     
-    // Calculate date range
+    // Calculate date range (same as before)
     let startDate, endDate;
     const now = new Date();
     
@@ -1174,49 +1177,46 @@ app.get('/api/admin/employee-data', async (req, res) => {
         break;
     }
     
-    // Build query with status filtering
+    // Build optimized query
     let query = {
       employeeName: employee,
       weekStartDate: { $gte: startDate },
       weekEndDate: { $lte: endDate }
     };
     
-    // Add status filter if not 'all'
     if (status && status !== 'all') {
       query.status = status;
     }
     
-    console.log('Employee query with status filter:', query); // Debug log
+    // Use aggregation pipeline for better performance
+    const result = await TimeEntry.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: 'projectId',
+          foreignField: '_id',
+          as: 'project'
+        }
+      },
+      {
+        $group: {
+          _id: '$projectId',
+          projectName: { $first: { $arrayElemAt: ['$project.projectName', 0] } },
+          totalHours: { $sum: '$totalHours' }
+        }
+      },
+      { $match: { totalHours: { $gt: 0 } } },
+      { $sort: { totalHours: -1 } }
+    ]);
     
-    const timeEntries = await TimeEntry.find(query).populate('projectId');
+    const endTime = Date.now();
+    console.log(`Employee data query took ${endTime - startTime}ms`);
     
-    console.log(`Found ${timeEntries.length} time entries for employee ${employee} with status ${status}`); // Debug log
-    
-    // Group by project and calculate totals
-    const projectBreakdown = [];
-    
-    // Create a map to group by project
-    const projectMap = {};
-    
-    timeEntries.forEach(entry => {
-      const projectName = entry.projectId ? entry.projectId.projectName : 'Unknown Project';
-      
-      if (!projectMap[projectName]) {
-        projectMap[projectName] = {
-          projectName: projectName,
-          totalHours: 0
-        };
-      }
-      
-      projectMap[projectName].totalHours += entry.totalHours;
-    });
-    
-    // Convert map to array
-    const result = Object.values(projectMap).filter(project => project.totalHours > 0);
-    
-    console.log('Employee data result:', result); // Debug log
-    
-    res.json(result);
+    res.json(result.map(item => ({
+      projectName: item.projectName || 'Unknown Project',
+      totalHours: item.totalHours
+    })));
     
   } catch (error) {
     console.error('Error fetching employee data:', error);
@@ -1225,18 +1225,22 @@ app.get('/api/admin/employee-data', async (req, res) => {
 });
 
 
+
 // Get project data (all employees working on a specific project)
 // Update the project data endpoint to accept time range
 // Get project timesheet data with status filtering for admin calendar
+// Optimize the project data endpoint
 app.get('/api/admin/project-data', async (req, res) => {
   try {
+    const startTime = Date.now(); // Performance tracking
+    
     const { projectId, range, status } = req.query;
     
     if (!projectId) {
       return res.status(400).json({ error: 'ProjectId parameter is required' });
     }
     
-    // Calculate date range
+    // Calculate date range (same logic as employee endpoint)
     let startDate, endDate;
     const now = new Date();
     
@@ -1257,57 +1261,45 @@ app.get('/api/admin/project-data', async (req, res) => {
         break;
     }
     
-    // Build query with status filtering
+    // Build optimized query
     let query = {
-      projectId: projectId,
+      projectId: new mongoose.Types.ObjectId(projectId),
       weekStartDate: { $gte: startDate },
       weekEndDate: { $lte: endDate }
     };
     
-    // Add status filter if not 'all'
     if (status && status !== 'all') {
       query.status = status;
     }
     
-    console.log('Project query with status filter:', query); // Debug log
+    // Use aggregation pipeline for better performance
+    const result = await TimeEntry.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: '$employeeName',
+          employeeName: { $first: '$employeeName' },
+          totalHours: { $sum: '$totalHours' }
+        }
+      },
+      { $match: { totalHours: { $gt: 0 } } },
+      { $sort: { totalHours: -1 } }
+    ]);
     
-    const timeEntries = await TimeEntry.find(query);
+    const endTime = Date.now();
+    console.log(`Project data query took ${endTime - startTime}ms`);
     
-    console.log(`Found ${timeEntries.length} time entries for project ${projectId} with status ${status}`); // Debug log
-    
-    // Group by employee and calculate totals
-    const employeeBreakdown = [];
-    
-    // Create a map to group by employee
-    const employeeMap = {};
-    
-    timeEntries.forEach(entry => {
-      const employeeName = entry.employeeName;
-      
-      if (!employeeMap[employeeName]) {
-        employeeMap[employeeName] = {
-          employeeName: employeeName,
-          totalHours: 0
-        };
-      }
-      
-      employeeMap[employeeName].totalHours += entry.totalHours;
-    });
-    
-    // Convert map to array and sort by hours descending
-    const result = Object.values(employeeMap)
-      .filter(employee => employee.totalHours > 0)
-      .sort((a, b) => b.totalHours - a.totalHours);
-    
-    console.log('Project data result:', result); // Debug log
-    
-    res.json(result);
+    res.json(result.map(item => ({
+      employeeName: item.employeeName,
+      totalHours: item.totalHours
+    })));
     
   } catch (error) {
     console.error('Error fetching project data:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 
