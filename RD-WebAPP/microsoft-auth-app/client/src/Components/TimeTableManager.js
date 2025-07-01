@@ -797,7 +797,7 @@ const HistoryView = () => {
                           <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span>
                         </td>
                         <td>{new Date(timesheet.submittedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
-                        <td className="actions-cell">
+                        <td className="actions-cell-horizontal">
                           <button
                             className="details-toggle-button"
                             onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
@@ -954,7 +954,7 @@ const HistoryView = () => {
                     <td className="report-name">{project.projectName}</td>
                     <td>{project.clientName}</td>
                     <td className="amount">{project.timesheetCount}</td>
-                    <td className="actions-cell">
+                    <td className="actions-cell-horizontal">
                       <button
                         className="edit-button"
                         onClick={() => fetchUserProjectTimesheets(project._id)}
@@ -2224,7 +2224,7 @@ return (
                               rows="2"
                             />
                           </td>
-                          <td className="actions-cell">
+                          <td className="actions-cell-horizontal">
                             <button
                               className="submit-decision-btn"
                               onClick={() => handleSubmitTimesheetDecision(timesheet._id)}
@@ -2417,7 +2417,7 @@ return (
                             {new Date(project.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                           </td>
                           <td className="amount">{project.maxHours} hrs</td>
-                          <td className="actions-cell">
+                          <td className="actions-cell-horizontal">
                             <button
                               className="edit-button"
                               onClick={() => handleViewProjectTimesheets(project._id)}

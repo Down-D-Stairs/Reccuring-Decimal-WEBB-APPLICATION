@@ -69,9 +69,12 @@
   background: #f8f9fa;
 }
 
-/* Standardize all table action buttons */
-.view-timesheets-button-table,
-.submit-decision-button-table {
+/* Standardize ALL table action buttons */
+.edit-button,
+.details-button,
+.view-timesheets-button,
+.submit-decision-btn,
+.details-toggle-button {
   min-width: 100px;
   height: 35px;
   padding: 8px 12px;
@@ -83,51 +86,77 @@
   text-align: center;
   white-space: nowrap;
   transition: background-color 0.2s ease;
+  margin: 2px; /* Small margin for spacing */
 }
 
-/* View Timesheets button styling */
-.view-timesheets-button-table {
+/* View Timesheets / Edit button - Blue */
+.edit-button,
+.view-timesheets-button {
   background-color: #007bff;
   color: white;
 }
 
-.view-timesheets-button-table:hover {
+.edit-button:hover,
+.view-timesheets-button:hover {
   background-color: #0056b3;
 }
 
-/* Submit Decision button styling */
-.submit-decision-button-table {
+/* Details button - Gray */
+.details-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.details-button:hover {
+  background-color: #5a6268;
+}
+
+/* Submit Decision button - Green */
+.submit-decision-btn {
   background-color: #28a745;
   color: white;
 }
 
-.submit-decision-button-table:hover {
+.submit-decision-btn:hover {
   background-color: #1e7e34;
 }
 
-.submit-decision-button-table:disabled {
+.submit-decision-btn:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-/* Expand/collapse details button */
+/* Details Toggle button - Light gray with smaller width */
 .details-toggle-button {
-  min-width: 40px;
-  height: 35px;
-  padding: 8px;
-  font-size: 16px;
-  font-weight: bold;
+  min-width: 60px; /* Smaller for expand/collapse */
   background-color: #f8f9fa;
+  color: #495057;
   border: 1px solid #dee2e6;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
-  transition: background-color 0.2s ease;
 }
 
 .details-toggle-button:hover {
   background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Actions cell layout */
+.actions-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  padding: 8px;
+}
+
+/* For horizontal button layout in some tables */
+.actions-cell-horizontal {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
 }
 
 /* Make sure table cells with buttons have consistent spacing */
@@ -858,26 +887,6 @@
   font-family: inherit;
 }
 
-.submit-decision-button-table {
-  padding: 6px 12px;
-  background-color: #28a745 !important;
-  color: white !important;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.submit-decision-button-table:disabled {
-  background-color: #cccccc !important;
-  cursor: not-allowed;
-}
-
-.submit-decision-button-table:hover:not(:disabled) {
-  background-color: #218838 !important;
-}
-
 /* Expanded row details */
 .expanded-timesheet-details {
   padding: 20px;
@@ -1449,15 +1458,7 @@
   font-weight: bold;
 }
 
-/* Fix double-click issues by ensuring proper button states */
-.timesheets-table button,
-.back-button,
-.submit-decision-button-table,
-.view-timesheets-button-table {
-  pointer-events: auto;
-  touch-action: manipulation; /* Prevents double-tap zoom on mobile */
-  user-select: none; /* Prevents text selection interfering with clicks */
-}
+
 
 
 
@@ -1768,4 +1769,11 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
+}
+
+/* Make sure table cells with buttons have consistent spacing */
+.timesheets-table td,
+.reports-table td {
+  vertical-align: middle;
+  padding: 8px;
 }
