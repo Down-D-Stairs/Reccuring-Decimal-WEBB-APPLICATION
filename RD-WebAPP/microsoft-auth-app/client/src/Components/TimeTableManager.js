@@ -114,6 +114,10 @@ function TimeTableManager({ onBack, user }) {
   // Add these state variables with your other useState declarations
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
   const [isSubmittingTimesheet, setIsSubmittingTimesheet] = useState(false);
+  // Add these with your other useState declarations
+  const [showCreateProjectConfirmation, setShowCreateProjectConfirmation] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+
 
 
   
@@ -338,6 +342,8 @@ const fetchTimeEntries = async () => {
 
   const handleCreateProject = async () => {
     try {
+      setIsCreatingProject(true);
+      
       const response = await fetch(`${API_URL}/api/projects`, {
         method: 'POST',
         headers: {
@@ -349,14 +355,41 @@ const fetchTimeEntries = async () => {
         })
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create project');
+      }
+
       const data = await response.json();
       setProjects(prevProjects => [...prevProjects, data]);
+      
+      // Success - close modal and reset form
+      setShowCreateProjectConfirmation(false);
       resetNewProjectForm();
       setView('list');
+      
     } catch (error) {
       console.error('Error creating project:', error);
+      // You could show an error modal here instead of just logging
+    } finally {
+      setIsCreatingProject(false);
     }
   };
+
+  // Create a function to show the confirmation modal
+  const handleCreateProjectClick = () => {
+    // Validate required fields
+    if (!newProject.projectName || !newProject.clientName ||
+        !newProject.dateRange.start || !newProject.dateRange.end ||
+        !newProject.maxHours || !newProject.maxBudget ||
+        !newProject.approvers || !newProject.projectMembers) {
+      // Could show an error modal here instead of just returning
+      return;
+    }
+    
+    setShowCreateProjectConfirmation(true);
+  };
+
 
   const resetNewProjectForm = () => {
     setNewProject({
@@ -2128,13 +2161,13 @@ return (
           <div className="form-buttons">
             <button onClick={() => setView('list')}>Cancel</button>
             <button
-              onClick={handleCreateProject}
-              disabled={!newProject.projectName || !newProject.clientName ||
+              onClick={handleCreateProjectClick} // Changed from handleCreateProject
+              disabled={isCreatingProject || !newProject.projectName || !newProject.clientName ||
                       !newProject.dateRange.start || !newProject.dateRange.end ||
                       !newProject.maxHours || !newProject.maxBudget ||
                       !newProject.approvers || !newProject.projectMembers}
             >
-              Create Project
+              {isCreatingProject ? 'Creating...' : 'Create Project'}
             </button>
           </div>
         </div>
@@ -2664,6 +2697,62 @@ return (
             entry.sunday > 0
           ).length} project(s)</p>
           <p>Total Hours: {totalHours.total}</p>
+          <p>Please wait, do not close this window.</p>
+        </div>
+      </div>
+    )}
+    {showCreateProjectConfirmation && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>Confirm Project Creation</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p>Are you sure you want to create this project?</p>
+            
+            <div className="submission-summary">
+              <p><strong>Project:</strong> {newProject.projectName}</p>
+              <p><strong>Client:</strong> {newProject.clientName}</p>
+              <p><strong>Type:</strong> {newProject.projectType}</p>
+              <p><strong>Duration:</strong> {new Date(newProject.dateRange.start).toLocaleDateString()} - {new Date(newProject.dateRange.end).toLocaleDateString()}</p>
+              <p><strong>Max Hours:</strong> {newProject.maxHours}</p>
+              <p><strong>Max Budget:</strong> ${newProject.maxBudget}</p>
+            </div>
+            
+            <p className="warning-text">
+              Once created, the project will be available to all assigned members.
+            </p>
+          </div>
+          
+          <div className="modal-actions">
+            <button
+              className="cancel-button"
+              onClick={() => setShowCreateProjectConfirmation(false)}
+              disabled={isCreatingProject}
+            >
+              Cancel
+            </button>
+            <button
+              className="confirm-submit-button"
+              onClick={handleCreateProject}
+              disabled={isCreatingProject}
+            >
+              Create Project
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Processing overlay for project creation */}
+    {isCreatingProject && (
+      <div className="processing-overlay">
+        <div className="processing-popup">
+          <div className="processing-spinner">⏳</div>
+          <h3>Creating Your Project...</h3>
+          <p>Setting up "{newProject.projectName}"</p>
+          <p>Client: {newProject.clientName}</p>
           <p>Please wait, do not close this window.</p>
         </div>
       </div>
