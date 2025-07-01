@@ -108,22 +108,7 @@ function TimeTableManager({ onBack, user }) {
   // Add these state variables
   const [isLoadingEmployeeData, setIsLoadingEmployeeData] = useState(false);
   const [isLoadingProjectData, setIsLoadingProjectData] = useState(false);
-  // Add debouncing to prevent rapid API calls
-  const debounce = (func, wait) => {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  };
-
-  // Create debounced versions of your fetch functions
-  const debouncedFetchEmployeeData = debounce(fetchEmployeeData, 300);
-  const debouncedFetchProjectData = debounce(fetchProjectData, 300);
+  
 
 
   // Get default week (current week starting Monday)
@@ -1184,6 +1169,23 @@ const fetchProjectData = async (projectId, range = 'month', status = 'all') => {
     setIsLoadingProjectData(false); // Hide loading
   }
 };
+
+// Add debouncing to prevent rapid API calls
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+
+  // Create debounced versions of your fetch functions
+  const debouncedFetchEmployeeData = debounce(fetchEmployeeData, 300);
+  const debouncedFetchProjectData = debounce(fetchProjectData, 300);
 
 
 
