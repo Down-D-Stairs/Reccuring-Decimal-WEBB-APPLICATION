@@ -64,7 +64,7 @@ function TimeTableManager({ onBack, user }) {
 
   const ADMIN_EMAILS = useMemo(() => [
     'pgupta@recurringdecimal.com',
-    
+    'kkarumudi@recurringdecimal.com',
     'sn@recurringdecimal.com'
   ], []);
 
@@ -198,6 +198,7 @@ function TimeTableManager({ onBack, user }) {
     const fetchApprovalCounts = async () => {
       if (view === 'approvals' && !selectedProjectId) {
         const approverProjects = projects.filter(project => {
+          if (isAdmin) return true;
           if (!project.approvers) return false;
           const approversList = project.approvers.split(',').map(email => email.trim());
           return approversList.includes(user.username);
@@ -673,6 +674,7 @@ const handleBackToProjectsFromApprovals = useCallback(() => {
 const ApprovalsView = () => {
   // Get projects where user is an approver
   const approverProjects = projects.filter(project => {
+    if (isAdmin) return true;
     if (!project.approvers) return false;
     const approversList = project.approvers.split(',').map(email => email.trim());
     return approversList.includes(user.username);
@@ -2459,6 +2461,7 @@ return (
           
           {(() => {
             const approverProjects = projects.filter(project => {
+              if (isAdmin) return true;
               if (!project.approvers) return false;
               const approversList = project.approvers.split(',').map(email => email.trim());
               return approversList.includes(user.username);
