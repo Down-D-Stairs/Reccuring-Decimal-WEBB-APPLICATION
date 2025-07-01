@@ -799,7 +799,7 @@ const HistoryView = () => {
                         <td>{new Date(timesheet.submittedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
                         <td className="actions-cell">
                           <button
-                            className="details-button"
+                            className="details-toggle-button"
                             onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
                           >
                             {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
@@ -2239,7 +2239,7 @@ return (
                               Submit
                             </button>
                             <button
-                              className="details-button"
+                              className="details-toggle-button"
                               onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
                             >
                               {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
