@@ -87,6 +87,12 @@
   white-space: nowrap;
   transition: background-color 0.2s ease;
   margin: 2px; /* Small margin for spacing */
+
+  /* Add these lines for better centering */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 /* View Timesheets / Edit button - Blue */
