@@ -1808,6 +1808,17 @@
   margin: 16px 0;
 }
 
+/* Fix modal actions positioning */
+.modal-actions {
+  padding: 16px 20px 20px 20px; /* More balanced padding */
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid #e9ecef;
+  margin-right: 12px; /* Push buttons away from right edge */
+}
+
+/* Update confirm button */
 .confirm-submit-button {
   padding: 10px 20px;
   background-color: #28a745;
@@ -1817,9 +1828,6 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   transition: background-color 0.2s;
 }
 
@@ -1831,6 +1839,7 @@
   background-color: #6c757d;
   cursor: not-allowed;
 }
+
 
 .processing-spinner {
   width: 16px;

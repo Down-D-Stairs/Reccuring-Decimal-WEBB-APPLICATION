@@ -2642,21 +2642,29 @@ return (
             >
               Cancel
             </button>
-            <button 
+            <button
               className="confirm-submit-button"
               onClick={handleSubmitTimesheet}
               disabled={isSubmittingTimesheet}
             >
-              {isSubmittingTimesheet ? (
-                <>
-                  <div className="processing-spinner"></div>
-                  Submitting...
-                </>
-              ) : (
-                'Submit Timesheet'
-              )}
+              Submit Timesheet
             </button>
           </div>
+        </div>
+      </div>
+    )}
+    {isSubmittingTimesheet && (
+      <div className="processing-overlay">
+        <div className="processing-popup">
+          <div className="processing-spinner">⏳</div>
+          <h3>Submitting Your Timesheet...</h3>
+          <p>Processing {weeklyEntries.filter(entry => 
+            entry.monday > 0 || entry.tuesday > 0 || entry.wednesday > 0 || 
+            entry.thursday > 0 || entry.friday > 0 || entry.saturday > 0 || 
+            entry.sunday > 0
+          ).length} project(s)</p>
+          <p>Total Hours: {totalHours.total}</p>
+          <p>Please wait, do not close this window.</p>
         </div>
       </div>
     )}
