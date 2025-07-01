@@ -108,6 +108,10 @@ function TimeTableManager({ onBack, user }) {
   // Add these state variables
   const [isLoadingEmployeeData, setIsLoadingEmployeeData] = useState(false);
   const [isLoadingProjectData, setIsLoadingProjectData] = useState(false);
+  // Add this with your other useState declarations
+  const [isLoadingCalendarData, setIsLoadingCalendarData] = useState(false);
+  const [calendarDataCache, setCalendarDataCache] = useState({});
+
   
 
 
@@ -1074,20 +1078,35 @@ const formatMonthYear = (date) => {
 };
 
 // Add API functions for calendar data
-const fetchCalendarData = async () => {
+const fetchCalendarData = async (targetDate = calendarDate) => {
   try {
-    const year = calendarDate.getFullYear();
-    const month = calendarDate.getMonth();
+    setIsLoadingCalendarData(true); // Add loading state
+    
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
     const startDate = new Date(year, month, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
     
+    console.log(`Fetching calendar data for ${year}-${month + 1}`); // Debug log
+    
     const response = await fetch(`${API_URL}/api/admin/calendar-data?startDate=${startDate}&endDate=${endDate}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch calendar data: ${response.status}`);
+    }
+    
     const data = await response.json();
+    console.log(`Calendar data received for ${year}-${month + 1}:`, data); // Debug log
+    
     setCalendarData(data);
   } catch (error) {
     console.error('Error fetching calendar data:', error);
+    setCalendarData({}); // Clear data on error
+  } finally {
+    setIsLoadingCalendarData(false); // Remove loading state
   }
 };
+
 
 const fetchDayDetails = async (date) => {
   try {
@@ -1425,12 +1444,17 @@ const AdminCalendarDashboard = () => {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
   const handlePrevMonth = () => {
-    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1));
+    const newDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+    setCalendarDate(newDate);
+    fetchCalendarData(newDate); // Add this line
   };
-  
+
   const handleNextMonth = () => {
-    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1));
+    const newDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+    setCalendarDate(newDate);
+    fetchCalendarData(newDate); // Add this line
   };
+
   
   const handleDayClick = (date) => {
     if (date) {
@@ -1494,8 +1518,8 @@ const AdminCalendarDashboard = () => {
             
             {/* Calendar days */}
             {days.map((date, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`calendar-day ${date ? 'active' : 'inactive'}`}
                 onClick={() => handleDayClick(date)}
               >
@@ -1503,7 +1527,11 @@ const AdminCalendarDashboard = () => {
                   <>
                     <div className="day-number">{date.getDate()}</div>
                     <div className="day-hours">
-                      {calendarData[date.toISOString().split('T')[0]]?.totalHours || 0}h
+                      {isLoadingCalendarData ? (
+                        <span className="loading-dots">⏳</span>
+                      ) : (
+                        `${calendarData[date.toISOString().split('T')[0]]?.totalHours || 0}h`
+                      )}
                     </div>
                   </>
                 )}
