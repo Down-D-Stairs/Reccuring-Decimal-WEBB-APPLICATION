@@ -1855,3 +1855,15 @@
   100% { transform: rotate(360deg); }
 }
 
+.project-comments-input {
+  width: 150px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.project-comments-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
