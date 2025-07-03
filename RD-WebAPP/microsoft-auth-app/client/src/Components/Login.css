@@ -1697,6 +1697,8 @@
   border: 2px dashed #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
+  min-height: 600px; /* Add this - makes container taller */
+  width: 100%; /* Ensure full width */
 }
 
 .pdf-fallback-preview,

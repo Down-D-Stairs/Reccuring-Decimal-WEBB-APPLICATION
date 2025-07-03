@@ -692,7 +692,7 @@ const fetchProjects = async () => {
           >
             <Page 
               pageNumber={pageNumber} 
-              width={300}
+              width={500}
               renderTextLayer={false}
               renderAnnotationLayer={false}
               onLoadSuccess={() => console.log('Page loaded successfully')}
