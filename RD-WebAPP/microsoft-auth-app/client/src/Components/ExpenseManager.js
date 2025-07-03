@@ -692,7 +692,8 @@ const fetchProjects = async () => {
           >
             <Page 
               pageNumber={pageNumber} 
-              height={700} // Add height instead of just width
+              width={500} // Keep your current width
+              scale={1.5} // Scale up the entire page (makes it bigger overall)
               renderTextLayer={false}
               renderAnnotationLayer={false}
               onLoadSuccess={() => console.log('Page loaded successfully')}
