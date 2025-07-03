@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './TimeTableManager.css';
 
 function TimeTableManager({ onBack, user }) {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_URL = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:5000', []);
   const [view, setView] = useState('list');
   const [projects, setProjects] = useState([]);
   const [selectedWeek, setSelectedWeek] = useState(getDefaultWeek());
@@ -826,10 +826,8 @@ const fetchTimeEntries = async () => {
     } catch (error) {
       console.error('Error fetching user history projects:', error);
     }
-  }, [user.username, API_URL]);
+  }, [user.username]); // Remove API_URL from dependencies
 
-
-  // Fetch user's timesheets for a specific project
   const fetchUserProjectTimesheets = useCallback(async (projectId) => {
     try {
       const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
@@ -839,7 +837,8 @@ const fetchTimeEntries = async () => {
     } catch (error) {
       console.error('Error fetching user project timesheets:', error);
     }
-  }, [user.username, API_URL]);
+  }, [user.username]); // Remove API_URL from dependencies
+
 
 
   const HistoryView = () => {
