@@ -1907,9 +1907,5 @@
   margin-left: 5px;
 }
 
-.timesheet-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+
 
