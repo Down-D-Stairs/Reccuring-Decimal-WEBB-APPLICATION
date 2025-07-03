@@ -898,9 +898,12 @@ const HistoryView = () => {
                         <td className="actions-cell-horizontal">
                           <button
                             className="details-toggle-button"
-                            onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id);
+                            }}
                           >
-                            {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
                           </button>
                         </td>
                       </tr>

@@ -183,11 +183,7 @@ button {
   padding: 8px;
 }
 
-/* Make sure table cells with buttons have consistent spacing */
-.timesheets-table td {
-  vertical-align: middle;
-  padding: 8px;
-}
+
 
 /* If you have multiple buttons in one cell, space them evenly */
 .table-button-group {
@@ -856,12 +852,6 @@ button {
   font-size: 14px;
 }
 
-.timesheets-table td {
-  padding: 12px 8px;
-  border-bottom: 1px solid #dee2e6;
-  vertical-align: top;
-  font-size: 14px;
-}
 
 .timesheets-table tr:hover {
   background: #f8f9fa;
@@ -953,18 +943,18 @@ button {
 
 /* Replace the existing button hover rules with these cleaner ones */
 .timesheets-table button {
-  min-width: 30px;
-  min-height: 30px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background: #f8f9fa;
-  padding: 4px 8px;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
+
+
 
 .timesheets-table button:hover {
   background: #e9ecef;
   border-color: #adb5bd;
-  
+  z-index: 1;
 }
 
 /* Responsive adjustments */
@@ -1777,8 +1767,7 @@ button {
 /* Make sure table cells with buttons have consistent spacing */
 .timesheets-table td,
 .reports-table td {
-  vertical-align: middle;
-  padding: 8px;
+  position: relative;
 }
 
 /* Timesheet submission specific styles */
