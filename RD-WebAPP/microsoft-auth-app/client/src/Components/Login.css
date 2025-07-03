@@ -1697,7 +1697,9 @@
   border: 2px dashed #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
-  min-height: 600px; /* Add this - makes container taller */
+  min-height: 800px; /* Increase from current height */
+  max-height: 90vh; /* Allow it to take up most of the viewport height */
+  overflow-y: auto; /* Add scrolling if needed */
   width: 100%; /* Ensure full width */
 }
 
