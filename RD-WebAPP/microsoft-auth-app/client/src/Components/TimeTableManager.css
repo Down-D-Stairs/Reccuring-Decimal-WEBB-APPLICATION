@@ -1855,15 +1855,61 @@
   100% { transform: rotate(360deg); }
 }
 
-.project-comments-input {
-  width: 150px;
-  padding: 4px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 12px;
+.comments-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-.project-comments-input:focus {
-  outline: none;
-  border-color: #007bff;
+.save-comments-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
+
+.skip-comments-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.active-for-comments {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.has-comments-indicator {
+  color: #28a745;
+  font-size: 14px;
+}
+
+.no-active-timesheet {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+}
+
+.view-comments-btn {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.timesheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+

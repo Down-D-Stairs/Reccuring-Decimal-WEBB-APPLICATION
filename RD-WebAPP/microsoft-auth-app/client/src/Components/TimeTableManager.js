@@ -117,7 +117,8 @@ function TimeTableManager({ onBack, user }) {
   // Add these with your other useState declarations
   const [showCreateProjectConfirmation, setShowCreateProjectConfirmation] = useState(false);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-
+  // Add this state variable
+  const [activeTimesheetForComments, setActiveTimesheetForComments] = useState(null);
 
 
   
@@ -430,12 +431,12 @@ const fetchTimeEntries = async () => {
     });
   };
 
-  // Update your weeklyEntries to include individual comments
   const handleAddTimeEntry = () => {
     if (!selectedProjectId) return;
     
+    const newEntryId = `temp-${Date.now()}`;
     const newEntry = {
-      id: `temp-${Date.now()}`,
+      id: newEntryId,
       projectId: selectedProjectId,
       projectName: projects.find(p => p._id === selectedProjectId)?.projectName || 'Unknown Project',
       isBillable,
@@ -446,18 +447,22 @@ const fetchTimeEntries = async () => {
       friday: dayHours.friday || 0,
       saturday: dayHours.saturday || 0,
       sunday: dayHours.sunday || 0,
-      comments: '' // Add individual comments field
+      comments: '' // Will be filled when user adds comments
     };
     
     setWeeklyEntries([...weeklyEntries, newEntry]);
     
-    // Reset form
+    // Set this timesheet as active for comments
+    setActiveTimesheetForComments(newEntryId);
+    
+    // Reset form but keep comments section for this timesheet
     setSelectedProjectId('');
     setIsBillable(true);
     setDayHours({
       monday: 0, tuesday: 0, wednesday: 0, thursday: 0,
       friday: 0, saturday: 0, sunday: 0
     });
+    // Don't clear weekComments - user will add comments for this timesheet
   };
 
 
@@ -465,8 +470,10 @@ const fetchTimeEntries = async () => {
     try {
       setIsSubmittingTimesheet(true);
       
+      // Convert weekly entries to the format expected by the API
       const timeEntriesToSubmit = weeklyEntries
         .filter(entry => {
+          // Only include entries with hours > 0
           const hasHours = entry.monday > 0 || entry.tuesday > 0 || entry.wednesday > 0 || 
                           entry.thursday > 0 || entry.friday > 0 || entry.saturday > 0 || 
                           entry.sunday > 0;
@@ -475,6 +482,8 @@ const fetchTimeEntries = async () => {
         .map(entry => {
           const dayEntries = [];
           const weekStart = new Date(selectedWeek.start);
+          
+          // Create day entries for each day of the week with hours > 0
           const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
           
           daysOfWeek.forEach((day, index) => {
@@ -502,19 +511,48 @@ const fetchTimeEntries = async () => {
             totalHours: dayEntries.reduce((sum, day) => sum + day.hours, 0),
             status: 'submitted',
             submittedDate: new Date().toISOString(),
-            comments: entry.comments || '', // Use individual project comments
-            weekComments: weekComments // Keep global week comments too
+            comments: entry.comments || ''
           };
         });
       
-      // Rest of your submission logic...
+      console.log('Submitting timesheet entries:', timeEntriesToSubmit);
+      
+      if (timeEntriesToSubmit.length === 0) {
+        setIsSubmittingTimesheet(false);
+        // You could show an error modal here instead of alert
+        return;
+      }
+      
+      // Submit all time entries
+      const response = await fetch(`${API_URL}/api/timeentries/batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(timeEntriesToSubmit)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit timesheet');
+      }
+      
+      await response.json();
+      
+      // Success - close modal and refresh
+      setShowSubmitConfirmation(false);
+      fetchTimeEntries();
+      setWeekComments('');
+      
+      // You could show a success modal here instead of alert
+      
     } catch (error) {
       console.error('Error submitting timesheet:', error);
+      // You could show an error modal here instead of alert
     } finally {
       setIsSubmittingTimesheet(false);
     }
   };
-
 
   // Create a function to show the confirmation modal
   const handleSubmitClick = () => {
@@ -564,6 +602,25 @@ const fetchTimeEntries = async () => {
       end: endDate.toISOString().split('T')[0]
     });
   };
+
+  // Add this function to save comments to the active timesheet
+  const handleSaveComments = () => {
+    if (!activeTimesheetForComments || !weekComments.trim()) return;
+    
+    // Update the timesheet with comments
+    const updatedEntries = weeklyEntries.map(entry => 
+      entry.id === activeTimesheetForComments 
+        ? { ...entry, comments: weekComments }
+        : entry
+    );
+    
+    setWeeklyEntries(updatedEntries);
+    
+    // Clear the comments and active timesheet
+    setWeekComments('');
+    setActiveTimesheetForComments(null);
+  };
+
 
 
 // Add this function to check if user is an approver
@@ -1820,14 +1877,16 @@ return (
                 {weekDays.map((day, index) => (
                   <th key={index}>{day.name}<br/>{day.date}</th>
                 ))}
-                <th>Comments</th> {/* Add this column */}
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {weeklyEntries.map((entry, index) => (
-                <tr key={index}>
-                  <td>{entry.projectName}</td>
+                <tr key={index} className={entry.id === activeTimesheetForComments ? 'active-for-comments' : ''}>
+                  <td>
+                    {entry.projectName}
+                    {entry.comments && <span className="has-comments-indicator"> 💬</span>}
+                  </td>
                   <td>{entry.isBillable ? 'Yes' : 'No'}</td>
                   <td><input type="number" min="0" max="24" value={entry.monday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.tuesday || 0} readOnly /></td>
@@ -1836,61 +1895,121 @@ return (
                   <td><input type="number" min="0" max="24" value={entry.friday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.saturday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.sunday || 0} readOnly /></td>
-                  {/* Add comments input */}
                   <td>
-                    <input
-                      type="text"
-                      placeholder="Project comments..."
-                      value={entry.comments || ''}
-                      onChange={(e) => {
-                        const updatedEntries = weeklyEntries.map((item, idx) => 
-                          idx === index ? { ...item, comments: e.target.value } : item
-                        );
-                        setWeeklyEntries(updatedEntries);
-                      }}
-                      className="project-comments-input"
-                    />
-                  </td>
-                  <td>
-                    <button onClick={() => handleDeleteEntry(entry.id)}>Delete</button>
+                    <div className="timesheet-actions">
+                      <button onClick={() => handleDeleteEntry(entry.id)}>Delete</button>
+                      {entry.comments && (
+                        <button 
+                          className="view-comments-btn"
+                          onClick={() => {
+                            setActiveTimesheetForComments(entry.id);
+                            setWeekComments(entry.comments);
+                          }}
+                        >
+                          Edit Comments
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
               
-              {/* Update the new entry row to include comments */}
+              {/* New entry form row */}
               <tr className="new-entry-row">
                 <td>
-                  <select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)}>
+                  <select 
+                    value={selectedProjectId} 
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                  >
                     <option value="">Select Project</option>
                     {projects.map(project => (
-                      <option key={project._id} value={project._id}>{project.projectName}</option>
+                      <option key={project._id} value={project._id}>
+                        {project.projectName} {project.isSystemProject ? '' : `(${project.clientName})`}
+                      </option>
                     ))}
+                    <option value="holiday">Holiday</option>
+                    <option value="pto">PTO</option>
                   </select>
                 </td>
                 <td>
-                  <select value={isBillable ? 'yes' : 'no'} onChange={(e) => setIsBillable(e.target.value === 'yes')}>
+                  <select 
+                    value={isBillable ? 'yes' : 'no'} 
+                    onChange={(e) => setIsBillable(e.target.value === 'yes')}
+                  >
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
                   </select>
                 </td>
-                {/* Your existing day inputs */}
-                <td><input type="number" min="0" max="24" value={dayHours.monday || ''} onChange={(e) => setDayHours({...dayHours, monday: e.target.value})} /></td>
-                <td><input type="number" min="0" max="24" value={dayHours.tuesday || ''} onChange={(e) => setDayHours({...dayHours, tuesday: e.target.value})} /></td>
-                <td><input type="number" min="0" max="24" value={dayHours.wednesday || ''} onChange={(e) => setDayHours({...dayHours, wednesday: e.target.value})} /></td>
-                <td><input type="number" min="0" max="24" value={dayHours.thursday || ''} onChange={(e) => setDayHours({...dayHours, thursday: e.target.value})} /></td>
-                <td><input type="number" min="0" max="24" value={dayHours.friday || ''} onChange={(e) => setDayHours({...dayHours, friday: e.target.value})} /></td>
-                <td><input type="number" min="0" max="24" value={dayHours.saturday || ''} onChange={(e) => setDayHours({...dayHours, saturday: e.target.value})} /></td>
-                <td><input type="number" min="0" max="24" value={dayHours.sunday || ''} onChange={(e) => setDayHours({...dayHours, sunday: e.target.value})} /></td>
                 <td>
-                  <input
-                    type="text"
-                    placeholder="Comments..."
-                    className="project-comments-input"
-                    disabled
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.monday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, monday: e.target.value})}
                   />
                 </td>
                 <td>
-                  <button onClick={handleAddTimeEntry} disabled={!selectedProjectId}>Add</button>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.tuesday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, tuesday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.wednesday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, wednesday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.thursday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, thursday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.friday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, friday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.saturday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, saturday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
+                    value={dayHours.sunday || ''} 
+                    onChange={(e) => setDayHours({...dayHours, sunday: e.target.value})}
+                  />
+                </td>
+                <td>
+                  <button 
+                    onClick={handleAddTimeEntry}
+                    disabled={!selectedProjectId}
+                  >
+                    Add
+                  </button>
                 </td>
               </tr>
               
@@ -1904,7 +2023,6 @@ return (
                 <td>{totalHours.friday}</td>
                 <td>{totalHours.saturday}</td>
                 <td>{totalHours.sunday}</td>
-                <td></td> {/* Empty cell for comments column */}
                 <td>Total: {totalHours.total}</td>
               </tr>
             </tbody>
@@ -1912,16 +2030,43 @@ return (
         </div>
 
         <div className="comments-section">
-          <label className="comments-label">Week Comments (Optional)</label>
-          <textarea
-            className="comments-input"
-            placeholder="Add any comments for this week..."
-            value={weekComments}
-            onChange={(e) => setWeekComments(e.target.value)}
-            rows={3}
-          />
+          {activeTimesheetForComments ? (
+            <>
+              <label className="comments-label">
+                Add Comments for: <strong>{weeklyEntries.find(e => e.id === activeTimesheetForComments)?.projectName}</strong>
+              </label>
+              <textarea
+                className="comments-input"
+                placeholder="Add comments for this timesheet..."
+                value={weekComments}
+                onChange={(e) => setWeekComments(e.target.value)}
+                rows={3}
+              />
+              <div className="comments-actions">
+                <button 
+                  className="save-comments-btn"
+                  onClick={handleSaveComments}
+                  disabled={!weekComments.trim()}
+                >
+                  Save Comments
+                </button>
+                <button 
+                  className="skip-comments-btn"
+                  onClick={() => {
+                    setActiveTimesheetForComments(null);
+                    setWeekComments('');
+                  }}
+                >
+                  Skip Comments
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="no-active-timesheet">
+              <p>Add a timesheet above to write comments for it.</p>
+            </div>
+          )}
         </div>
-
 
         
         <div className="timesheet-actions">
