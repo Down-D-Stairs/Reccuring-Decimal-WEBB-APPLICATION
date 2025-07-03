@@ -623,252 +623,416 @@ const fetchTimeEntries = async () => {
 
 
 
-// Add this function to check if user is an approver
-const isUserAnApprover = (user, projects) => {
-  if (!user || !user.username) return false;
-  
-  return projects.some(project => {
-    if (!project.approvers) return false;
-    const approversList = project.approvers.split(',').map(email => email.trim());
-    return approversList.includes(user.username);
-  });
-};
-
-// Add this function to fetch timesheets for a project
-const handleViewProjectTimesheets = async (projectId) => {
-  try {
-    // Simplify the request - don't use date parameters if they're causing issues
-    const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}`);
+  // Add this function to check if user is an approver
+  const isUserAnApprover = (user, projects) => {
+    if (!user || !user.username) return false;
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server returned ${response.status}: ${errorText}`);
-    }
-    
-    const data = await response.json();
-    console.log('Fetched project timesheets:', data);
-    console.log('Full timesheet object:', JSON.stringify(data[0], null, 2));
-    
-    // Initialize the status updates with existing data
-    const initialStatusUpdates = {};
-    data.forEach(timesheet => {
-      initialStatusUpdates[timesheet._id] = {
-        status: timesheet.status,
-        approvalComments: timesheet.approvalComments || '' // Changed from 'comments' to 'approvalComments'
-      };
+    return projects.some(project => {
+      if (!project.approvers) return false;
+      const approversList = project.approvers.split(',').map(email => email.trim());
+      return approversList.includes(user.username);
     });
-    
-    setTimesheetStatusUpdates(initialStatusUpdates);
-    setSelectedProjectTimesheets(data);
-    setSelectedProjectId(projectId);
-  } catch (error) {
-    console.error('Error fetching project timesheets:', error);
-    setSelectedProjectTimesheets([]);
-  }
-};
+  };
 
-// Add these memoized handlers to prevent recreation on every render
-const handleExpandTimesheet = useCallback((timesheetId) => {
-  setExpandedTimesheet(expandedTimesheet === timesheetId ? null : timesheetId);
-}, [expandedTimesheet]);
-
-const handleBackToProjects = useCallback(() => {
-  setSelectedHistoryProjectId(null);
-  setUserHistoryTimesheets([]);
-}, []);
-
-const handleBackToList = useCallback(() => {
-  setView('list');
-}, []);
-
-const handleViewTimesheets = useCallback((projectId) => {
-  fetchUserProjectTimesheets(projectId);
-}, []);
-
-const handleBackToProjectsFromApprovals = useCallback(() => {
-  setSelectedProjectId(null);
-}, []);
-
-
-
-// Add these component functions
-const ApprovalsView = () => {
-  // Get projects where user is an approver
-  const approverProjects = projects.filter(project => {
-    if (isAdmin) return true;
-    if (!project.approvers) return false;
-    const approversList = project.approvers.split(',').map(email => email.trim());
-    return approversList.includes(user.username);
-  });
-};
-
-const ProjectTimesheetsView = () => {
-  const project = projects.find(p => p._id === selectedProjectId);
-  
-  if (!project) return <p>Project not found</p>;
-  
-  // Group timesheets by employee
-  const timesheetsByEmployee = {};
-  selectedProjectTimesheets.forEach(timesheet => {
-    if (!timesheetsByEmployee[timesheet.employeeName]) {
-      timesheetsByEmployee[timesheet.employeeName] = [];
+  // Add this function to fetch timesheets for a project
+  const handleViewProjectTimesheets = async (projectId) => {
+    try {
+      // Simplify the request - don't use date parameters if they're causing issues
+      const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server returned ${response.status}: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Fetched project timesheets:', data);
+      console.log('Full timesheet object:', JSON.stringify(data[0], null, 2));
+      
+      // Initialize the status updates with existing data
+      const initialStatusUpdates = {};
+      data.forEach(timesheet => {
+        initialStatusUpdates[timesheet._id] = {
+          status: timesheet.status,
+          approvalComments: timesheet.approvalComments || '' // Changed from 'comments' to 'approvalComments'
+        };
+      });
+      
+      setTimesheetStatusUpdates(initialStatusUpdates);
+      setSelectedProjectTimesheets(data);
+      setSelectedProjectId(projectId);
+    } catch (error) {
+      console.error('Error fetching project timesheets:', error);
+      setSelectedProjectTimesheets([]);
     }
-    timesheetsByEmployee[timesheet.employeeName].push(timesheet);
-  });
-};
+  };
+
+  // Add these memoized handlers to prevent recreation on every render
+  const handleExpandTimesheet = useCallback((timesheetId) => {
+    setExpandedTimesheet(expandedTimesheet === timesheetId ? null : timesheetId);
+  }, [expandedTimesheet]);
+
+  const handleBackToProjects = useCallback(() => {
+    setSelectedHistoryProjectId(null);
+    setUserHistoryTimesheets([]);
+  }, []);
+
+  const handleBackToList = useCallback(() => {
+    setView('list');
+  }, []);
+
+  const handleViewTimesheets = useCallback((projectId) => {
+    fetchUserProjectTimesheets(projectId);
+  }, []);
+
+  const handleBackToProjectsFromApprovals = useCallback(() => {
+    setSelectedProjectId(null);
+  }, []);
+
+
+
+  // Add these component functions
+  const ApprovalsView = () => {
+    // Get projects where user is an approver
+    const approverProjects = projects.filter(project => {
+      if (isAdmin) return true;
+      if (!project.approvers) return false;
+      const approversList = project.approvers.split(',').map(email => email.trim());
+      return approversList.includes(user.username);
+    });
+  };
+
+  const ProjectTimesheetsView = () => {
+    const project = projects.find(p => p._id === selectedProjectId);
+    
+    if (!project) return <p>Project not found</p>;
+    
+    // Group timesheets by employee
+    const timesheetsByEmployee = {};
+    selectedProjectTimesheets.forEach(timesheet => {
+      if (!timesheetsByEmployee[timesheet.employeeName]) {
+        timesheetsByEmployee[timesheet.employeeName] = [];
+      }
+      timesheetsByEmployee[timesheet.employeeName].push(timesheet);
+    });
+  };
 
   const weekDays = getWeekDayNames();
 
   // First, add this function before your return statement
-const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
-  try {
-    // Add a reason prompt if denying
-    let reason = '';
-    if (newStatus === 'denied') {
-      reason = prompt('Please provide a reason for denial:');
-      if (!reason) return; // Cancel if no reason provided
-    }
+  const handleTimesheetStatusUpdate = async (timesheetId, newStatus) => {
+    try {
+      // Add a reason prompt if denying
+      let reason = '';
+      if (newStatus === 'denied') {
+        reason = prompt('Please provide a reason for denial:');
+        if (!reason) return; // Cancel if no reason provided
+      }
 
-    const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: newStatus,
-        comments: reason, // Save reason in the comments field
-        reason: reason,   // Also keep the original reason field for compatibility
-        approverEmail: user.username
-      })
-    });
+      const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          comments: reason, // Save reason in the comments field
+          reason: reason,   // Also keep the original reason field for compatibility
+          approverEmail: user.username
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
-    }
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
 
-    const updatedTimesheet = await response.json();
-    
-    // Update the local state with the updated timesheet
-    setSelectedProjectTimesheets(
-      selectedProjectTimesheets.map(timesheet => 
-        timesheet._id === timesheetId ? updatedTimesheet : timesheet
-      )
-    );
-    
-    alert(`Timesheet ${newStatus === 'approved' ? 'approved' : 'denied'} successfully!`);
-  } catch (error) {
-    console.error('Error updating timesheet status:', error);
-    alert('Failed to update timesheet status');
-  }
-};
-
-
-const handleSubmitTimesheetDecision = async (timesheetId) => {
-  const update = timesheetStatusUpdates[timesheetId];
-  if (!update) return;
-  
-  // Set up the pending decision for confirmation
-  setPendingDecision({
-    timesheetId,
-    update,
-    timesheet: selectedProjectTimesheets.find(t => t._id === timesheetId)
-  });
-  setShowDecisionConfirmation(true);
-};
-
-
-const handleConfirmedDecision = async () => {
-  setShowDecisionConfirmation(false);
-  setIsProcessingDecision(true);
-  
-  const { timesheetId, update } = pendingDecision;
-  
-  try {
-    const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: update.status,
-        comments: update.approvalComments,
-        approverEmail: user.username,
-        approvedDate: new Date().toISOString()
-      })
-    });
-
-    if (response.ok) {
       const updatedTimesheet = await response.json();
       
-      // Clear selections and go back to main view
-      setSelectedProjectId(null);
-      setSelectedProjectTimesheets([]);
-      setTimesheetStatusUpdates({});
-      setView('list'); // Go back to main timesheet view
+      // Update the local state with the updated timesheet
+      setSelectedProjectTimesheets(
+        selectedProjectTimesheets.map(timesheet => 
+          timesheet._id === timesheetId ? updatedTimesheet : timesheet
+        )
+      );
+      
+      alert(`Timesheet ${newStatus === 'approved' ? 'approved' : 'denied'} successfully!`);
+    } catch (error) {
+      console.error('Error updating timesheet status:', error);
+      alert('Failed to update timesheet status');
     }
-  } catch (error) {
-    console.error('Error updating timesheet status:', error);
-    alert('Failed to update timesheet status');
-  } finally {
-    setIsProcessingDecision(false);
-  }
-  
-  setPendingDecision(null);
-};
+  };
 
 
-
-
-// Fetch projects that user has submitted timesheets for
-const fetchUserHistoryProjects = async () => {
-  try {
-    const response = await fetch(`${API_URL}/api/timeentries/user-projects/${user.username}`);
-    const data = await response.json();
-    setUserHistoryProjects(data);
-  } catch (error) {
-    console.error('Error fetching user history projects:', error);
-  }
-};
-
-// Fetch user's timesheets for a specific project
-const fetchUserProjectTimesheets = async (projectId) => {
-  try {
-    const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
-    const data = await response.json();
-    setUserHistoryTimesheets(data);
-    setSelectedHistoryProjectId(projectId);
-  } catch (error) {
-    console.error('Error fetching user project timesheets:', error);
-  }
-};
-
-const HistoryView = () => {
-  useEffect(() => {
-    fetchUserHistoryProjects();
-  }, []);
-
-  if (selectedHistoryProjectId) {
-    const project = projects.find(p => p._id === selectedHistoryProjectId);
+  const handleSubmitTimesheetDecision = async (timesheetId) => {
+    const update = timesheetStatusUpdates[timesheetId];
+    if (!update) return;
     
+    // Set up the pending decision for confirmation
+    setPendingDecision({
+      timesheetId,
+      update,
+      timesheet: selectedProjectTimesheets.find(t => t._id === timesheetId)
+    });
+    setShowDecisionConfirmation(true);
+  };
+
+
+  const handleConfirmedDecision = async () => {
+    setShowDecisionConfirmation(false);
+    setIsProcessingDecision(true);
+    
+    const { timesheetId, update } = pendingDecision;
+    
+    try {
+      const response = await fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: update.status,
+          comments: update.approvalComments,
+          approverEmail: user.username,
+          approvedDate: new Date().toISOString()
+        })
+      });
+
+      if (response.ok) {
+        const updatedTimesheet = await response.json();
+        
+        // Clear selections and go back to main view
+        setSelectedProjectId(null);
+        setSelectedProjectTimesheets([]);
+        setTimesheetStatusUpdates({});
+        setView('list'); // Go back to main timesheet view
+      }
+    } catch (error) {
+      console.error('Error updating timesheet status:', error);
+      alert('Failed to update timesheet status');
+    } finally {
+      setIsProcessingDecision(false);
+    }
+    
+    setPendingDecision(null);
+  };
+
+
+  // Fetch projects that user has submitted timesheets for
+  const fetchUserHistoryProjects = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/timeentries/user-projects/${user.username}`);
+      const data = await response.json();
+      setUserHistoryProjects(data);
+    } catch (error) {
+      console.error('Error fetching user history projects:', error);
+    }
+  }, [user.username, API_URL]);
+
+
+  // Fetch user's timesheets for a specific project
+  const fetchUserProjectTimesheets = useCallback(async (projectId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/timeentries/user-project/${user.username}/${projectId}`);
+      const data = await response.json();
+      setUserHistoryTimesheets(data);
+      setSelectedHistoryProjectId(projectId);
+    } catch (error) {
+      console.error('Error fetching user project timesheets:', error);
+    }
+  }, [user.username, API_URL]);
+
+
+  const HistoryView = () => {
+    useEffect(() => {
+      fetchUserHistoryProjects();
+    }, [fetchUserHistoryProjects]);
+
+    if (selectedHistoryProjectId) {
+      const project = projects.find(p => p._id === selectedHistoryProjectId);
+      
+      return (
+        <div className="approval-table-view">
+          <div className="approval-header">
+            <h2>Your Timesheets for {project?.projectName}</h2>
+            <button 
+              className="back-button"
+              onClick={() => {
+                setSelectedHistoryProjectId(null);
+                setUserHistoryTimesheets([]);
+                setCurrentHistoryTimesheetPage(1);
+              }}
+            >
+              Back to Projects
+            </button>
+          </div>
+          
+          {userHistoryTimesheets.length === 0 ? (
+            <div className="no-reports">
+              <p>No timesheets found for this project.</p>
+            </div>
+          ) : (
+            <>
+              <div className="approval-table-container">
+                <table className="reports-table">
+                  <thead>
+                    <tr>
+                      <th>Week</th>
+                      <th>Total Hours</th>
+                      <th>Status</th>
+                      <th>Submitted Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getPaginatedHistoryTimesheets(userHistoryTimesheets).map(timesheet => (
+                      <React.Fragment key={timesheet._id}>
+                        <tr className="report-row">
+                          <td className="date-range">
+                            {new Date(timesheet.weekStartDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(timesheet.weekEndDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                          </td>
+                          <td className="amount">{timesheet.totalHours.toFixed(1)} hrs</td>
+                          <td>
+                            <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span>
+                          </td>
+                          <td>{new Date(timesheet.submittedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
+                          <td className="actions-cell-horizontal">
+                            <button
+                              className="details-toggle-button"
+                              onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
+                            >
+                              {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Expandable Details Row */}
+                        {expandedTimesheet === timesheet._id && (
+                          <tr className="expanded-row">
+                            <td colSpan="5">
+                              <div className="trip-details-expanded">
+                                
+                                {/* Approval information */}
+                                {timesheet.approverEmail && (
+                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
+                                    <h4>Approval Details:</h4>
+                                    <div className="detail-row">
+                                      <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                      <span className="detail-value">{timesheet.approverEmail}</span>
+                                    </div>
+                                    {timesheet.approvedDate && (
+                                      <div className="detail-row">
+                                        <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                        <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Employee's week comments */}
+                                {timesheet.comments && (
+                                  <div className="detail-row">
+                                    <span className="detail-label">Week Comments:</span>
+                                    <span className="detail-value">{timesheet.comments}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Approval comments */}
+                                {timesheet.approvalComments && (
+                                  <div className="detail-row">
+                                    <span className="detail-label">Approval Comments:</span>
+                                    <span className="detail-value">{timesheet.approvalComments}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Daily breakdown */}
+                                <h4>Daily Breakdown</h4>
+                                <div className="expenses-list">
+                                  {timesheet.dayEntries.map((day, index) => (
+                                    <div key={index} className="expense-item">
+                                      <div className="expense-details">
+                                        <p>Date: {new Date(day.date).toLocaleDateString()}</p>
+                                        <p>Hours: {day.hours}</p>
+                                        {day.notes && <p>Notes: {day.notes}</p>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls for History Timesheets */}
+              <div className="pagination-container">
+                <div className="pagination-info">
+                  Showing {Math.min((currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage + 1, userHistoryTimesheets.length)} to {Math.min(currentHistoryTimesheetPage * historyTimesheetsPerPage, userHistoryTimesheets.length)} of {userHistoryTimesheets.length} timesheets
+                </div>
+                
+                <div className="pagination-controls">
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(1)}
+                    disabled={currentHistoryTimesheetPage === 1}
+                  >
+                    First
+                  </button>
+                  
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentHistoryTimesheetPage === 1}
+                  >
+                    Previous
+                  </button>
+                  
+                  <span className="page-info">
+                    Page {currentHistoryTimesheetPage} of {Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  </span>
+                  
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(prev => Math.min(prev + 1, Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)))}
+                    disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  >
+                    Next
+                  </button>
+                  
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage))}
+                    disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="approval-table-view">
         <div className="approval-header">
-          <h2>Your Timesheets for {project?.projectName}</h2>
+          <h2>Your Timesheet History</h2>
           <button 
             className="back-button"
-            onClick={() => {
-              setSelectedHistoryProjectId(null);
-              setUserHistoryTimesheets([]);
-              setCurrentHistoryTimesheetPage(1);
-            }}
+            onClick={() => setView('list')}
           >
-            Back to Projects
+            Back to Timesheet
           </button>
         </div>
         
-        {userHistoryTimesheets.length === 0 ? (
+        {userHistoryProjects.length === 0 ? (
           <div className="no-reports">
-            <p>No timesheets found for this project.</p>
+            <p>You haven't submitted any timesheets yet.</p>
           </div>
         ) : (
           <>
@@ -876,140 +1040,77 @@ const HistoryView = () => {
               <table className="reports-table">
                 <thead>
                   <tr>
-                    <th>Week</th>
-                    <th>Total Hours</th>
-                    <th>Status</th>
-                    <th>Submitted Date</th>
+                    <th>Project Name</th>
+                    <th>Client</th>
+                    <th>Total Timesheets</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {getPaginatedHistoryTimesheets(userHistoryTimesheets).map(timesheet => (
-                    <React.Fragment key={timesheet._id}>
-                      <tr className="report-row">
-                        <td className="date-range">
-                          {new Date(timesheet.weekStartDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(timesheet.weekEndDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
-                        </td>
-                        <td className="amount">{timesheet.totalHours.toFixed(1)} hrs</td>
-                        <td>
-                          <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span>
-                        </td>
-                        <td>{new Date(timesheet.submittedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
-                        <td className="actions-cell-horizontal">
-                          <button
-                            className="details-toggle-button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id);
-                            }}
-                          >
-                          </button>
-                        </td>
-                      </tr>
-                      
-                      {/* Expandable Details Row */}
-                      {expandedTimesheet === timesheet._id && (
-                        <tr className="expanded-row">
-                          <td colSpan="5">
-                            <div className="trip-details-expanded">
-                              
-                              {/* Approval information */}
-                              {timesheet.approverEmail && (
-                                <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
-                                  <h4>Approval Details:</h4>
-                                  <div className="detail-row">
-                                    <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
-                                    <span className="detail-value">{timesheet.approverEmail}</span>
-                                  </div>
-                                  {timesheet.approvedDate && (
-                                    <div className="detail-row">
-                                      <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
-                                      <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Employee's week comments */}
-                              {timesheet.comments && (
-                                <div className="detail-row">
-                                  <span className="detail-label">Week Comments:</span>
-                                  <span className="detail-value">{timesheet.comments}</span>
-                                </div>
-                              )}
-                              
-                              {/* Approval comments */}
-                              {timesheet.approvalComments && (
-                                <div className="detail-row">
-                                  <span className="detail-label">Approval Comments:</span>
-                                  <span className="detail-value">{timesheet.approvalComments}</span>
-                                </div>
-                              )}
-                              
-                              {/* Daily breakdown */}
-                              <h4>Daily Breakdown</h4>
-                              <div className="expenses-list">
-                                {timesheet.dayEntries.map((day, index) => (
-                                  <div key={index} className="expense-item">
-                                    <div className="expense-details">
-                                      <p>Date: {new Date(day.date).toLocaleDateString()}</p>
-                                      <p>Hours: {day.hours}</p>
-                                      {day.notes && <p>Notes: {day.notes}</p>}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                  {getPaginatedHistoryProjects(userHistoryProjects).map(project => (
+                    <tr key={project._id} className="report-row">
+                      <td className="report-name">{project.projectName}</td>
+                      <td>{project.clientName}</td>
+                      <td className="amount">{project.timesheetCount}</td>
+                      <td className="actions-cell-horizontal">
+                        <button
+                          className="edit-button"
+                          onClick={() => fetchUserProjectTimesheets(project._id)}
+                        >
+                          View Timesheets
+                        </button>
+                        <button
+                          className="details-button"
+                          onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
+                        >
+                          Details
+                        </button>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination Controls for History Timesheets */}
+            {/* Pagination Controls for History Projects */}
             <div className="pagination-container">
               <div className="pagination-info">
-                Showing {Math.min((currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage + 1, userHistoryTimesheets.length)} to {Math.min(currentHistoryTimesheetPage * historyTimesheetsPerPage, userHistoryTimesheets.length)} of {userHistoryTimesheets.length} timesheets
+                Showing {Math.min((currentHistoryProjectPage - 1) * historyProjectsPerPage + 1, userHistoryProjects.length)} to {Math.min(currentHistoryProjectPage * historyProjectsPerPage, userHistoryProjects.length)} of {userHistoryProjects.length} projects
               </div>
               
               <div className="pagination-controls">
                 <button 
                   className="pagination-btn"
-                  onClick={() => setCurrentHistoryTimesheetPage(1)}
-                  disabled={currentHistoryTimesheetPage === 1}
+                  onClick={() => setCurrentHistoryProjectPage(1)}
+                  disabled={currentHistoryProjectPage === 1}
                 >
                   First
                 </button>
                 
                 <button 
                   className="pagination-btn"
-                  onClick={() => setCurrentHistoryTimesheetPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentHistoryTimesheetPage === 1}
+                  onClick={() => setCurrentHistoryProjectPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentHistoryProjectPage === 1}
                 >
                   Previous
                 </button>
                 
                 <span className="page-info">
-                  Page {currentHistoryTimesheetPage} of {Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  Page {currentHistoryProjectPage} of {Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
                 </span>
                 
                 <button 
                   className="pagination-btn"
-                  onClick={() => setCurrentHistoryTimesheetPage(prev => Math.min(prev + 1, Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)))}
-                  disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  onClick={() => setCurrentHistoryProjectPage(prev => Math.min(prev + 1, Math.ceil(userHistoryProjects.length / historyProjectsPerPage)))}
+                  disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
                 >
                   Next
                 </button>
                 
                 <button 
                   className="pagination-btn"
-                  onClick={() => setCurrentHistoryTimesheetPage(Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage))}
-                  disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  onClick={() => setCurrentHistoryProjectPage(Math.ceil(userHistoryProjects.length / historyProjectsPerPage))}
+                  disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
                 >
                   Last
                 </button>
@@ -1019,816 +1120,712 @@ const HistoryView = () => {
         )}
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="approval-table-view">
-      <div className="approval-header">
-        <h2>Your Timesheet History</h2>
+
+  const fetchProjectTimesheetCounts = async (projectIds) => {
+    try {
+      const counts = {};
+      
+      // Fetch counts for each project
+      await Promise.all(
+        projectIds.map(async (projectId) => {
+          const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}?status=submitted`);
+          if (response.ok) {
+            const timesheets = await response.json();
+            counts[projectId] = timesheets.length;
+          } else {
+            counts[projectId] = 0;
+          }
+        })
+      );
+      
+      return counts;
+    } catch (error) {
+      console.error('Error fetching timesheet counts:', error);
+      return {};
+    }
+  };
+
+  // Add calendar helper functions
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Add all days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day));
+    }
+    
+    return days;
+  };
+
+  const formatMonthYear = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  // Add API functions for calendar data
+  const fetchCalendarData = async (targetDate = calendarDate) => {
+    try {
+      setIsLoadingCalendarData(true); // Add loading state
+      
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth();
+      const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      
+      console.log(`Fetching calendar data for ${year}-${month + 1}`); // Debug log
+      
+      const response = await fetch(`${API_URL}/api/admin/calendar-data?startDate=${startDate}&endDate=${endDate}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch calendar data: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Calendar data received for ${year}-${month + 1}:`, data); // Debug log
+      
+      setCalendarData(data);
+    } catch (error) {
+      console.error('Error fetching calendar data:', error);
+      setCalendarData({}); // Clear data on error
+    } finally {
+      setIsLoadingCalendarData(false); // Remove loading state
+    }
+  };
+
+
+  const fetchDayDetails = async (date) => {
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const response = await fetch(`${API_URL}/api/admin/day-details?date=${dateStr}`);
+      const data = await response.json();
+      setSelectedDayData(data);
+      setSelectedDay(date);
+    } catch (error) {
+      console.error('Error fetching day details:', error);
+    }
+  };
+
+  const fetchAllEmployees = async () => {
+    try {
+      console.log('Fetching all employees...');
+      const response = await fetch(`${API_URL}/api/admin/employees`);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('All employees received:', data);
+      
+      setAllEmployees(data);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      setAllEmployees([]);
+    }
+  };
+
+  // Update your fetchEmployeeData function to add more logging
+  const fetchEmployeeData = async (employeeName, range = 'month', status = 'all') => {
+    try {
+      setIsLoadingEmployeeData(true); // Show loading
+      console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
+      
+      const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server returned ${response.status}: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Employee data received:', data);
+      
+      setEmployeeData(data);
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+      setEmployeeData([]);
+    } finally {
+      setIsLoadingEmployeeData(false); // Hide loading
+    }
+  };
+
+
+  // Update this function in your TimeTableManager component
+  const fetchProjectData = async (projectId, range = 'month', status = 'all') => {
+    try {
+      setIsLoadingProjectData(true); // Show loading
+      console.log(`Fetching project data for ${projectId} with range ${range} and status ${status}`);
+      
+      const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Project data received:', data);
+      
+      setProjectData(data);
+    } catch (error) {
+      console.error('Error fetching project data:', error);
+      setProjectData([]);
+    } finally {
+      setIsLoadingProjectData(false); // Hide loading
+    }
+  };
+
+  // Add debouncing to prevent rapid API calls
+    const debounce = (func, wait) => {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    };
+
+    // Create debounced versions of your fetch functions
+    const debouncedFetchEmployeeData = debounce(fetchEmployeeData, 300);
+    const debouncedFetchProjectData = debounce(fetchProjectData, 300);
+
+
+
+  // Add useEffect for calendar data
+  useEffect(() => {
+    if (view === 'admin-calendar') {
+      fetchAllEmployees();
+      fetchCalendarData(); // Also fetch calendar data once
+    }
+  }, [view]);
+
+  // Day Details Modal Component
+  const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
+    if (!selectedDay) return null;
+
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>Details for {selectedDay.toLocaleDateString()}</h3>
+            <button className="modal-close-button" onClick={onClose}>×</button>
+          </div>
+          
+          <div className="modal-body">
+            {selectedDayData.length === 0 ? (
+              <p>No hours logged for this day</p>
+            ) : (
+              <div className="day-breakdown">
+                <div className="day-summary">
+                  <strong>Total Hours: {selectedDayData.reduce((sum, entry) => sum + entry.totalHours, 0)}</strong>
+                </div>
+                
+                {selectedDayData.map((entry, index) => (
+                  <div key={index} className="employee-day-entry-modal">
+                    <div className="employee-header">
+                      <strong>{entry.employeeName}</strong>
+                      <span className="employee-total">{entry.totalHours}h</span>
+                    </div>
+                    <div className="project-breakdown">
+                      {entry.projects.map((project, pIndex) => (
+                        <div key={pIndex} className="project-hours">
+                          <span className="project-name">{project.projectName}</span>
+                          <span className="project-hours-value">{project.hours}h</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const getPaginatedProjects = (projects) => {
+    const startIndex = (currentProjectPage - 1) * projectsPerPage;
+    const endIndex = startIndex + projectsPerPage;
+    return projects.slice(startIndex, endIndex);
+  };
+
+  const getPaginatedTimesheets = (timesheets) => {
+    const startIndex = (currentTimesheetPage - 1) * timesheetsPerPage;
+    const endIndex = startIndex + timesheetsPerPage;
+    return timesheets.slice(startIndex, endIndex);
+  };
+
+  const getPaginatedHistoryProjects = (projects) => {
+    const startIndex = (currentHistoryProjectPage - 1) * historyProjectsPerPage;
+    const endIndex = startIndex + historyProjectsPerPage;
+    return projects.slice(startIndex, endIndex);
+  };
+
+  const getPaginatedHistoryTimesheets = (timesheets) => {
+    const startIndex = (currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage;
+    const endIndex = startIndex + historyTimesheetsPerPage;
+    return timesheets.slice(startIndex, endIndex);
+  };
+
+
+
+
+  const handleSubmitBatchDecisions = async () => {
+    if (selectedTimesheets.length === 0) return;
+    
+    setShowBatchConfirmation(true);
+  };
+
+  const handleConfirmedBatchDecisions = async () => {
+    setShowBatchConfirmation(false);
+    setIsProcessingDecision(true);
+    
+    try {
+      const updatePromises = selectedTimesheets.map(timesheetId => {
+        const updates = timesheetStatusUpdates[timesheetId];
+        return fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: updates.status,
+            comments: updates.approvalComments,
+            approverEmail: user.username,
+            approvedDate: new Date()
+          })
+        });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Clear all selections and go back to main view
+      setSelectedTimesheets([]);
+      setSelectedProjectId(null);
+      setSelectedProjectTimesheets([]);
+      setTimesheetStatusUpdates({});
+      setView('list'); // Go back to main timesheet view
+      
+    } catch (error) {
+      console.error('Failed to submit batch decisions:', error);
+      alert('Failed to submit decisions. Please try again.');
+    } finally {
+      setIsProcessingDecision(false);
+    }
+  };
+
+
+
+
+
+  // Project Details Modal Component
+  const ProjectDetailsModal = ({ project, onClose }) => {
+    if (!project) return null;
+
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>Project Details</h2>
+            <button className="modal-close-btn" onClick={onClose}>×</button>
+          </div>
+          
+          <div className="modal-body">
+            <div className="project-details-grid">
+              <div className="detail-row">
+                <span className="detail-label">Project Name:</span>
+                <span className="detail-value">{project.projectName}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Client Name:</span>
+                <span className="detail-value">{project.clientName}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Project Type:</span>
+                <span className="detail-value">{project.projectType}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">PO Number:</span>
+                <span className="detail-value">{project.poNumber || 'N/A'}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Contract Number:</span>
+                <span className="detail-value">{project.contractNumber || 'N/A'}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Date Range:</span>
+                <span className="detail-value">
+                  {new Date(project.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - 
+                  {new Date(project.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                </span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Max Hours:</span>
+                <span className="detail-value">{project.maxHours} hrs</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Max Budget:</span>
+                <span className="detail-value">${project.maxBudget?.toLocaleString() || 'N/A'}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Total Hours Used:</span>
+                <span className="detail-value">{project.projectTotalHours || 0} hrs</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Total Billed Hours:</span>
+                <span className="detail-value">{project.projectTotalBilledHours || 0} hrs</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Location:</span>
+                <span className="detail-value">{project.location || 'N/A'}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Is Hybrid:</span>
+                <span className="detail-value">{project.isHybrid ? 'Yes' : 'No'}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Approvers:</span>
+                <span className="detail-value">{project.approvers || 'N/A'}</span>
+              </div>
+              
+              <div className="detail-row">
+                <span className="detail-label">Project Members:</span>
+                <span className="detail-value">{project.projectMembers || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="modal-footer">
+            <button className="modal-close-button" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+
+
+
+
+  // Add the Calendar Dashboard component
+  // Add the Calendar Dashboard component
+  const AdminCalendarDashboard = () => {
+    
+
+    const days = getDaysInMonth(calendarDate);
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    const handlePrevMonth = () => {
+      const newDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+      setCalendarDate(newDate);
+      fetchCalendarData(newDate); // Add this line
+    };
+
+    const handleNextMonth = () => {
+      const newDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+      setCalendarDate(newDate);
+      fetchCalendarData(newDate); // Add this line
+    };
+
+    
+    const handleDayClick = (date) => {
+      if (date) {
+        fetchDayDetails(date);
+      }
+    };
+    
+    const handleEmployeeSelect = (employeeName) => {
+      console.log('Employee selected:', employeeName);
+      setSelectedEmployee(employeeName);
+      if (employeeName) {
+        fetchEmployeeData(employeeName, employeeTimeRange, employeeStatusFilter);
+      } else {
+        setEmployeeData([]);
+      }
+    };
+    
+    const handleProjectSelect = (projectId) => {
+      setSelectedProject(projectId);
+      if (projectId) {
+        fetchProjectData(projectId, projectTimeRange, projectStatusFilter);
+      } else {
+        setProjectData([]);
+      }
+    };
+
+
+
+
+
+    const handleCloseModal = () => {
+      setSelectedDay(null);
+      setSelectedDayData([]);
+    };
+    
+    return (
+      <div className="admin-calendar-container">
+        <h2>Admin Calendar Dashboard</h2>
+        
         <button 
           className="back-button"
           onClick={() => setView('list')}
         >
-          Back to Timesheet
+          ← Back to Timesheet
         </button>
-      </div>
-      
-      {userHistoryProjects.length === 0 ? (
-        <div className="no-reports">
-          <p>You haven't submitted any timesheets yet.</p>
-        </div>
-      ) : (
-        <>
-          <div className="approval-table-container">
-            <table className="reports-table">
-              <thead>
-                <tr>
-                  <th>Project Name</th>
-                  <th>Client</th>
-                  <th>Total Timesheets</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getPaginatedHistoryProjects(userHistoryProjects).map(project => (
-                  <tr key={project._id} className="report-row">
-                    <td className="report-name">{project.projectName}</td>
-                    <td>{project.clientName}</td>
-                    <td className="amount">{project.timesheetCount}</td>
-                    <td className="actions-cell-horizontal">
-                      <button
-                        className="edit-button"
-                        onClick={() => fetchUserProjectTimesheets(project._id)}
-                      >
-                        View Timesheets
-                      </button>
-                      <button
-                        className="details-button"
-                        onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
-                      >
-                        Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination Controls for History Projects */}
-          <div className="pagination-container">
-            <div className="pagination-info">
-              Showing {Math.min((currentHistoryProjectPage - 1) * historyProjectsPerPage + 1, userHistoryProjects.length)} to {Math.min(currentHistoryProjectPage * historyProjectsPerPage, userHistoryProjects.length)} of {userHistoryProjects.length} projects
+        
+        <div className="calendar-dashboard">
+          {/* Left Side - Calendar */}
+          <div className="calendar-section">
+            <div className="calendar-header">
+              <button onClick={handlePrevMonth}>‹</button>
+              <h3>{formatMonthYear(calendarDate)}</h3>
+              <button onClick={handleNextMonth}>›</button>
             </div>
             
-            <div className="pagination-controls">
-              <button 
-                className="pagination-btn"
-                onClick={() => setCurrentHistoryProjectPage(1)}
-                disabled={currentHistoryProjectPage === 1}
-              >
-                First
-              </button>
+            <div className="calendar-grid">
+              {/* Day headers */}
+              {dayNames.map(day => (
+                <div key={day} className="calendar-day-header">{day}</div>
+              ))}
               
-              <button 
-                className="pagination-btn"
-                onClick={() => setCurrentHistoryProjectPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentHistoryProjectPage === 1}
-              >
-                Previous
-              </button>
-              
-              <span className="page-info">
-                Page {currentHistoryProjectPage} of {Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
-              </span>
-              
-              <button 
-                className="pagination-btn"
-                onClick={() => setCurrentHistoryProjectPage(prev => Math.min(prev + 1, Math.ceil(userHistoryProjects.length / historyProjectsPerPage)))}
-                disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
-              >
-                Next
-              </button>
-              
-              <button 
-                className="pagination-btn"
-                onClick={() => setCurrentHistoryProjectPage(Math.ceil(userHistoryProjects.length / historyProjectsPerPage))}
-                disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
-              >
-                Last
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-
-const fetchProjectTimesheetCounts = async (projectIds) => {
-  try {
-    const counts = {};
-    
-    // Fetch counts for each project
-    await Promise.all(
-      projectIds.map(async (projectId) => {
-        const response = await fetch(`${API_URL}/api/timeentries/project/${projectId}?status=submitted`);
-        if (response.ok) {
-          const timesheets = await response.json();
-          counts[projectId] = timesheets.length;
-        } else {
-          counts[projectId] = 0;
-        }
-      })
-    );
-    
-    return counts;
-  } catch (error) {
-    console.error('Error fetching timesheet counts:', error);
-    return {};
-  }
-};
-
-// Add calendar helper functions
-const getDaysInMonth = (date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const daysInMonth = lastDay.getDate();
-  const startingDayOfWeek = firstDay.getDay();
-  
-  const days = [];
-  
-  // Add empty cells for days before the first day of the month
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    days.push(null);
-  }
-  
-  // Add all days of the month
-  for (let day = 1; day <= daysInMonth; day++) {
-    days.push(new Date(year, month, day));
-  }
-  
-  return days;
-};
-
-const formatMonthYear = (date) => {
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-};
-
-// Add API functions for calendar data
-const fetchCalendarData = async (targetDate = calendarDate) => {
-  try {
-    setIsLoadingCalendarData(true); // Add loading state
-    
-    const year = targetDate.getFullYear();
-    const month = targetDate.getMonth();
-    const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
-    
-    console.log(`Fetching calendar data for ${year}-${month + 1}`); // Debug log
-    
-    const response = await fetch(`${API_URL}/api/admin/calendar-data?startDate=${startDate}&endDate=${endDate}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch calendar data: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log(`Calendar data received for ${year}-${month + 1}:`, data); // Debug log
-    
-    setCalendarData(data);
-  } catch (error) {
-    console.error('Error fetching calendar data:', error);
-    setCalendarData({}); // Clear data on error
-  } finally {
-    setIsLoadingCalendarData(false); // Remove loading state
-  }
-};
-
-
-const fetchDayDetails = async (date) => {
-  try {
-    const dateStr = date.toISOString().split('T')[0];
-    const response = await fetch(`${API_URL}/api/admin/day-details?date=${dateStr}`);
-    const data = await response.json();
-    setSelectedDayData(data);
-    setSelectedDay(date);
-  } catch (error) {
-    console.error('Error fetching day details:', error);
-  }
-};
-
-const fetchAllEmployees = async () => {
-  try {
-    console.log('Fetching all employees...');
-    const response = await fetch(`${API_URL}/api/admin/employees`);
-    
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log('All employees received:', data);
-    
-    setAllEmployees(data);
-  } catch (error) {
-    console.error('Error fetching employees:', error);
-    setAllEmployees([]);
-  }
-};
-
-// Update your fetchEmployeeData function to add more logging
-const fetchEmployeeData = async (employeeName, range = 'month', status = 'all') => {
-  try {
-    setIsLoadingEmployeeData(true); // Show loading
-    console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
-    
-    const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server returned ${response.status}: ${errorText}`);
-    }
-    
-    const data = await response.json();
-    console.log('Employee data received:', data);
-    
-    setEmployeeData(data);
-  } catch (error) {
-    console.error('Error fetching employee data:', error);
-    setEmployeeData([]);
-  } finally {
-    setIsLoadingEmployeeData(false); // Hide loading
-  }
-};
-
-
-// Update this function in your TimeTableManager component
-const fetchProjectData = async (projectId, range = 'month', status = 'all') => {
-  try {
-    setIsLoadingProjectData(true); // Show loading
-    console.log(`Fetching project data for ${projectId} with range ${range} and status ${status}`);
-    
-    const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
-    
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log('Project data received:', data);
-    
-    setProjectData(data);
-  } catch (error) {
-    console.error('Error fetching project data:', error);
-    setProjectData([]);
-  } finally {
-    setIsLoadingProjectData(false); // Hide loading
-  }
-};
-
-// Add debouncing to prevent rapid API calls
-  const debounce = (func, wait) => {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  };
-
-  // Create debounced versions of your fetch functions
-  const debouncedFetchEmployeeData = debounce(fetchEmployeeData, 300);
-  const debouncedFetchProjectData = debounce(fetchProjectData, 300);
-
-
-
-// Add useEffect for calendar data
-useEffect(() => {
-  if (view === 'admin-calendar') {
-    fetchAllEmployees();
-    fetchCalendarData(); // Also fetch calendar data once
-  }
-}, [view]);
-
-// Day Details Modal Component
-const DayDetailsModal = ({ selectedDay, selectedDayData, onClose }) => {
-  if (!selectedDay) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Details for {selectedDay.toLocaleDateString()}</h3>
-          <button className="modal-close-button" onClick={onClose}>×</button>
-        </div>
-        
-        <div className="modal-body">
-          {selectedDayData.length === 0 ? (
-            <p>No hours logged for this day</p>
-          ) : (
-            <div className="day-breakdown">
-              <div className="day-summary">
-                <strong>Total Hours: {selectedDayData.reduce((sum, entry) => sum + entry.totalHours, 0)}</strong>
-              </div>
-              
-              {selectedDayData.map((entry, index) => (
-                <div key={index} className="employee-day-entry-modal">
-                  <div className="employee-header">
-                    <strong>{entry.employeeName}</strong>
-                    <span className="employee-total">{entry.totalHours}h</span>
-                  </div>
-                  <div className="project-breakdown">
-                    {entry.projects.map((project, pIndex) => (
-                      <div key={pIndex} className="project-hours">
-                        <span className="project-name">{project.projectName}</span>
-                        <span className="project-hours-value">{project.hours}h</span>
+              {/* Calendar days */}
+              {days.map((date, index) => (
+                <div
+                  key={index}
+                  className={`calendar-day ${date ? 'active' : 'inactive'}`}
+                  onClick={() => handleDayClick(date)}
+                >
+                  {date && (
+                    <>
+                      <div className="day-number">{date.getDate()}</div>
+                      <div className="day-hours">
+                        {isLoadingCalendarData ? (
+                          <span className="loading-dots">⏳</span>
+                        ) : (
+                          `${calendarData[date.toISOString().split('T')[0]]?.totalHours || 0}h`
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const getPaginatedProjects = (projects) => {
-  const startIndex = (currentProjectPage - 1) * projectsPerPage;
-  const endIndex = startIndex + projectsPerPage;
-  return projects.slice(startIndex, endIndex);
-};
-
-const getPaginatedTimesheets = (timesheets) => {
-  const startIndex = (currentTimesheetPage - 1) * timesheetsPerPage;
-  const endIndex = startIndex + timesheetsPerPage;
-  return timesheets.slice(startIndex, endIndex);
-};
-
-const getPaginatedHistoryProjects = (projects) => {
-  const startIndex = (currentHistoryProjectPage - 1) * historyProjectsPerPage;
-  const endIndex = startIndex + historyProjectsPerPage;
-  return projects.slice(startIndex, endIndex);
-};
-
-const getPaginatedHistoryTimesheets = (timesheets) => {
-  const startIndex = (currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage;
-  const endIndex = startIndex + historyTimesheetsPerPage;
-  return timesheets.slice(startIndex, endIndex);
-};
-
-
-
-
-const handleSubmitBatchDecisions = async () => {
-  if (selectedTimesheets.length === 0) return;
-  
-  setShowBatchConfirmation(true);
-};
-
-const handleConfirmedBatchDecisions = async () => {
-  setShowBatchConfirmation(false);
-  setIsProcessingDecision(true);
-  
-  try {
-    const updatePromises = selectedTimesheets.map(timesheetId => {
-      const updates = timesheetStatusUpdates[timesheetId];
-      return fetch(`${API_URL}/api/timeentries/${timesheetId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: updates.status,
-          comments: updates.approvalComments,
-          approverEmail: user.username,
-          approvedDate: new Date()
-        })
-      });
-    });
-    
-    await Promise.all(updatePromises);
-    
-    // Clear all selections and go back to main view
-    setSelectedTimesheets([]);
-    setSelectedProjectId(null);
-    setSelectedProjectTimesheets([]);
-    setTimesheetStatusUpdates({});
-    setView('list'); // Go back to main timesheet view
-    
-  } catch (error) {
-    console.error('Failed to submit batch decisions:', error);
-    alert('Failed to submit decisions. Please try again.');
-  } finally {
-    setIsProcessingDecision(false);
-  }
-};
-
-
-
-
-
-// Project Details Modal Component
-const ProjectDetailsModal = ({ project, onClose }) => {
-  if (!project) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Project Details</h2>
-          <button className="modal-close-btn" onClick={onClose}>×</button>
-        </div>
-        
-        <div className="modal-body">
-          <div className="project-details-grid">
-            <div className="detail-row">
-              <span className="detail-label">Project Name:</span>
-              <span className="detail-value">{project.projectName}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Client Name:</span>
-              <span className="detail-value">{project.clientName}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Project Type:</span>
-              <span className="detail-value">{project.projectType}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">PO Number:</span>
-              <span className="detail-value">{project.poNumber || 'N/A'}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Contract Number:</span>
-              <span className="detail-value">{project.contractNumber || 'N/A'}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Date Range:</span>
-              <span className="detail-value">
-                {new Date(project.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - 
-                {new Date(project.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
-              </span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Max Hours:</span>
-              <span className="detail-value">{project.maxHours} hrs</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Max Budget:</span>
-              <span className="detail-value">${project.maxBudget?.toLocaleString() || 'N/A'}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Total Hours Used:</span>
-              <span className="detail-value">{project.projectTotalHours || 0} hrs</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Total Billed Hours:</span>
-              <span className="detail-value">{project.projectTotalBilledHours || 0} hrs</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Location:</span>
-              <span className="detail-value">{project.location || 'N/A'}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Is Hybrid:</span>
-              <span className="detail-value">{project.isHybrid ? 'Yes' : 'No'}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Approvers:</span>
-              <span className="detail-value">{project.approvers || 'N/A'}</span>
-            </div>
-            
-            <div className="detail-row">
-              <span className="detail-label">Project Members:</span>
-              <span className="detail-value">{project.projectMembers || 'N/A'}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="modal-footer">
-          <button className="modal-close-button" onClick={onClose}>Close</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-
-
-
-// Add the Calendar Dashboard component
-// Add the Calendar Dashboard component
-const AdminCalendarDashboard = () => {
-  
-
-  const days = getDaysInMonth(calendarDate);
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  
-  const handlePrevMonth = () => {
-    const newDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
-    setCalendarDate(newDate);
-    fetchCalendarData(newDate); // Add this line
-  };
-
-  const handleNextMonth = () => {
-    const newDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
-    setCalendarDate(newDate);
-    fetchCalendarData(newDate); // Add this line
-  };
-
-  
-  const handleDayClick = (date) => {
-    if (date) {
-      fetchDayDetails(date);
-    }
-  };
-  
-  const handleEmployeeSelect = (employeeName) => {
-    console.log('Employee selected:', employeeName);
-    setSelectedEmployee(employeeName);
-    if (employeeName) {
-      fetchEmployeeData(employeeName, employeeTimeRange, employeeStatusFilter);
-    } else {
-      setEmployeeData([]);
-    }
-  };
-  
-  const handleProjectSelect = (projectId) => {
-    setSelectedProject(projectId);
-    if (projectId) {
-      fetchProjectData(projectId, projectTimeRange, projectStatusFilter);
-    } else {
-      setProjectData([]);
-    }
-  };
-
-
-
-
-
-  const handleCloseModal = () => {
-    setSelectedDay(null);
-    setSelectedDayData([]);
-  };
-  
-  return (
-    <div className="admin-calendar-container">
-      <h2>Admin Calendar Dashboard</h2>
-      
-      <button 
-        className="back-button"
-        onClick={() => setView('list')}
-      >
-        ← Back to Timesheet
-      </button>
-      
-      <div className="calendar-dashboard">
-        {/* Left Side - Calendar */}
-        <div className="calendar-section">
-          <div className="calendar-header">
-            <button onClick={handlePrevMonth}>‹</button>
-            <h3>{formatMonthYear(calendarDate)}</h3>
-            <button onClick={handleNextMonth}>›</button>
           </div>
           
-          <div className="calendar-grid">
-            {/* Day headers */}
-            {dayNames.map(day => (
-              <div key={day} className="calendar-day-header">{day}</div>
-            ))}
-            
-            {/* Calendar days */}
-            {days.map((date, index) => (
-              <div
-                key={index}
-                className={`calendar-day ${date ? 'active' : 'inactive'}`}
-                onClick={() => handleDayClick(date)}
+          {/* Right Side - Employee/Project Panel */}
+          <div className="info-panel">
+            <div className="panel-tabs">
+              <button 
+                className={rightPanelView === 'employee' ? 'active' : ''}
+                onClick={() => setRightPanelView('employee')}
               >
-                {date && (
-                  <>
-                    <div className="day-number">{date.getDate()}</div>
-                    <div className="day-hours">
-                      {isLoadingCalendarData ? (
-                        <span className="loading-dots">⏳</span>
+                Employee View
+              </button>
+              <button 
+                className={rightPanelView === 'project' ? 'active' : ''}
+                onClick={() => setRightPanelView('project')}
+              >
+                Project View
+              </button>
+            </div>
+            
+            {rightPanelView === 'employee' ? (
+              <div className="employee-panel">
+                <h4>Employee Hours</h4>
+                
+                <div className="employee-selector">
+                  <select 
+                    value={selectedEmployee} 
+                    onChange={(e) => handleEmployeeSelect(e.target.value)}
+                  >
+                    <option value="">Select Employee</option>
+                    {allEmployees.map(name => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="time-range-selector">
+                  <label>Time Range:</label>
+                  <select 
+                    value={employeeTimeRange} 
+                    onChange={(e) => {
+                      setEmployeeTimeRange(e.target.value);
+                      if (selectedEmployee) {
+                        fetchEmployeeData(selectedEmployee, e.target.value);
+                      }
+                    }}
+                  >
+                    <option value="week">This Week</option>
+                    <option value="2weeks">Last 2 Weeks</option>
+                    <option value="month">This Month</option>
+                  </select>
+                </div>
+
+                <div className="status-filter-selector">
+                  <label>Status Filter:</label>
+                  <select 
+                    value={employeeStatusFilter} 
+                    onChange={(e) => {
+                      setEmployeeStatusFilter(e.target.value);
+                      if (selectedEmployee) {
+                        debouncedFetchEmployeeData(selectedEmployee, employeeTimeRange, e.target.value);
+                      }
+                    }}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="denied">Denied</option>
+                  </select>
+                </div>
+                
+                {selectedEmployee && (
+                  <div className="employee-data">
+                    <h5>{selectedEmployee} - {employeeTimeRange}</h5>
+                    {isLoadingEmployeeData ? (
+                      <div className="loading-indicator">
+                        <div className="processing-spinner">⏳</div>
+                        <p>Loading employee data...</p>
+                      </div>
+                    ) : (
+                      employeeData.length > 0 ? (
+                        <>
+                          <div className="total-hours">
+                            Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                          </div>
+                          {employeeData.map((entry, index) => (
+                            <div key={index} className="employee-entry">
+                              <div className="project-name">{entry.projectName}</div>
+                              <div className="hours">{entry.totalHours}h</div>
+                            </div>
+                          ))}
+                        </>
                       ) : (
-                        `${calendarData[date.toISOString().split('T')[0]]?.totalHours || 0}h`
-                      )}
-                    </div>
-                  </>
+                        <p>No hours found for this employee in the selected time range.</p>
+                      )
+                    )}
+                  </div>
                 )}
               </div>
-            ))}
+            ) : (
+              <div className="project-panel">
+                <h4>Project Hours</h4>
+                
+                <div className="project-selector">
+                  <select 
+                    value={selectedProject} 
+                    onChange={(e) => handleProjectSelect(e.target.value)}
+                  >
+                    <option value="">Select Project</option>
+                    {projects.map(project => (
+                      <option key={project._id} value={project._id}>{project.projectName}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="time-range-selector">
+                  <label>Time Range:</label>
+                  <select 
+                    value={projectTimeRange} 
+                    onChange={(e) => {
+                      setProjectTimeRange(e.target.value);
+                      if (selectedProject) {
+                        fetchProjectData(selectedProject, e.target.value);
+                      }
+                    }}
+                  >
+                    <option value="week">This Week</option>
+                    <option value="2weeks">Last 2 Weeks</option>
+                    <option value="month">This Month</option>
+                  </select>
+                </div>
+
+                <div className="status-filter-selector">
+                  <label>Status Filter:</label>
+                  <select 
+                    value={projectStatusFilter} 
+                    onChange={(e) => {
+                      setProjectStatusFilter(e.target.value);
+                      if (selectedProject) {
+                        debouncedFetchProjectData(selectedProject, projectTimeRange, e.target.value);
+                      }
+                    }}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="denied">Denied</option>
+                  </select>
+                </div>
+                
+                {selectedProject && (
+                  <div className="project-data">
+                    <h5>{projects.find(p => p._id === selectedProject)?.projectName} - {projectTimeRange}</h5>
+                    {isLoadingProjectData ? (
+                      <div className="loading-indicator">
+                        <div className="processing-spinner">⏳</div>
+                        <p>Loading project data...</p>
+                      </div>
+                    ) : (
+                      projectData.length > 0 ? (
+                        <>
+                          <div className="total-hours">
+                            Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
+                          </div>
+                          {projectData.map((entry, index) => (
+                            <div key={index} className="project-entry">
+                              <div className="employee-name">{entry.employeeName}</div>
+                              <div className="hours">{entry.totalHours}h</div>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <p>No hours found for this project in the selected time range.</p>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Right Side - Employee/Project Panel */}
-        <div className="info-panel">
-          <div className="panel-tabs">
-            <button 
-              className={rightPanelView === 'employee' ? 'active' : ''}
-              onClick={() => setRightPanelView('employee')}
-            >
-              Employee View
-            </button>
-            <button 
-              className={rightPanelView === 'project' ? 'active' : ''}
-              onClick={() => setRightPanelView('project')}
-            >
-              Project View
-            </button>
-          </div>
-          
-          {rightPanelView === 'employee' ? (
-            <div className="employee-panel">
-              <h4>Employee Hours</h4>
-              
-              <div className="employee-selector">
-                <select 
-                  value={selectedEmployee} 
-                  onChange={(e) => handleEmployeeSelect(e.target.value)}
-                >
-                  <option value="">Select Employee</option>
-                  {allEmployees.map(name => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="time-range-selector">
-                <label>Time Range:</label>
-                <select 
-                  value={employeeTimeRange} 
-                  onChange={(e) => {
-                    setEmployeeTimeRange(e.target.value);
-                    if (selectedEmployee) {
-                      fetchEmployeeData(selectedEmployee, e.target.value);
-                    }
-                  }}
-                >
-                  <option value="week">This Week</option>
-                  <option value="2weeks">Last 2 Weeks</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
 
-              <div className="status-filter-selector">
-                <label>Status Filter:</label>
-                <select 
-                  value={employeeStatusFilter} 
-                  onChange={(e) => {
-                    setEmployeeStatusFilter(e.target.value);
-                    if (selectedEmployee) {
-                      debouncedFetchEmployeeData(selectedEmployee, employeeTimeRange, e.target.value);
-                    }
-                  }}
-                >
-                  <option value="all">All Status</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="approved">Approved</option>
-                  <option value="denied">Denied</option>
-                </select>
-              </div>
-              
-              {selectedEmployee && (
-                <div className="employee-data">
-                  <h5>{selectedEmployee} - {employeeTimeRange}</h5>
-                  {isLoadingEmployeeData ? (
-                    <div className="loading-indicator">
-                      <div className="processing-spinner">⏳</div>
-                      <p>Loading employee data...</p>
-                    </div>
-                  ) : (
-                    employeeData.length > 0 ? (
-                      <>
-                        <div className="total-hours">
-                          Total Hours: {employeeData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                        </div>
-                        {employeeData.map((entry, index) => (
-                          <div key={index} className="employee-entry">
-                            <div className="project-name">{entry.projectName}</div>
-                            <div className="hours">{entry.totalHours}h</div>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <p>No hours found for this employee in the selected time range.</p>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="project-panel">
-              <h4>Project Hours</h4>
-              
-              <div className="project-selector">
-                <select 
-                  value={selectedProject} 
-                  onChange={(e) => handleProjectSelect(e.target.value)}
-                >
-                  <option value="">Select Project</option>
-                  {projects.map(project => (
-                    <option key={project._id} value={project._id}>{project.projectName}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="time-range-selector">
-                <label>Time Range:</label>
-                <select 
-                  value={projectTimeRange} 
-                  onChange={(e) => {
-                    setProjectTimeRange(e.target.value);
-                    if (selectedProject) {
-                      fetchProjectData(selectedProject, e.target.value);
-                    }
-                  }}
-                >
-                  <option value="week">This Week</option>
-                  <option value="2weeks">Last 2 Weeks</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
-
-              <div className="status-filter-selector">
-                <label>Status Filter:</label>
-                <select 
-                  value={projectStatusFilter} 
-                  onChange={(e) => {
-                    setProjectStatusFilter(e.target.value);
-                    if (selectedProject) {
-                      debouncedFetchProjectData(selectedProject, projectTimeRange, e.target.value);
-                    }
-                  }}
-                >
-                  <option value="all">All Status</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="approved">Approved</option>
-                  <option value="denied">Denied</option>
-                </select>
-              </div>
-              
-              {selectedProject && (
-                <div className="project-data">
-                  <h5>{projects.find(p => p._id === selectedProject)?.projectName} - {projectTimeRange}</h5>
-                  {isLoadingProjectData ? (
-                    <div className="loading-indicator">
-                      <div className="processing-spinner">⏳</div>
-                      <p>Loading project data...</p>
-                    </div>
-                  ) : (
-                    projectData.length > 0 ? (
-                      <>
-                        <div className="total-hours">
-                          Total Hours: {projectData.reduce((sum, entry) => sum + entry.totalHours, 0)}
-                        </div>
-                        {projectData.map((entry, index) => (
-                          <div key={index} className="project-entry">
-                            <div className="employee-name">{entry.employeeName}</div>
-                            <div className="hours">{entry.totalHours}h</div>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <p>No hours found for this project in the selected time range.</p>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Day Details Modal */}
+        <DayDetailsModal 
+          selectedDay={selectedDay}
+          selectedDayData={selectedDayData}
+          onClose={handleCloseModal}
+        />
       </div>
-
-      {/* Day Details Modal */}
-      <DayDetailsModal 
-        selectedDay={selectedDay}
-        selectedDayData={selectedDayData}
-        onClose={handleCloseModal}
-      />
-    </div>
-  );
-};
+    );
+  };
 
 
 
