@@ -1,3 +1,21 @@
+/* Add these performance optimizations */
+.modal-content,
+.timesheets-table,
+.projects-table {
+  contain: layout style paint;
+}
+
+.modal-overlay {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize button transitions */
+button {
+  will-change: background-color;
+  backface-visibility: hidden;
+}
+
+
 .timetable-container {
   padding: 20px;
   max-width: 1200px;
@@ -941,13 +959,12 @@
   border: 1px solid #ccc;
   background: #f8f9fa;
   padding: 4px 8px;
-  transition: background-color 0.2s ease; /* Smooth transition */
 }
 
 .timesheets-table button:hover {
-  background: #e9ecef !important;
-  border-color: #adb5bd !important;
-  transform: none; /* Remove any transforms that cause positioning issues */
+  background: #e9ecef;
+  border-color: #adb5bd;
+  
 }
 
 /* Responsive adjustments */
@@ -1345,7 +1362,8 @@
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding: 20px 0;
   z-index: 1000;
 }
 
@@ -1589,28 +1607,7 @@
 }
 
 /* TimeTable specific modal styles */
-.timetable-container .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
 
-.timetable-container .modal-content {
-  background: white;
-  border-radius: 8px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
 
 .timetable-container .modal-header {
   display: flex;
@@ -1947,6 +1944,12 @@
   width: 8px;
   height: 8px;
 }
+
+.scrollable-timesheet-container {
+  contain: layout style paint;
+  -webkit-overflow-scrolling: touch;
+}
+
 
 .scrollable-timesheet-container::-webkit-scrollbar-track {
   background: #f1f1f1;
