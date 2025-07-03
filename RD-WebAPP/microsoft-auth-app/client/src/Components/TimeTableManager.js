@@ -14,8 +14,14 @@ const HistoryView = React.memo(({
   setCurrentHistoryProjectPage,
   setCurrentHistoryTimesheetPage,
   handleBackToProjects,
-  handleBackToList 
+  handleBackToList,
+  projects,
+  setSelectedProjectDetails,
+  setView,
+  setSelectedHistoryProjectId,
+  setUserHistoryTimesheets
 }) => {
+
   // Move these constants inside the component
   const historyProjectsPerPage = 2;
   const historyTimesheetsPerPage = 4;
