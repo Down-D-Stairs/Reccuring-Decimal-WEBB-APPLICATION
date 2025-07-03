@@ -32,6 +32,11 @@ function ExpenseManager({ onBack, user }) {
   const [selectedTripDetails, setSelectedTripDetails] = useState(null);
   const [showTripDetailsModal, setShowTripDetailsModal] = useState(false);
   const [isProcessingDecision, setIsProcessingDecision] = useState(false);
+  // Add these state variables with your other useState declarations
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState('');
+  const [previewPdfName, setPreviewPdfName] = useState('');
+
 
 
 
@@ -678,17 +683,24 @@ const fetchProjects = async () => {
     if (isPDF) {
       return (
         <div className="pdf-preview">
-          <p>PDF detected! Trying to display...</p>
+          <p>📄 PDF Receipt</p>
           <iframe
             src={receiptUrl}
             width="100%"
-            height="400px"
+            height="500px"
             title="PDF Receipt Preview"
             style={{ border: '1px solid #ddd', borderRadius: '4px' }}
             onLoad={() => console.log('PDF iframe loaded successfully')}
             onError={() => console.log('PDF iframe failed to load')}
           />
-          <p>If PDF doesn't show, <a href={receiptUrl} target="_blank" rel="noopener noreferrer">click here to open</a></p>
+          <div className="pdf-actions">
+            <button 
+              className="open-pdf-btn"
+              onClick={() => window.open(receiptUrl, '_blank')}
+            >
+              🔗 Open in New Tab
+            </button>
+          </div>
         </div>
       );
     } else {
@@ -2304,11 +2316,25 @@ const fetchProjects = async () => {
             
             <div className="expense-modal-content">
               <div className="expense-modal-image">
-                <img 
-                  src={selectedExpense.receipt} 
-                  alt="Receipt" 
-                  className="full-receipt-image"
-                />
+                {selectedExpense.receipt && (
+                  selectedExpense.receipt.includes('data:application/pdf') ? (
+                    <div className="pdf-viewer-container">
+                      <iframe
+                        src={selectedExpense.receipt}
+                        width="100%"
+                        height="100%"
+                        title="Receipt PDF"
+                        style={{ border: 'none', borderRadius: '8px' }}
+                      />
+                    </div>
+                  ) : (
+                    <img 
+                      src={selectedExpense.receipt} 
+                      alt="Receipt" 
+                      className="full-receipt-image"
+                    />
+                  )
+                )}
               </div>
               
               <div className="expense-modal-details">
