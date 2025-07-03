@@ -16,6 +16,23 @@ const HistoryView = React.memo(({
   handleBackToProjects,
   handleBackToList 
 }) => {
+  // Move these constants inside the component
+  const historyProjectsPerPage = 2;
+  const historyTimesheetsPerPage = 4;
+  
+  // Move these helper functions inside the component
+  const getPaginatedHistoryProjects = (projects) => {
+    const startIndex = (currentHistoryProjectPage - 1) * historyProjectsPerPage;
+    const endIndex = startIndex + historyProjectsPerPage;
+    return projects.slice(startIndex, endIndex);
+  };
+
+  const getPaginatedHistoryTimesheets = (timesheets) => {
+    const startIndex = (currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage;
+    const endIndex = startIndex + historyTimesheetsPerPage;
+    return timesheets.slice(startIndex, endIndex);
+  };
+
   useEffect(() => {
     fetchUserHistoryProjects();
   }, [fetchUserHistoryProjects]);
@@ -2644,7 +2661,26 @@ return (
         </div>
       )
     ) : view === 'history' ? (
-      <HistoryView />
+      <HistoryView
+        userHistoryProjects={userHistoryProjects}
+        userHistoryTimesheets={userHistoryTimesheets}
+        selectedHistoryProjectId={selectedHistoryProjectId}
+        expandedTimesheet={expandedTimesheet}
+        currentHistoryProjectPage={currentHistoryProjectPage}
+        currentHistoryTimesheetPage={currentHistoryTimesheetPage}
+        fetchUserHistoryProjects={fetchUserHistoryProjects}
+        fetchUserProjectTimesheets={fetchUserProjectTimesheets}
+        setExpandedTimesheet={setExpandedTimesheet}
+        setCurrentHistoryProjectPage={setCurrentHistoryProjectPage}
+        setCurrentHistoryTimesheetPage={setCurrentHistoryTimesheetPage}
+        handleBackToProjects={handleBackToProjects}
+        handleBackToList={handleBackToList}
+        projects={projects}
+        setSelectedProjectDetails={setSelectedProjectDetails}
+        setView={setView}
+        setSelectedHistoryProjectId={setSelectedHistoryProjectId}
+        setUserHistoryTimesheets={setUserHistoryTimesheets}
+      />
     ) : view === 'admin-calendar' ? (
       <AdminCalendarDashboard />
     ) : null}
