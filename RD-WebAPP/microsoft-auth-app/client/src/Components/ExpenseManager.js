@@ -10,6 +10,17 @@ import { Pie } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+// Add this import at the top
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Add this after your imports
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Add this right after your pdfjs.GlobalWorkerOptions.workerSrc line
+console.log('PDF.js version:', pdfjs.version);
+console.log('Worker src:', pdfjs.GlobalWorkerOptions.workerSrc);
+
 
 function ExpenseManager({ onBack, user }) {
   const [trips, setTrips] = useState([]);
@@ -36,6 +47,9 @@ function ExpenseManager({ onBack, user }) {
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState('');
   const [previewPdfName, setPreviewPdfName] = useState('');
+  // Add these state variables
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
 
 
 
@@ -655,60 +669,61 @@ const fetchProjects = async () => {
 
 
   const renderReceiptPreview = (receipt) => {
-    console.log('Receipt data:', receipt);
-    console.log('Receipt type:', typeof receipt);
-    
     if (!receipt) return null;
     
-    // Handle different types of receipt data
-    let receiptUrl = '';
-    let isPDF = false;
-    
-    if (typeof receipt === 'string') {
-      receiptUrl = receipt;
-      isPDF = receiptUrl.includes('data:application/pdf') || receiptUrl.toLowerCase().includes('.pdf');
-      console.log('String receipt - isPDF:', isPDF);
-    } else if (receipt instanceof File) {
-      receiptUrl = URL.createObjectURL(receipt);
-      isPDF = receipt.type === 'application/pdf' || receipt.name.toLowerCase().endsWith('.pdf');
-      console.log('File receipt - isPDF:', isPDF, 'File type:', receipt.type, 'File name:', receipt.name);
-    } else {
-      console.log('Unknown receipt type');
-      return null;
-    }
-    
-    console.log('Final receiptUrl:', receiptUrl);
-    console.log('Final isPDF:', isPDF);
+    const isPDF = receipt.includes('data:application/pdf') || receipt.toLowerCase().includes('.pdf');
     
     if (isPDF) {
       return (
-        <div className="pdf-preview">
-          <p>📄 PDF Receipt</p>
-          <iframe
-            src={receiptUrl}
-            width="100%"
-            height="500px"
-            title="PDF Receipt Preview"
-            style={{ border: '1px solid #ddd', borderRadius: '4px' }}
-            onLoad={() => console.log('PDF iframe loaded successfully')}
-            onError={() => console.log('PDF iframe failed to load')}
-          />
-          <div className="pdf-actions">
-            <button 
-              className="open-pdf-btn"
-              onClick={() => window.open(receiptUrl, '_blank')}
-            >
-              🔗 Open in New Tab
-            </button>
-          </div>
+        <div className="pdf-preview-container">
+          <Document
+            file={receipt}
+            onLoadSuccess={({ numPages }) => {
+              console.log('PDF loaded successfully, pages:', numPages);
+              setNumPages(numPages);
+            }}
+            onLoadError={(error) => {
+              console.error('PDF load error:', error);
+              console.log('Receipt data length:', receipt.length);
+              console.log('Receipt starts with:', receipt.substring(0, 50));
+            }}
+            loading={<div>Loading PDF...</div>}
+            error={<div>Failed to load PDF. <button onClick={() => window.open(receipt, '_blank')}>Open in new tab</button></div>}
+          >
+            <Page 
+              pageNumber={pageNumber} 
+              width={300}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              onLoadSuccess={() => console.log('Page loaded successfully')}
+              onLoadError={(error) => console.error('Page load error:', error)}
+            />
+          </Document>
+          
+          {numPages > 1 && (
+            <div className="pdf-navigation">
+              <button 
+                onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
+                disabled={pageNumber <= 1}
+              >
+                Previous
+              </button>
+              <span>Page {pageNumber} of {numPages}</span>
+              <button 
+                onClick={() => setPageNumber(Math.min(numPages, pageNumber + 1))}
+                disabled={pageNumber >= numPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       );
     } else {
-      return (
-        <img src={receiptUrl} alt="Receipt Preview" className="receipt-preview" />
-      );
+      return <img src={receipt} alt="Receipt Preview" className="receipt-preview" />;
     }
   };
+
 
   const fetchAnalyticsData = async () => {
     try {
