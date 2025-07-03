@@ -1908,4 +1908,78 @@
 }
 
 
+.scrollable-timesheet-container {
+  max-height: 400px; /* Adjust this height as needed */
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Make sure the table header stays visible while scrolling */
+.scrollable-timesheet-container .timesheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.scrollable-timesheet-container .timesheet-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+}
+
+.scrollable-timesheet-container .timesheet-table thead th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  padding: 12px 8px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Style the scrollbar */
+.scrollable-timesheet-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollable-timesheet-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scrollable-timesheet-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.scrollable-timesheet-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure the new entry row and totals row are always visible */
+.new-entry-row {
+  background-color: #e8f5e8 !important;
+  border-top: 2px solid #28a745;
+}
+
+.totals-row {
+  background-color: #fff3cd !important;
+  border-top: 2px solid #ffc107;
+  font-weight: 600;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+
+/* Make sure active timesheet row is visible */
+.active-for-comments {
+  background-color: #e3f2fd !important;
+  border-left: 4px solid #2196f3;
+}
 

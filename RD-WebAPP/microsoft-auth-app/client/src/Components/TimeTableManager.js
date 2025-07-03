@@ -1868,7 +1868,7 @@ return (
           <button onClick={handleNextWeek}>Next Week</button>
         </div>
 
-        <div className="timesheet-table-container">
+        <div className="timesheet-table-container scrollable-timesheet-container">
           <table className="timesheet-table">
             <thead>
               <tr>
