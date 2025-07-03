@@ -1,6 +1,299 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import './TimeTableManager.css';
 
+const HistoryView = React.memo(({ 
+  userHistoryProjects, 
+  userHistoryTimesheets, 
+  selectedHistoryProjectId, 
+  expandedTimesheet,
+  currentHistoryProjectPage,
+  currentHistoryTimesheetPage,
+  fetchUserHistoryProjects,
+  fetchUserProjectTimesheets,
+  setExpandedTimesheet,
+  setCurrentHistoryProjectPage,
+  setCurrentHistoryTimesheetPage,
+  handleBackToProjects,
+  handleBackToList 
+}) => {
+  useEffect(() => {
+    fetchUserHistoryProjects();
+  }, [fetchUserHistoryProjects]);
+    if (selectedHistoryProjectId) {
+      const project = projects.find(p => p._id === selectedHistoryProjectId);
+      
+      return (
+        <div className="approval-table-view">
+          <div className="approval-header">
+            <h2>Your Timesheets for {project?.projectName}</h2>
+            <button 
+              className="back-button"
+              onClick={() => {
+                setSelectedHistoryProjectId(null);
+                setUserHistoryTimesheets([]);
+                setCurrentHistoryTimesheetPage(1);
+              }}
+            >
+              Back to Projects
+            </button>
+          </div>
+          
+          {userHistoryTimesheets.length === 0 ? (
+            <div className="no-reports">
+              <p>No timesheets found for this project.</p>
+            </div>
+          ) : (
+            <>
+              <div className="approval-table-container">
+                <table className="reports-table">
+                  <thead>
+                    <tr>
+                      <th>Week</th>
+                      <th>Total Hours</th>
+                      <th>Status</th>
+                      <th>Submitted Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getPaginatedHistoryTimesheets(userHistoryTimesheets).map(timesheet => (
+                      <React.Fragment key={timesheet._id}>
+                        <tr className="report-row">
+                          <td className="date-range">
+                            {new Date(timesheet.weekStartDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(timesheet.weekEndDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                          </td>
+                          <td className="amount">{timesheet.totalHours.toFixed(1)} hrs</td>
+                          <td>
+                            <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span>
+                          </td>
+                          <td>{new Date(timesheet.submittedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
+                          <td className="actions-cell-horizontal">
+                            <button
+                              className="details-toggle-button"
+                              onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
+                            >
+                              {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Expandable Details Row */}
+                        {expandedTimesheet === timesheet._id && (
+                          <tr className="expanded-row">
+                            <td colSpan="5">
+                              <div className="trip-details-expanded">
+                                
+                                {/* Approval information */}
+                                {timesheet.approverEmail && (
+                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
+                                    <h4>Approval Details:</h4>
+                                    <div className="detail-row">
+                                      <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
+                                      <span className="detail-value">{timesheet.approverEmail}</span>
+                                    </div>
+                                    {timesheet.approvedDate && (
+                                      <div className="detail-row">
+                                        <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
+                                        <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Employee's week comments */}
+                                {timesheet.comments && (
+                                  <div className="detail-row">
+                                    <span className="detail-label">Week Comments:</span>
+                                    <span className="detail-value">{timesheet.comments}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Approval comments */}
+                                {timesheet.approvalComments && (
+                                  <div className="detail-row">
+                                    <span className="detail-label">Approval Comments:</span>
+                                    <span className="detail-value">{timesheet.approvalComments}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Daily breakdown */}
+                                <h4>Daily Breakdown</h4>
+                                <div className="expenses-list">
+                                  {timesheet.dayEntries.map((day, index) => (
+                                    <div key={index} className="expense-item">
+                                      <div className="expense-details">
+                                        <p>Date: {new Date(day.date).toLocaleDateString()}</p>
+                                        <p>Hours: {day.hours}</p>
+                                        {day.notes && <p>Notes: {day.notes}</p>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls for History Timesheets */}
+              <div className="pagination-container">
+                <div className="pagination-info">
+                  Showing {Math.min((currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage + 1, userHistoryTimesheets.length)} to {Math.min(currentHistoryTimesheetPage * historyTimesheetsPerPage, userHistoryTimesheets.length)} of {userHistoryTimesheets.length} timesheets
+                </div>
+                
+                <div className="pagination-controls">
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(1)}
+                    disabled={currentHistoryTimesheetPage === 1}
+                  >
+                    First
+                  </button>
+                  
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentHistoryTimesheetPage === 1}
+                  >
+                    Previous
+                  </button>
+                  
+                  <span className="page-info">
+                    Page {currentHistoryTimesheetPage} of {Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  </span>
+                  
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(prev => Math.min(prev + 1, Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)))}
+                    disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  >
+                    Next
+                  </button>
+                  
+                  <button 
+                    className="pagination-btn"
+                    onClick={() => setCurrentHistoryTimesheetPage(Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage))}
+                    disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="approval-table-view">
+        <div className="approval-header">
+          <h2>Your Timesheet History</h2>
+          <button 
+            className="back-button"
+            onClick={() => setView('list')}
+          >
+            Back to Timesheet
+          </button>
+        </div>
+        
+        {userHistoryProjects.length === 0 ? (
+          <div className="no-reports">
+            <p>You haven't submitted any timesheets yet.</p>
+          </div>
+        ) : (
+          <>
+            <div className="approval-table-container">
+              <table className="reports-table">
+                <thead>
+                  <tr>
+                    <th>Project Name</th>
+                    <th>Client</th>
+                    <th>Total Timesheets</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getPaginatedHistoryProjects(userHistoryProjects).map(project => (
+                    <tr key={project._id} className="report-row">
+                      <td className="report-name">{project.projectName}</td>
+                      <td>{project.clientName}</td>
+                      <td className="amount">{project.timesheetCount}</td>
+                      <td className="actions-cell-horizontal">
+                        <button
+                          className="edit-button"
+                          onClick={() => fetchUserProjectTimesheets(project._id)}
+                        >
+                          View Timesheets
+                        </button>
+                        <button
+                          className="details-button"
+                          onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
+                        >
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls for History Projects */}
+            <div className="pagination-container">
+              <div className="pagination-info">
+                Showing {Math.min((currentHistoryProjectPage - 1) * historyProjectsPerPage + 1, userHistoryProjects.length)} to {Math.min(currentHistoryProjectPage * historyProjectsPerPage, userHistoryProjects.length)} of {userHistoryProjects.length} projects
+              </div>
+              
+              <div className="pagination-controls">
+                <button 
+                  className="pagination-btn"
+                  onClick={() => setCurrentHistoryProjectPage(1)}
+                  disabled={currentHistoryProjectPage === 1}
+                >
+                  First
+                </button>
+                
+                <button 
+                  className="pagination-btn"
+                  onClick={() => setCurrentHistoryProjectPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentHistoryProjectPage === 1}
+                >
+                  Previous
+                </button>
+                
+                <span className="page-info">
+                  Page {currentHistoryProjectPage} of {Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
+                </span>
+                
+                <button 
+                  className="pagination-btn"
+                  onClick={() => setCurrentHistoryProjectPage(prev => Math.min(prev + 1, Math.ceil(userHistoryProjects.length / historyProjectsPerPage)))}
+                  disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
+                >
+                  Next
+                </button>
+                
+                <button 
+                  className="pagination-btn"
+                  onClick={() => setCurrentHistoryProjectPage(Math.ceil(userHistoryProjects.length / historyProjectsPerPage))}
+                  disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  });
+
 function TimeTableManager({ onBack, user }) {
   const API_URL = useMemo(() => process.env.REACT_APP_API_URL || 'http://localhost:5000', []);
   const [view, setView] = useState('list');
@@ -841,285 +1134,7 @@ const fetchTimeEntries = async () => {
 
 
 
-  const HistoryView = () => {
-    useEffect(() => {
-      fetchUserHistoryProjects();
-    }, [fetchUserHistoryProjects]);
-
-    if (selectedHistoryProjectId) {
-      const project = projects.find(p => p._id === selectedHistoryProjectId);
-      
-      return (
-        <div className="approval-table-view">
-          <div className="approval-header">
-            <h2>Your Timesheets for {project?.projectName}</h2>
-            <button 
-              className="back-button"
-              onClick={() => {
-                setSelectedHistoryProjectId(null);
-                setUserHistoryTimesheets([]);
-                setCurrentHistoryTimesheetPage(1);
-              }}
-            >
-              Back to Projects
-            </button>
-          </div>
-          
-          {userHistoryTimesheets.length === 0 ? (
-            <div className="no-reports">
-              <p>No timesheets found for this project.</p>
-            </div>
-          ) : (
-            <>
-              <div className="approval-table-container">
-                <table className="reports-table">
-                  <thead>
-                    <tr>
-                      <th>Week</th>
-                      <th>Total Hours</th>
-                      <th>Status</th>
-                      <th>Submitted Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getPaginatedHistoryTimesheets(userHistoryTimesheets).map(timesheet => (
-                      <React.Fragment key={timesheet._id}>
-                        <tr className="report-row">
-                          <td className="date-range">
-                            {new Date(timesheet.weekStartDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} - {new Date(timesheet.weekEndDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
-                          </td>
-                          <td className="amount">{timesheet.totalHours.toFixed(1)} hrs</td>
-                          <td>
-                            <span className={`status-badge ${timesheet.status}`}>{timesheet.status}</span>
-                          </td>
-                          <td>{new Date(timesheet.submittedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</td>
-                          <td className="actions-cell-horizontal">
-                            <button
-                              className="details-toggle-button"
-                              onClick={() => setExpandedTimesheet(expandedTimesheet === timesheet._id ? null : timesheet._id)}
-                            >
-                              {expandedTimesheet === timesheet._id ? 'Hide' : 'Details'}
-                            </button>
-                          </td>
-                        </tr>
-                        
-                        {/* Expandable Details Row */}
-                        {expandedTimesheet === timesheet._id && (
-                          <tr className="expanded-row">
-                            <td colSpan="5">
-                              <div className="trip-details-expanded">
-                                
-                                {/* Approval information */}
-                                {timesheet.approverEmail && (
-                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
-                                    <h4>Approval Details:</h4>
-                                    <div className="detail-row">
-                                      <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
-                                      <span className="detail-value">{timesheet.approverEmail}</span>
-                                    </div>
-                                    {timesheet.approvedDate && (
-                                      <div className="detail-row">
-                                        <span className="detail-label">{timesheet.status === 'approved' ? 'Approved on:' : 'Denied on:'}</span>
-                                        <span className="detail-value">{new Date(timesheet.approvedDate).toLocaleDateString()}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Employee's week comments */}
-                                {timesheet.comments && (
-                                  <div className="detail-row">
-                                    <span className="detail-label">Week Comments:</span>
-                                    <span className="detail-value">{timesheet.comments}</span>
-                                  </div>
-                                )}
-                                
-                                {/* Approval comments */}
-                                {timesheet.approvalComments && (
-                                  <div className="detail-row">
-                                    <span className="detail-label">Approval Comments:</span>
-                                    <span className="detail-value">{timesheet.approvalComments}</span>
-                                  </div>
-                                )}
-                                
-                                {/* Daily breakdown */}
-                                <h4>Daily Breakdown</h4>
-                                <div className="expenses-list">
-                                  {timesheet.dayEntries.map((day, index) => (
-                                    <div key={index} className="expense-item">
-                                      <div className="expense-details">
-                                        <p>Date: {new Date(day.date).toLocaleDateString()}</p>
-                                        <p>Hours: {day.hours}</p>
-                                        {day.notes && <p>Notes: {day.notes}</p>}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                                
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination Controls for History Timesheets */}
-              <div className="pagination-container">
-                <div className="pagination-info">
-                  Showing {Math.min((currentHistoryTimesheetPage - 1) * historyTimesheetsPerPage + 1, userHistoryTimesheets.length)} to {Math.min(currentHistoryTimesheetPage * historyTimesheetsPerPage, userHistoryTimesheets.length)} of {userHistoryTimesheets.length} timesheets
-                </div>
-                
-                <div className="pagination-controls">
-                  <button 
-                    className="pagination-btn"
-                    onClick={() => setCurrentHistoryTimesheetPage(1)}
-                    disabled={currentHistoryTimesheetPage === 1}
-                  >
-                    First
-                  </button>
-                  
-                  <button 
-                    className="pagination-btn"
-                    onClick={() => setCurrentHistoryTimesheetPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentHistoryTimesheetPage === 1}
-                  >
-                    Previous
-                  </button>
-                  
-                  <span className="page-info">
-                    Page {currentHistoryTimesheetPage} of {Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
-                  </span>
-                  
-                  <button 
-                    className="pagination-btn"
-                    onClick={() => setCurrentHistoryTimesheetPage(prev => Math.min(prev + 1, Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)))}
-                    disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
-                  >
-                    Next
-                  </button>
-                  
-                  <button 
-                    className="pagination-btn"
-                    onClick={() => setCurrentHistoryTimesheetPage(Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage))}
-                    disabled={currentHistoryTimesheetPage === Math.ceil(userHistoryTimesheets.length / historyTimesheetsPerPage)}
-                  >
-                    Last
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="approval-table-view">
-        <div className="approval-header">
-          <h2>Your Timesheet History</h2>
-          <button 
-            className="back-button"
-            onClick={() => setView('list')}
-          >
-            Back to Timesheet
-          </button>
-        </div>
-        
-        {userHistoryProjects.length === 0 ? (
-          <div className="no-reports">
-            <p>You haven't submitted any timesheets yet.</p>
-          </div>
-        ) : (
-          <>
-            <div className="approval-table-container">
-              <table className="reports-table">
-                <thead>
-                  <tr>
-                    <th>Project Name</th>
-                    <th>Client</th>
-                    <th>Total Timesheets</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getPaginatedHistoryProjects(userHistoryProjects).map(project => (
-                    <tr key={project._id} className="report-row">
-                      <td className="report-name">{project.projectName}</td>
-                      <td>{project.clientName}</td>
-                      <td className="amount">{project.timesheetCount}</td>
-                      <td className="actions-cell-horizontal">
-                        <button
-                          className="edit-button"
-                          onClick={() => fetchUserProjectTimesheets(project._id)}
-                        >
-                          View Timesheets
-                        </button>
-                        <button
-                          className="details-button"
-                          onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
-                        >
-                          Details
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination Controls for History Projects */}
-            <div className="pagination-container">
-              <div className="pagination-info">
-                Showing {Math.min((currentHistoryProjectPage - 1) * historyProjectsPerPage + 1, userHistoryProjects.length)} to {Math.min(currentHistoryProjectPage * historyProjectsPerPage, userHistoryProjects.length)} of {userHistoryProjects.length} projects
-              </div>
-              
-              <div className="pagination-controls">
-                <button 
-                  className="pagination-btn"
-                  onClick={() => setCurrentHistoryProjectPage(1)}
-                  disabled={currentHistoryProjectPage === 1}
-                >
-                  First
-                </button>
-                
-                <button 
-                  className="pagination-btn"
-                  onClick={() => setCurrentHistoryProjectPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentHistoryProjectPage === 1}
-                >
-                  Previous
-                </button>
-                
-                <span className="page-info">
-                  Page {currentHistoryProjectPage} of {Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
-                </span>
-                
-                <button 
-                  className="pagination-btn"
-                  onClick={() => setCurrentHistoryProjectPage(prev => Math.min(prev + 1, Math.ceil(userHistoryProjects.length / historyProjectsPerPage)))}
-                  disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
-                >
-                  Next
-                </button>
-                
-                <button 
-                  className="pagination-btn"
-                  onClick={() => setCurrentHistoryProjectPage(Math.ceil(userHistoryProjects.length / historyProjectsPerPage))}
-                  disabled={currentHistoryProjectPage === Math.ceil(userHistoryProjects.length / historyProjectsPerPage)}
-                >
-                  Last
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
+  
 
 
   const fetchProjectTimesheetCounts = async (projectIds) => {

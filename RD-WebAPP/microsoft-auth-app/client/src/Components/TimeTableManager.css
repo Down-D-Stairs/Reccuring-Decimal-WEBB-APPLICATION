@@ -1,8 +1,3 @@
-/* Performance optimizations */
-* {
-  box-sizing: border-box;
-}
-
 .timetable-container {
   padding: 20px;
   max-width: 1200px;
@@ -22,7 +17,6 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
 }
 
 .home-button {
@@ -41,16 +35,6 @@
 
 .create-project-button:hover {
   background-color: #006cbd;
-}
-
-.approvals-button {
-  background-color: #28a745;
-  color: white;
-  font-weight: bold;
-}
-
-.approvals-button:hover {
-  background-color: #218838;
 }
 
 /* Projects table styles */
@@ -79,21 +63,18 @@
 .projects-table td {
   padding: 15px;
   border-bottom: 1px solid #dee2e6;
-  vertical-align: middle;
 }
 
 .projects-table tr:hover {
   background: #f8f9fa;
 }
 
-/* UNIFIED BUTTON STYLES */
+/* Standardize ALL table action buttons */
 .edit-button,
-.view-timesheets-button,
 .details-button,
+.view-timesheets-button,
 .submit-decision-btn,
-.details-toggle-button,
-.back-button,
-.view-comments-btn {
+.details-toggle-button {
   min-width: 100px;
   height: 35px;
   padding: 8px 12px;
@@ -104,15 +85,17 @@
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
-  margin: 2px;
+  transition: background-color 0.2s ease;
+  margin: 2px; /* Small margin for spacing */
+
+  /* Add these lines for better centering */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   vertical-align: middle;
-  transition: none; /* Remove transitions that cause blinking */
 }
 
-/* Button colors */
+/* View Timesheets / Edit button - Blue */
 .edit-button,
 .view-timesheets-button {
   background-color: #007bff;
@@ -124,6 +107,7 @@
   background-color: #0056b3;
 }
 
+/* Details button - Gray */
 .details-button {
   background-color: #6c757d;
   color: white;
@@ -133,12 +117,13 @@
   background-color: #5a6268;
 }
 
+/* Submit Decision button - Green */
 .submit-decision-btn {
   background-color: #28a745;
   color: white;
 }
 
-.submit-decision-btn:hover:not(:disabled) {
+.submit-decision-btn:hover {
   background-color: #1e7e34;
 }
 
@@ -148,8 +133,9 @@
   opacity: 0.6;
 }
 
+/* Details Toggle button - Light gray with smaller width */
 .details-toggle-button {
-  min-width: 60px;
+  min-width: 60px; /* Smaller for expand/collapse */
   background-color: #f8f9fa;
   color: #495057;
   border: 1px solid #dee2e6;
@@ -158,24 +144,6 @@
 .details-toggle-button:hover {
   background-color: #e9ecef;
   border-color: #adb5bd;
-}
-
-.back-button {
-  background-color: #dc3545;
-  color: white;
-}
-
-.back-button:hover {
-  background-color: #c82333;
-}
-
-.view-comments-btn {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.view-comments-btn:hover {
-  background-color: #138496;
 }
 
 /* Actions cell layout */
@@ -187,6 +155,7 @@
   padding: 8px;
 }
 
+/* For horizontal button layout in some tables */
 .actions-cell-horizontal {
   display: flex;
   flex-direction: row;
@@ -196,51 +165,655 @@
   padding: 8px;
 }
 
-/* Timesheet table styles */
-.timesheet-table-container {
-  width: 100%;
-  margin: 20px 0;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* Make sure table cells with buttons have consistent spacing */
+.timesheets-table td {
+  vertical-align: middle;
+  padding: 8px;
 }
 
-.scrollable-timesheet-container {
-  max-height: 600px;
+/* If you have multiple buttons in one cell, space them evenly */
+.table-button-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.add-time-button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.add-time-button:hover {
+  background-color: #45a049;
+}
+
+.show-details-button {
+  padding: 8px 16px;
+  background-color: #ffa500;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.show-details-button:hover {
+  background-color: #ff8c00;
+}
+
+/* Project and time form styles */
+.project-form-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 100;
   overflow-y: auto;
+  padding: 20px;
+}
+
+.project-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+
+.time-form-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.time-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #333;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-group.checkbox input {
+  width: auto;
+}
+
+.project-form input,
+.time-form input,
+.project-form select,
+.time-form select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.form-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.form-buttons button:first-child {
+  background-color: #ff4444;
+  color: white;
+}
+
+.form-buttons button:first-child:hover {
+  background-color: #e03131;
+}
+
+.form-buttons button:last-child {
+  background-color: #28a745;
+}
+
+.form-buttons button:last-child:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.form-buttons button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Project details styles */
+.details-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.details-container h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.details-container p {
+  font-size: 16px;
+  margin: 10px 0;
+  color: #666;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.details-table th,
+.details-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.details-table th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+.details-container button {
+  padding: 10px 20px;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.details-container button:hover {
+  background-color: #006cbd;
+}
+
+/* New Weekly Timesheet Styles */
+.timesheet-view {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.week-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.week-selector button {
+  padding: 8px 16px;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.week-selector button:hover {
+  background-color: #006cbd;
+}
+
+.timesheet-table-container {
   overflow-x: auto;
+  margin-bottom: 20px;
 }
 
 .timesheet-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  min-width: 800px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.timesheet-table th,
+.timesheet-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
 }
 
 .timesheet-table th {
-  background: #f8f9fa;
-  padding: 12px 8px;
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+.timesheet-table input[type="number"] {
+  width: 60px;
+  padding: 8px;
   text-align: center;
-  font-weight: 600;
-  border-bottom: 2px solid #dee2e6;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.timesheet-table select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.new-entry-row {
+  background-color: #f8f9fa;
+}
+
+.new-entry-row button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.new-entry-row button:hover {
+  background-color: #45a049;
+}
+
+.new-entry-row button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.totals-row {
+  font-weight: bold;
+  background-color: #e9ecef;
+}
+
+.timesheet-actions {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timesheet-history-btn {
+  padding: 10px 20px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.timesheet-history-btn:hover {
+  background: #138496;
+}
+
+
+.submit-timesheet-button {
+  padding: 12px 24px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;   
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.submit-timesheet-button:hover {
+  background-color: #28a745;
+}
+
+.submit-timesheet-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Approvals View Styles */
+.approvals-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.approvals-button {
+  background-color: #0078d4;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.back-button {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
 }
 
-.timesheet-table td {
+.back-button:hover {
+  background-color: #c0392b;
+}
+
+.projects-for-approval {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.approval-project-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.view-timesheets-button {
+  background-color: #2196F3;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.project-timesheets-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.employee-timesheets {
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.timesheet-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: white;
+}
+
+.day-entries {
+  margin-top: 10px;
+}
+
+.day-entry {
   padding: 8px;
-  border-bottom: 1px solid #dee2e6;
-  text-align: center;
-  vertical-align: middle;
+  border-bottom: 1px solid #eee;
 }
 
-.timesheet-table tr:hover {
+.status-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.status-badge.submitted {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.status-badge.approved {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.status-badge.denied {
+  background-color: #d9534f;
+  color: white;
+}
+
+.approval-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.approve-button {
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.deny-button {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.approval-info {
+  margin-top: 10px;
+  color: #5cb85c;
+  font-style: italic;
+}
+
+.denial-info {
+  margin-top: 10px;
+  color: #d9534f;
+  font-style: italic;
+}
+
+
+.timesheet-approval-section {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.status-select {
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.status-select.submitted {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.status-select.approved {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.status-select.denied {
+  background-color: #d9534f;
+  color: white;
+}
+
+.approval-comments {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+}
+
+.submit-decision-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-decision-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.timesheet-comments {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-left: 3px solid #0078d4;
+}
+
+.approval-info {
+  margin-top: 10px;
+  font-style: italic;
+  color: #6c757d;
+}
+
+.comments-section {
+  margin-top: 20px;
+  padding: 15px;
   background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 }
 
-/* Timesheets table styles */
+.comments-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.comments-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+.comments-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.approval-comments-display {
+  background: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+}
+
+.approval-comments-display h4 {
+  color: #2e7d32;
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.approval-comments-display p {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.week-comments-table {
+  background: #f0f8ff;
+  border: 1px solid #2196f3;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+}
+
+.week-comments-table h4 {
+  color: #1976d2;
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.week-comments-table p {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Timesheet approval table styles */
 .timesheets-table-container {
   width: 100%;
   overflow-x: auto;
@@ -268,7 +841,7 @@
 .timesheets-table td {
   padding: 12px 8px;
   border-bottom: 1px solid #dee2e6;
-  vertical-align: middle;
+  vertical-align: top;
   font-size: 14px;
 }
 
@@ -276,14 +849,493 @@
   background: #f8f9fa;
 }
 
-/* Fix button click issues */
-.timesheets-table button {
-  pointer-events: auto;
-  position: relative;
-  z-index: 1;
+/* Status badge in table */
+.timesheets-table .status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-/* Modal styles */
+.timesheets-table .status-badge.submitted {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.timesheets-table .status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.timesheets-table .status-badge.denied {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Table form elements */
+.status-select {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  width: 100%;
+  max-width: 120px;
+}
+
+.approval-comments-table {
+  width: 100%;
+  max-width: 200px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Expanded row details */
+.expanded-timesheet-details {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.day-entries-table h4,
+.week-comments-table h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 14px;
+}
+
+.day-entry-row {
+  padding: 5px 0;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 13px;
+}
+
+.day-entry-row:last-child {
+  border-bottom: none;
+}
+
+.week-comments-table {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+}
+
+.week-comments-table p {
+  margin: 0;
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  font-size: 13px;
+}
+
+/* Replace the existing button hover rules with these cleaner ones */
+.timesheets-table button {
+  min-width: 30px;
+  min-height: 30px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  transition: background-color 0.2s ease; /* Smooth transition */
+}
+
+.timesheets-table button:hover {
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+  transform: none; /* Remove any transforms that cause positioning issues */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .timesheets-table th,
+  .timesheets-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .approval-comments-table {
+    max-width: 150px;
+  }
+}
+
+.comments-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.timesheet-history-btn {
+  padding: 10px 20px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.timesheet-history-btn:hover {
+  background: #138496;
+}
+
+/* Admin Calendar Dashboard Styles */
+.admin-calendar-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.admin-calendar-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0 10px;
+  transition: background-color 0.3s;
+}
+
+.admin-calendar-button:hover {
+  background-color: #c0392b;
+}
+
+.calendar-dashboard {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+/* Left Side - Calendar Section */
+.calendar-section {
+  flex: 2;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.calendar-header button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.calendar-header button:hover {
+  background-color: #2980b9;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  background-color: #bdc3c7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-day-header {
+  background-color: #34495e;
+  color: white;
+  padding: 15px 5px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.calendar-day {
+  background-color: white;
+  min-height: 80px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.calendar-day.active:hover {
+  background-color: #ecf0f1;
+  transform: scale(1.02);
+}
+
+.calendar-day.inactive {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.calendar-day.selected {
+  background-color: #3498db;
+  color: white;
+}
+
+.day-number {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.day-hours {
+  font-size: 12px;
+  background-color: #e74c3c;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-align: center;
+  align-self: flex-start;
+}
+
+.calendar-day.selected .day-hours {
+  background-color: #2c3e50;
+}
+
+/* Selected Day Details */
+.day-details {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.day-details h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 1px solid #bdc3c7;
+  padding-bottom: 10px;
+}
+
+.day-breakdown {
+  margin-top: 15px;
+}
+
+.employee-day-entry {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 3px solid #27ae60;
+}
+
+.project-breakdown {
+  margin-top: 8px;
+  margin-left: 20px;
+}
+
+.project-hours {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin: 2px 0;
+}
+
+/* Right Side - Info Panel */
+.info-panel {
+  flex: 1;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  height: fit-content;
+}
+
+.panel-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.panel-tabs button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #7f8c8d;
+  transition: all 0.3s;
+}
+
+.panel-tabs button.active {
+  color: #3498db;
+  border-bottom: 3px solid #3498db;
+}
+
+.panel-tabs button:hover {
+  color: #2980b9;
+}
+
+/* Employee Panel */
+.employee-panel h4,
+.project-panel h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+.employee-selector,
+.project-selector,
+.time-range-selector {
+  margin-bottom: 20px;
+}
+
+.employee-selector select,
+.project-selector select,
+.time-range-selector select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #bdc3c7;
+  border-radius: 5px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.employee-selector select:focus,
+.project-selector select:focus,
+.time-range-selector select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.time-range-selector label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Employee/Project Data Display */
+.employee-data,
+.project-data {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+}
+
+.employee-data h5,
+.project-data h5 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.total-hours {
+  background-color: #3498db;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.employee-entry,
+.project-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 3px solid #e74c3c;
+}
+
+.project-name,
+.employee-name {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.hours {
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .calendar-dashboard {
+    flex-direction: column;
+  }
+  
+  .calendar-section {
+    margin-bottom: 20px;
+  }
+  
+  .calendar-grid {
+    gap: 1px;
+  }
+  
+  .calendar-day {
+    min-height: 60px;
+    padding: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-calendar-container {
+    padding: 10px;
+  }
+  
+  .calendar-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .calendar-day {
+    min-height: 50px;
+    padding: 3px;
+  }
+  
+  .day-number {
+    font-size: 14px;
+  }
+  
+  .day-hours {
+    font-size: 10px;
+  }
+  
+  .panel-tabs {
+    flex-direction: column;
+  }
+}
+
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -293,22 +1345,18 @@
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   z-index: 1000;
-  overflow-y: auto;
-  padding: 20px;
 }
 
 .modal-content {
   background: white;
   border-radius: 10px;
   max-width: 600px;
-  width: 100%;
-  max-height: calc(100vh - 40px);
+  width: 90%;
+  max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  margin: auto;
-  position: relative;
 }
 
 .modal-header {
@@ -319,29 +1367,30 @@
   border-bottom: 2px solid #ecf0f1;
   background-color: #f8f9fa;
   border-radius: 10px 10px 0 0;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
-.modal-close-button,
-.modal-close-btn {
+.modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.modal-close-button {
   background: none;
   border: none;
   font-size: 24px;
   cursor: pointer;
   color: #7f8c8d;
-  padding: 5px;
+  padding: 0;
   width: 30px;
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  transition: all 0.3s;
 }
 
-.modal-close-button:hover,
-.modal-close-btn:hover {
+.modal-close-button:hover {
   background-color: #e74c3c;
   color: white;
 }
@@ -350,62 +1399,587 @@
   padding: 20px;
 }
 
-.modal-footer,
+.day-summary {
+  background-color: #3498db;
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.employee-day-entry-modal {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+}
+
+.employee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #bdc3c7;
+}
+
+.employee-total {
+  background-color: #e74c3c;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.project-breakdown {
+  margin-top: 10px;
+}
+
+.project-hours {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 5px 0;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 3px solid #3498db;
+}
+
+.project-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.project-hours-value {
+  background-color: #3498db;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+
+
+
+
+/* Ensure buttons are properly clickable */
+.timesheets-table td button {
+  min-width: 30px;
+  min-height: 30px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  padding: 4px 8px;
+}
+
+.timesheets-table td button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Back button styling - make them red */
+.back-button {
+  background-color: #dc3545 !important; /* Bootstrap red */
+  color: white !important;
+  border: 1px solid #dc3545 !important;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #c82333 !important; /* Darker red on hover */
+  border-color: #bd2130 !important;
+  color: white !important;
+}
+
+.back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+/* Specific overrides for history section back buttons */
+.history-timesheets-container .back-button,
+.history-projects-container .back-button {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: 1px solid #dc3545 !important;
+}
+
+.history-timesheets-container .back-button:hover,
+.history-projects-container .back-button:hover {
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+  color: white !important;
+}
+
+.approval-info-display,
+.approval-info-section {
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+}
+
+.approval-info-section h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 5px 0;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.detail-value {
+  color: #333;
+}
+
+.approved-status {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+.approved-status .detail-label {
+  color: #155724;
+}
+
+.denied-status {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.denied-status .detail-label {
+  color: #721c24;
+}
+
+/* TimeTableManager specific styles - add these to Login.css */
+
+/* Make actions-cell specific to timetable only */
+.timetable-container .actions-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+}
+
+/* Keep ExpenseManager actions-cell as horizontal */
+.expense-manager .actions-cell {
+  white-space: nowrap;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+/* TimeTable specific modal styles */
+.timetable-container .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.timetable-container .modal-content {
+  background: white;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.timetable-container .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.timetable-container .modal-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.timetable-container .modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.timetable-container .modal-close-btn:hover {
+  color: #333;
+  background-color: #f0f0f0;
+}
+
+.timetable-container .modal-body {
+  padding: 20px;
+}
+
+.timetable-container .project-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timetable-container .modal-footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timetable-container .modal-close-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+.timetable-container .modal-close-button:hover {
+  background-color: #5a6268;
+}
+
+/* TimeTable Decision Confirmation Styles */
+.timetable-container .confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+.timetable-container .confirmation-popup {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.timetable-container .timesheet-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 15px 0;
+}
+
+.timetable-container .batch-summary {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 15px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.timetable-container .batch-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.timetable-container .batch-item:last-child {
+  border-bottom: none;
+}
+
+.timetable-container .confirmation-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.timetable-container .cancel-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.timetable-container .cancel-button:hover {
+  background-color: #5a6268;
+}
+
+.timetable-container .confirm-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.timetable-container .confirm-button:hover {
+  background-color: #0056b3;
+}
+
+.status-filter-selector {
+  margin-bottom: 15px;
+}
+
+.status-filter-selector label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.status-filter-selector select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Make sure table cells with buttons have consistent spacing */
+.timesheets-table td,
+.reports-table td {
+  vertical-align: middle;
+  padding: 8px;
+}
+
+/* Timesheet submission specific styles */
+.submission-summary {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  border-left: 4px solid #007bff;
+}
+
+.submission-summary p {
+  margin: 4px 0;
+  color: #333;
+}
+
+.warning-text {
+  color: #856404;
+  background-color: #fff3cd;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #ffeaa7;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* Fix modal actions positioning */
 .modal-actions {
-  padding: 16px 20px;
+  padding: 16px 20px 20px 20px; /* More balanced padding */
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   border-top: 1px solid #e9ecef;
+  margin-right: 12px; /* Push buttons away from right edge */
 }
 
-/* Other necessary styles */
-.week-selector {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 20px 0;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.timesheet-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin: 30px 0;
-  flex-wrap: wrap;
-}
-
-.timesheet-actions button {
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 500;
+/* Update confirm button */
+.confirm-submit-button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  min-width: 150px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
-.comments-section {
-  margin: 20px 0;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
+.confirm-submit-button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.confirm-submit-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+
+.processing-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.comments-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.save-comments-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.skip-comments-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .active-for-comments {
-  background-color: #fff3cd !important;
-  border-left: 4px solid #ffc107;
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
 }
 
+.has-comments-indicator {
+  color: #28a745;
+  font-size: 14px;
+}
+
+.no-active-timesheet {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+}
+
+.view-comments-btn {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+
+.scrollable-timesheet-container {
+  max-height: 400px; /* Adjust this height as needed */
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Make sure the table header stays visible while scrolling */
+.scrollable-timesheet-container .timesheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.scrollable-timesheet-container .timesheet-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+}
+
+.scrollable-timesheet-container .timesheet-table thead th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  padding: 12px 8px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Style the scrollbar */
+.scrollable-timesheet-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollable-timesheet-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scrollable-timesheet-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.scrollable-timesheet-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure the new entry row and totals row are always visible */
 .new-entry-row {
-  background-color: #e8f5e8;
+  background-color: #e8f5e8 !important;
+  border-top: 2px solid #28a745;
 }
 
 .totals-row {
-  background-color: #f0f8ff;
-  font-weight: bold;
+  background-color: #fff3cd !important;
+  border-top: 2px solid #ffc107;
+  font-weight: 600;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
 }
+
+/* Make sure active timesheet row is visible */
+.active-for-comments {
+  background-color: #e3f2fd !important;
+  border-left: 4px solid #2196f3;
+}
+
