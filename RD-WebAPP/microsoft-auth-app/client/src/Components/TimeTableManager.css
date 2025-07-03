@@ -1848,6 +1848,7 @@
   border-top: 2px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  text-align: center;
 }
 
 @keyframes spin {
