@@ -1288,6 +1288,14 @@ const fetchTimeEntries = async () => {
         const month = calendarDate.getMonth();
         url += `&year=${year}&month=${month}`;
       }
+
+      console.log('CALENDAR-MONTH DEBUG:', {
+        calendarDate,
+        year,
+        month,
+        finalUrl: url
+      });
+    
       
       const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
       console.log('API URL:', `${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
@@ -1324,6 +1332,13 @@ const fetchTimeEntries = async () => {
         const month = calendarDate.getMonth();
         url += `&year=${year}&month=${month}`;
       }
+
+       console.log('CALENDAR-MONTH DEBUG:', {
+        calendarDate,
+        year,
+        month,
+        finalUrl: url
+      });
       
       const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
       

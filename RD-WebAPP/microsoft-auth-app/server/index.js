@@ -1197,6 +1197,14 @@ app.get('/api/admin/employee-data', async (req, res) => {
         const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
         const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
         
+        console.log('BACKEND CALENDAR-MONTH:', {
+          receivedYear: req.query.year,
+          receivedMonth: req.query.month,
+          targetYear,
+          targetMonth,
+          now: now.getMonth()
+        });
+
         // First day of the target month
         startDate = new Date(targetYear, targetMonth, 1);
         startDate.setHours(0, 0, 0, 0);
@@ -1312,6 +1320,14 @@ app.get('/api/admin/project-data', async (req, res) => {
         const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
         const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
         
+        console.log('BACKEND CALENDAR-MONTH:', {
+          receivedYear: req.query.year,
+          receivedMonth: req.query.month,
+          targetYear,
+          targetMonth,
+          now: now.getMonth()
+        });
+
         // First day of the target month
         startDate = new Date(targetYear, targetMonth, 1);
         startDate.setHours(0, 0, 0, 0);
@@ -1632,6 +1648,14 @@ app.get('/api/admin/employee-data', async (req, res) => {
         const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
         const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
         
+        console.log('BACKEND CALENDAR-MONTH:', {
+          receivedYear: req.query.year,
+          receivedMonth: req.query.month,
+          targetYear,
+          targetMonth,
+          now: now.getMonth()
+        });
+
         // First day of the target month
         startDate = new Date(targetYear, targetMonth, 1);
         startDate.setHours(0, 0, 0, 0);
@@ -1737,6 +1761,14 @@ app.get('/api/admin/project-data', async (req, res) => {
         const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
         const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
         
+        console.log('BACKEND CALENDAR-MONTH:', {
+          receivedYear: req.query.year,
+          receivedMonth: req.query.month,
+          targetYear,
+          targetMonth,
+          now: now.getMonth()
+        });
+
         // First day of the target month
         startDate = new Date(targetYear, targetMonth, 1);
         startDate.setHours(0, 0, 0, 0);
