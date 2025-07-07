@@ -1281,6 +1281,7 @@ const fetchTimeEntries = async () => {
       console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
       
       const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
+      console.log('API URL:', `${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
       
       if (!response.ok) {
         const errorText = await response.text();
