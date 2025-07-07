@@ -1204,6 +1204,7 @@ app.get('/api/admin/employee-data', async (req, res) => {
         // Last day of the target month
         endDate = new Date(targetYear, targetMonth + 1, 0);
         endDate.setHours(23, 59, 59, 999);
+        console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
         break;
     }
     
@@ -1318,6 +1319,7 @@ app.get('/api/admin/project-data', async (req, res) => {
         // Last day of the target month
         endDate = new Date(targetYear, targetMonth + 1, 0);
         endDate.setHours(23, 59, 59, 999);
+        console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
         break;
     }
     
@@ -1637,6 +1639,7 @@ app.get('/api/admin/employee-data', async (req, res) => {
         // Last day of the target month
         endDate = new Date(targetYear, targetMonth + 1, 0);
         endDate.setHours(23, 59, 59, 999);
+        console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
         break;
     }
     
@@ -1741,6 +1744,7 @@ app.get('/api/admin/project-data', async (req, res) => {
         // Last day of the target month
         endDate = new Date(targetYear, targetMonth + 1, 0);
         endDate.setHours(23, 59, 59, 999);
+        console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
         break;
 
     }
