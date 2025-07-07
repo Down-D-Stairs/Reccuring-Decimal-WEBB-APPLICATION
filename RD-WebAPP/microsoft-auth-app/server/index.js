@@ -1192,6 +1192,19 @@ app.get('/api/admin/employee-data', async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         endDate.setHours(23, 59, 59, 999); // End of month
         break;
+      case 'calendar-month':
+        // Get the month/year from query parameters
+        const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+        const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
+        
+        // First day of the target month
+        startDate = new Date(targetYear, targetMonth, 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Last day of the target month
+        endDate = new Date(targetYear, targetMonth + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
     }
     
     // Build optimized query
@@ -1292,6 +1305,19 @@ app.get('/api/admin/project-data', async (req, res) => {
         startDate.setHours(0, 0, 0, 0); // Beginning of month
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         endDate.setHours(23, 59, 59, 999); // End of month
+        break;
+      case 'calendar-month':
+        // Get the month/year from query parameters
+        const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+        const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
+        
+        // First day of the target month
+        startDate = new Date(targetYear, targetMonth, 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Last day of the target month
+        endDate = new Date(targetYear, targetMonth + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
         break;
     }
     
@@ -1599,6 +1625,19 @@ app.get('/api/admin/employee-data', async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         endDate.setHours(23, 59, 59, 999); // End of month
         break;
+      case 'calendar-month':
+        // Get the month/year from query parameters
+        const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+        const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
+        
+        // First day of the target month
+        startDate = new Date(targetYear, targetMonth, 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Last day of the target month
+        endDate = new Date(targetYear, targetMonth + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
     }
     
     // Build query
@@ -1690,6 +1729,20 @@ app.get('/api/admin/project-data', async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         endDate.setHours(23, 59, 59, 999); // End of month
         break;
+      case 'calendar-month':
+        // Get the month/year from query parameters
+        const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+        const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
+        
+        // First day of the target month
+        startDate = new Date(targetYear, targetMonth, 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Last day of the target month
+        endDate = new Date(targetYear, targetMonth + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+
     }
     
     // Build query

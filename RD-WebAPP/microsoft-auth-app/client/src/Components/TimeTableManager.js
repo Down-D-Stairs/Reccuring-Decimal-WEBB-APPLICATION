@@ -1279,10 +1279,19 @@ const fetchTimeEntries = async () => {
     try {
       setIsLoadingEmployeeData(true); // Show loading
       console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
+
+      let url = `${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`;
+    
+      // Add calendar month parameters
+      if (range === 'calendar-month') {
+        const year = calendarDate.getFullYear();
+        const month = calendarDate.getMonth();
+        url += `&year=${year}&month=${month}`;
+      }
       
       const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
       console.log('API URL:', `${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Server returned ${response.status}: ${errorText}`);
@@ -1306,6 +1315,15 @@ const fetchTimeEntries = async () => {
     try {
       setIsLoadingProjectData(true); // Show loading
       console.log(`Fetching project data for ${projectId} with range ${range} and status ${status}`);
+
+      let url = `${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`;
+    
+      // Add calendar month parameters
+      if (range === 'calendar-month') {
+        const year = calendarDate.getFullYear();
+        const month = calendarDate.getMonth();
+        url += `&year=${year}&month=${month}`;
+      }
       
       const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
       
@@ -1723,6 +1741,7 @@ const fetchTimeEntries = async () => {
                     <option value="week">This Week</option>
                     <option value="2weeks">Last 2 Weeks</option>
                     <option value="month">This Month</option>
+                    <option value="calendar-month">Calendar Month</option>
                   </select>
                 </div>
 
@@ -1802,6 +1821,7 @@ const fetchTimeEntries = async () => {
                     <option value="week">This Week</option>
                     <option value="2weeks">Last 2 Weeks</option>
                     <option value="month">This Month</option>
+                    <option value="calendar-month">Calendar Month</option>
                   </select>
                 </div>
 
