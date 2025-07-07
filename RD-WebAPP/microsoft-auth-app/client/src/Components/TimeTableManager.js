@@ -1280,14 +1280,25 @@ const fetchTimeEntries = async () => {
       setIsLoadingEmployeeData(true); // Show loading
       console.log(`Fetching employee data for ${employeeName} with range ${range} and status ${status}`);
 
+      console.log('=== FETCH EMPLOYEE DATA DEBUG ===');
+      console.log('Range:', range);
+      console.log('Calendar Date:', calendarDate);
+      console.log('Calendar Month:', calendarDate.getMonth());
+      console.log('Calendar Year:', calendarDate.getFullYear());
+      console.log('Current Date:', new Date());
+      console.log('Current Month:', new Date().getMonth());
+      
       let url = `${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`;
-    
-      // Add calendar month parameters
+      
       if (range === 'calendar-month') {
         const year = calendarDate.getFullYear();
         const month = calendarDate.getMonth();
         url += `&year=${year}&month=${month}`;
+        console.log('CALENDAR-MONTH URL:', url);
       }
+      
+      console.log('Final URL:', url);
+      console.log('===================================');
 
       
     
