@@ -1730,13 +1730,13 @@ const fetchTimeEntries = async () => {
                 <div className="time-range-selector">
                   <label>Time Range:</label>
                   <select 
-                    value={employeeTimeRange} 
-                    onChange={(e) => {
-                      setEmployeeTimeRange(e.target.value);
-                      if (selectedEmployee) {
-                        fetchEmployeeData(selectedEmployee, e.target.value);
-                      }
-                    }}
+                      value={employeeTimeRange} 
+                      onChange={(e) => {
+                        setEmployeeTimeRange(e.target.value);
+                        if (selectedEmployee) {
+                          fetchEmployeeData(selectedEmployee, e.target.value, employeeStatusFilter);
+                        }
+                      }}
                   >
                     <option value="week">This Week</option>
                     <option value="2weeks">Last 2 Weeks</option>
@@ -1814,7 +1814,7 @@ const fetchTimeEntries = async () => {
                     onChange={(e) => {
                       setProjectTimeRange(e.target.value);
                       if (selectedProject) {
-                        fetchProjectData(selectedProject, e.target.value);
+                        fetchProjectData(selectedProject, e.target.value, projectStatusFilter);
                       }
                     }}
                   >
