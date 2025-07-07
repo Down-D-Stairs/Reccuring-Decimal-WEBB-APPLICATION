@@ -1143,240 +1143,7 @@ app.get('/api/admin/day-details', async (req, res) => {
   }
 });
 
-// Get employee data for specified time range
-// Get employee timesheet data with status filtering for admin calendar
-// Optimize the employee data endpoint
-app.get('/api/admin/employee-data', async (req, res) => {
-  try {
-    const startTime = Date.now(); // Performance tracking
-    
-    const { employee, range, status } = req.query;
-    
-    if (!employee) {
-      return res.status(400).json({ error: 'Employee parameter is required' });
-    }
-    
-    // Calculate date range (same as before)
-    let startDate, endDate;
-    const now = new Date();
-    
-    switch (range) {
-      case 'week':
-        // Calculate Monday-Sunday week (same as frontend)
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
-        
-        // ADD THIS DEBUG LOG
-        console.log('Week calculation debug:', {
-          today: now,
-          startDate: startDate,
-          endDate: endDate,
-          employee: employee
-        });
-        break;
-      case '2weeks':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Beginning of day
-        endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999); // End of day
-        break;
-      case 'month':
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate.setHours(0, 0, 0, 0); // Beginning of month
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999); // End of month
-        break;
-      case 'calendar-month':
-        // Get the month/year from query parameters
-        const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
-        const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
-        
-        console.log('BACKEND CALENDAR-MONTH:', {
-          receivedYear: req.query.year,
-          receivedMonth: req.query.month,
-          targetYear,
-          targetMonth,
-          now: now.getMonth()
-        });
 
-        // First day of the target month
-        startDate = new Date(targetYear, targetMonth, 1);
-        startDate.setHours(0, 0, 0, 0);
-        
-        // Last day of the target month
-        endDate = new Date(targetYear, targetMonth + 1, 0);
-        endDate.setHours(23, 59, 59, 999);
-        console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
-        break;
-    }
-    
-    // Build optimized query
-    let query = {
-      employeeName: employee,
-      weekStartDate: { $gte: startDate },
-      weekEndDate: { $lte: endDate }
-    };
-    
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    // Use aggregation pipeline for better performance
-    const result = await TimeEntry.aggregate([
-      { $match: query },
-      {
-        $lookup: {
-          from: 'projects',
-          localField: 'projectId',
-          foreignField: '_id',
-          as: 'project'
-        }
-      },
-      {
-        $group: {
-          _id: '$projectId',
-          projectName: { $first: { $arrayElemAt: ['$project.projectName', 0] } },
-          totalHours: { $sum: '$totalHours' }
-        }
-      },
-      { $match: { totalHours: { $gt: 0 } } },
-      { $sort: { totalHours: -1 } }
-    ]);
-    
-    const endTime = Date.now();
-    console.log(`Employee data query took ${endTime - startTime}ms`);
-    
-    res.json(result.map(item => ({
-      projectName: item.projectName || 'Unknown Project',
-      totalHours: item.totalHours
-    })));
-    
-  } catch (error) {
-    console.error('Error fetching employee data:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-
-
-// Get project data (all employees working on a specific project)
-// Update the project data endpoint to accept time range
-// Get project timesheet data with status filtering for admin calendar
-// Optimize the project data endpoint
-app.get('/api/admin/project-data', async (req, res) => {
-  try {
-    const startTime = Date.now(); // Performance tracking
-    
-    const { projectId, range, status } = req.query;
-    
-    if (!projectId) {
-      return res.status(400).json({ error: 'ProjectId parameter is required' });
-    }
-    
-    // Calculate date range (same logic as employee endpoint)
-    let startDate, endDate;
-    const now = new Date();
-    
-    switch (range) {
-      case 'week':
-        // Calculate Monday-Sunday week (same as frontend)
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
-        
-        // ADD THIS DEBUG LOG
-        console.log('Week calculation debug:', {
-          today: now,
-          startDate: startDate,
-          endDate: endDate,
-          employee: employee
-        });
-        break;
-      case '2weeks':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Beginning of day
-        endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999); // End of day
-        break;
-      case 'month':
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate.setHours(0, 0, 0, 0); // Beginning of month
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999); // End of month
-        break;
-      case 'calendar-month':
-        // Get the month/year from query parameters
-        const targetYear = req.query.year ? parseInt(req.query.year) : now.getFullYear();
-        const targetMonth = req.query.month ? parseInt(req.query.month) : now.getMonth();
-        
-        console.log('BACKEND CALENDAR-MONTH:', {
-          receivedYear: req.query.year,
-          receivedMonth: req.query.month,
-          targetYear,
-          targetMonth,
-          now: now.getMonth()
-        });
-
-        // First day of the target month
-        startDate = new Date(targetYear, targetMonth, 1);
-        startDate.setHours(0, 0, 0, 0);
-        
-        // Last day of the target month
-        endDate = new Date(targetYear, targetMonth + 1, 0);
-        endDate.setHours(23, 59, 59, 999);
-        console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
-        break;
-    }
-    
-    // Build optimized query
-    let query = {
-      projectId: new mongoose.Types.ObjectId(projectId),
-      weekStartDate: { $gte: startDate },
-      weekEndDate: { $lte: endDate }
-    };
-    
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    // Use aggregation pipeline for better performance
-    const result = await TimeEntry.aggregate([
-      { $match: query },
-      {
-        $group: {
-          _id: '$employeeName',
-          employeeName: { $first: '$employeeName' },
-          totalHours: { $sum: '$totalHours' }
-        }
-      },
-      { $match: { totalHours: { $gt: 0 } } },
-      { $sort: { totalHours: -1 } }
-    ]);
-    
-    const endTime = Date.now();
-    console.log(`Project data query took ${endTime - startTime}ms`);
-    
-    res.json(result.map(item => ({
-      employeeName: item.employeeName,
-      totalHours: item.totalHours
-    })));
-    
-  } catch (error) {
-    console.error('Error fetching project data:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 
 
@@ -1601,13 +1368,15 @@ app.post('/api/timeentries/counts', async (req, res) => {
 // Get employee timesheet data with status filtering for admin calendar
 app.get('/api/admin/employee-data', async (req, res) => {
   try {
+    const startTime = Date.now(); // Performance tracking from version 2
+    
     const { employee, range, status } = req.query;
     
     if (!employee) {
       return res.status(400).json({ error: 'Employee parameter is required' });
     }
     
-    // Calculate date range
+    // Calculate date range (same in both versions)
     let startDate, endDate;
     const now = new Date();
     
@@ -1622,7 +1391,7 @@ app.get('/api/admin/employee-data', async (req, res) => {
         endDate.setDate(startDate.getDate() + 6);
         endDate.setHours(23, 59, 59, 999);
         
-        // ADD THIS DEBUG LOG
+        // Debug log from both versions
         console.log('Week calculation debug:', {
           today: now,
           startDate: startDate,
@@ -1632,16 +1401,16 @@ app.get('/api/admin/employee-data', async (req, res) => {
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Beginning of day
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999); // End of day
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate.setHours(0, 0, 0, 0); // Beginning of month
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999); // End of month
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'calendar-month':
         // Get the month/year from query parameters
@@ -1655,7 +1424,7 @@ app.get('/api/admin/employee-data', async (req, res) => {
           targetMonth,
           now: now.getMonth()
         });
-
+        
         // First day of the target month
         startDate = new Date(targetYear, targetMonth, 1);
         startDate.setHours(0, 0, 0, 0);
@@ -1667,42 +1436,66 @@ app.get('/api/admin/employee-data', async (req, res) => {
         break;
     }
     
-    // Build query
+    // Build query (same in both versions)
     let query = {
       employeeName: employee,
       weekStartDate: { $gte: startDate },
       weekEndDate: { $lte: endDate }
     };
     
-    // Add status filter if not 'all'
     if (status && status !== 'all') {
       query.status = status;
     }
     
-    const timeEntries = await TimeEntry.find(query).populate('projectId');
+    // Use aggregation pipeline for better performance (from version 2)
+    // But also get the raw time entries for detailed response (from version 1)
+    const [aggregationResult, timeEntries] = await Promise.all([
+      TimeEntry.aggregate([
+        { $match: query },
+        {
+          $lookup: {
+            from: 'projects',
+            localField: 'projectId',
+            foreignField: '_id',
+            as: 'project'
+          }
+        },
+        {
+          $group: {
+            _id: '$projectId',
+            projectName: { $first: { $arrayElemAt: ['$project.projectName', 0] } },
+            totalHours: { $sum: '$totalHours' }
+          }
+        },
+        { $match: { totalHours: { $gt: 0 } } },
+        { $sort: { totalHours: -1 } }
+      ]),
+      TimeEntry.find(query).populate('projectId')
+    ]);
     
-    // Group by project and calculate totals
+    // Calculate totals from aggregation (more efficient)
     const projectBreakdown = {};
     let totalHours = 0;
     
-    timeEntries.forEach(entry => {
-      const projectName = entry.projectId ? entry.projectId.projectName : 'Unknown Project';
-      
-      if (!projectBreakdown[projectName]) {
-        projectBreakdown[projectName] = 0;
-      }
-      
-      projectBreakdown[projectName] += entry.totalHours;
-      totalHours += entry.totalHours;
+    aggregationResult.forEach(item => {
+      const projectName = item.projectName || 'Unknown Project';
+      projectBreakdown[projectName] = item.totalHours;
+      totalHours += item.totalHours;
     });
     
+    const endTime = Date.now();
+    console.log(`Employee data query took ${endTime - startTime}ms`);
+    
+    // Return detailed response format (from version 1) with performance optimizations (from version 2)
     res.json({
       employee,
       totalHours,
       projectBreakdown,
       timeEntries,
       dateRange: { startDate, endDate },
-      statusFilter: status || 'all'
+      statusFilter: status || 'all',
+      // Add performance data
+      queryTime: endTime - startTime
     });
     
   } catch (error) {
@@ -1711,16 +1504,19 @@ app.get('/api/admin/employee-data', async (req, res) => {
   }
 });
 
+
 // Get project timesheet data with status filtering for admin calendar
 app.get('/api/admin/project-data', async (req, res) => {
   try {
+    const startTime = Date.now(); // Performance tracking from version 1
+    
     const { projectId, range, status } = req.query;
     
     if (!projectId) {
       return res.status(400).json({ error: 'ProjectId parameter is required' });
     }
     
-    // Calculate date range
+    // Calculate date range (same in both versions)
     let startDate, endDate;
     const now = new Date();
     
@@ -1735,26 +1531,26 @@ app.get('/api/admin/project-data', async (req, res) => {
         endDate.setDate(startDate.getDate() + 6);
         endDate.setHours(23, 59, 59, 999);
         
-        // ADD THIS DEBUG LOG
+        // Fixed debug log (was referencing 'employee' incorrectly)
         console.log('Week calculation debug:', {
           today: now,
           startDate: startDate,
           endDate: endDate,
-          employee: employee
+          projectId: projectId
         });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Beginning of day
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999); // End of day
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate.setHours(0, 0, 0, 0); // Beginning of month
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999); // End of month
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'calendar-month':
         // Get the month/year from query parameters
@@ -1768,7 +1564,7 @@ app.get('/api/admin/project-data', async (req, res) => {
           targetMonth,
           now: now.getMonth()
         });
-
+        
         // First day of the target month
         startDate = new Date(targetYear, targetMonth, 1);
         startDate.setHours(0, 0, 0, 0);
@@ -1778,47 +1574,60 @@ app.get('/api/admin/project-data', async (req, res) => {
         endDate.setHours(23, 59, 59, 999);
         console.log('CALENDAR-MONTH filter:', { targetYear, targetMonth, startDate, endDate });
         break;
-
     }
     
-    // Build query
+    // Build query with ObjectId conversion (from version 1 - more robust)
     let query = {
-      projectId: projectId,
+      projectId: new mongoose.Types.ObjectId(projectId),
       weekStartDate: { $gte: startDate },
       weekEndDate: { $lte: endDate }
     };
     
-    // Add status filter if not 'all'
     if (status && status !== 'all') {
       query.status = status;
     }
     
-    const timeEntries = await TimeEntry.find(query).populate('projectId');
+    // Use aggregation pipeline for better performance (from version 1)
+    // But also get the raw time entries and project details (from version 2)
+    const [aggregationResult, timeEntries, project] = await Promise.all([
+      TimeEntry.aggregate([
+        { $match: query },
+        {
+          $group: {
+            _id: '$employeeName',
+            employeeName: { $first: '$employeeName' },
+            totalHours: { $sum: '$totalHours' }
+          }
+        },
+        { $match: { totalHours: { $gt: 0 } } },
+        { $sort: { totalHours: -1 } }
+      ]),
+      TimeEntry.find(query).populate('projectId'),
+      Project.findById(projectId)
+    ]);
     
-    // Group by employee and calculate totals
+    // Calculate totals from aggregation (more efficient)
     const employeeBreakdown = {};
     let totalHours = 0;
     
-    timeEntries.forEach(entry => {
-      const employeeName = entry.employeeName;
-      
-      if (!employeeBreakdown[employeeName]) {
-        employeeBreakdown[employeeName] = 0;
-      }
-      
-      employeeBreakdown[employeeName] += entry.totalHours;
-      totalHours += entry.totalHours;
+    aggregationResult.forEach(item => {
+      employeeBreakdown[item.employeeName] = item.totalHours;
+      totalHours += item.totalHours;
     });
     
-    const project = await Project.findById(projectId);
+    const endTime = Date.now();
+    console.log(`Project data query took ${endTime - startTime}ms`);
     
+    // Return detailed response format (from version 2) with performance optimizations (from version 1)
     res.json({
       project: project ? project.projectName : 'Unknown Project',
       totalHours,
       employeeBreakdown,
       timeEntries,
       dateRange: { startDate, endDate },
-      statusFilter: status || 'all'
+      statusFilter: status || 'all',
+      // Add performance data
+      queryTime: endTime - startTime
     });
     
   } catch (error) {
