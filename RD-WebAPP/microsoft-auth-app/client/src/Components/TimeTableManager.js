@@ -1757,7 +1757,7 @@ const fetchTimeEntries = async () => {
                     <option value="week">This Week</option>
                     <option value="2weeks">Last 2 Weeks</option>
                     <option value="month">This Month</option>
-                    <option value="calendar-month">Calendar Month</option>
+                    
                   </select>
                 </div>
 
@@ -1837,7 +1837,7 @@ const fetchTimeEntries = async () => {
                     <option value="week">This Week</option>
                     <option value="2weeks">Last 2 Weeks</option>
                     <option value="month">This Month</option>
-                    <option value="calendar-month">Calendar Month</option>
+                    
                   </select>
                 </div>
 
