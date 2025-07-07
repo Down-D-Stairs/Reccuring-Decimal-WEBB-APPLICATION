@@ -1162,18 +1162,35 @@ app.get('/api/admin/employee-data', async (req, res) => {
     
     switch (range) {
       case 'week':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        // Calculate Monday-Sunday week (same as frontend)
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+        
+        // ADD THIS DEBUG LOG
+        console.log('Week calculation debug:', {
+          today: now,
+          startDate: startDate,
+          endDate: endDate,
+          employee: employee
+        });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+        startDate.setHours(0, 0, 0, 0); // Beginning of day
         endDate = new Date(now);
+        endDate.setHours(23, 59, 59, 999); // End of day
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0); // Beginning of month
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999); // End of month
         break;
     }
     
@@ -1246,18 +1263,35 @@ app.get('/api/admin/project-data', async (req, res) => {
     
     switch (range) {
       case 'week':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        // Calculate Monday-Sunday week (same as frontend)
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+        
+        // ADD THIS DEBUG LOG
+        console.log('Week calculation debug:', {
+          today: now,
+          startDate: startDate,
+          endDate: endDate,
+          employee: employee
+        });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+        startDate.setHours(0, 0, 0, 0); // Beginning of day
         endDate = new Date(now);
+        endDate.setHours(23, 59, 59, 999); // End of day
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0); // Beginning of month
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999); // End of month
         break;
     }
     
@@ -1535,18 +1569,35 @@ app.get('/api/admin/employee-data', async (req, res) => {
     
     switch (range) {
       case 'week':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        // Calculate Monday-Sunday week (same as frontend)
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+        
+        // ADD THIS DEBUG LOG
+        console.log('Week calculation debug:', {
+          today: now,
+          startDate: startDate,
+          endDate: endDate,
+          employee: employee
+        });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+        startDate.setHours(0, 0, 0, 0); // Beginning of day
         endDate = new Date(now);
+        endDate.setHours(23, 59, 59, 999); // End of day
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0); // Beginning of month
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999); // End of month
         break;
     }
     
@@ -1609,18 +1660,35 @@ app.get('/api/admin/project-data', async (req, res) => {
     
     switch (range) {
       case 'week':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        // Calculate Monday-Sunday week (same as frontend)
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+        
+        // ADD THIS DEBUG LOG
+        console.log('Week calculation debug:', {
+          today: now,
+          startDate: startDate,
+          endDate: endDate,
+          employee: employee
+        });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
+        startDate.setHours(0, 0, 0, 0); // Beginning of day
         endDate = new Date(now);
+        endDate.setHours(23, 59, 59, 999); // End of day
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0); // Beginning of month
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999); // End of month
         break;
     }
     
