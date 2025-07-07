@@ -1289,13 +1289,7 @@ const fetchTimeEntries = async () => {
         url += `&year=${year}&month=${month}`;
       }
 
-      console.log('BACKEND CALENDAR-MONTH:', {
-        receivedYear: req.query.year,
-        receivedMonth: req.query.month,
-        targetYear,
-        targetMonth,
-        now: now.getMonth()
-      });
+      
     
       
       const response = await fetch(`${API_URL}/api/admin/employee-data?employee=${encodeURIComponent(employeeName)}&range=${range}&status=${status}`);
@@ -1334,13 +1328,7 @@ const fetchTimeEntries = async () => {
         url += `&year=${year}&month=${month}`;
       }
 
-       console.log('BACKEND CALENDAR-MONTH:', {
-        receivedYear: req.query.year,
-        receivedMonth: req.query.month,
-        targetYear,
-        targetMonth,
-        now: now.getMonth()
-      });
+       
       
       const response = await fetch(`${API_URL}/api/admin/project-data?projectId=${projectId}&range=${range}&status=${status}`);
       
