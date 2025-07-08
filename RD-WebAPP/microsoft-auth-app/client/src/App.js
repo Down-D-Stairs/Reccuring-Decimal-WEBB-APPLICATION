@@ -59,12 +59,23 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await msalInstance.logoutPopup();
-      setUser(null);
+      // Check if user is a guest user
+      if (user?.isGuest) {
+        // For guest users, just clear the state - no Microsoft logout needed
+        setUser(null);
+        setCurrentView('main');
+      } else {
+        // For Microsoft users, do the normal Microsoft logout
+        await msalInstance.logoutPopup();
+        setUser(null);
+      }
     } catch (error) {
       console.log("Logout Failed:", error);
+      // Fallback: just clear user state
+      setUser(null);
     }
   };
+
 
   // Fixed guest login function
   const handleGuestLogin = async () => {

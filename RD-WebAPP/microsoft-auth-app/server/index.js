@@ -952,15 +952,37 @@ app.delete('/api/moderators/:email', async (req, res) => {
 });
 
 // Check if user is moderator (for frontend)
+// Check if user is moderator (for frontend) - Updated to include guest users
 app.get('/api/moderators/check/:email', async (req, res) => {
   try {
     const { email } = req.params;
+    
+    // First check if it's a regular moderator
     const moderator = await Moderator.findOne({ email, isActive: true });
-    res.json({ isModerator: !!moderator });
+    
+    if (moderator) {
+      return res.json({ isModerator: true });
+    }
+    
+    // Then check if it's a guest user with moderator privileges
+    const guestUser = await GuestUser.findOne({ 
+      email: email.toLowerCase(),
+      isActive: true,
+      isModerator: true 
+    });
+    
+    if (guestUser) {
+      return res.json({ isModerator: true });
+    }
+    
+    // Not a moderator
+    res.json({ isModerator: false });
   } catch (error) {
+    console.error('Error checking moderator status:', error);
     res.status(500).json({ error: 'Failed to check moderator status' });
   }
 });
+
 
 // Get projects that a user has submitted timesheets for
 app.get('/api/timeentries/user-projects/:username', async (req, res) => {
