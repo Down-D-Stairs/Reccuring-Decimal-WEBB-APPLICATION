@@ -2972,16 +2972,8 @@ return (
                             >
                               Details
                             </button>
-                            {(isAdminOnly || isModerator) && (
-                              <button
-                                className="edit-button"
-                                onClick={() => handleEditProject(project)}
-                                style={{ backgroundColor: '#ff9800' }}
-                                title={isAdminOnly ? 'Admin: Edit any project' : 'Moderator: Edit projects you\'re involved with'}
-                              >
-                                Edit Project
-                              </button>
-                            )}
+                            
+                            
                           </td>
                         </tr>
                       ))}
@@ -3134,15 +3126,7 @@ return (
                               >
                                 Details
                               </button>
-                              {isApprover && (
-                                <button
-                                  className="edit-button"
-                                  onClick={() => handleViewProjectTimesheets(project._id)}
-                                  style={{ backgroundColor: '#28a745' }}
-                                >
-                                  Timesheets
-                                </button>
-                              )}
+                              
                             </td>
                           </tr>
                         );
