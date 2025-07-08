@@ -953,35 +953,18 @@ app.delete('/api/moderators/:email', async (req, res) => {
 
 // Check if user is moderator (for frontend)
 // Check if user is moderator (for frontend) - Updated to include guest users
+// Simplified moderator check - now works for both regular and guest moderators
 app.get('/api/moderators/check/:email', async (req, res) => {
   try {
     const { email } = req.params;
-    
-    // First check if it's a regular moderator
     const moderator = await Moderator.findOne({ email, isActive: true });
-    
-    if (moderator) {
-      return res.json({ isModerator: true });
-    }
-    
-    // Then check if it's a guest user with moderator privileges
-    const guestUser = await GuestUser.findOne({ 
-      email: email.toLowerCase(),
-      isActive: true,
-      isModerator: true 
-    });
-    
-    if (guestUser) {
-      return res.json({ isModerator: true });
-    }
-    
-    // Not a moderator
-    res.json({ isModerator: false });
+    res.json({ isModerator: !!moderator });
   } catch (error) {
     console.error('Error checking moderator status:', error);
     res.status(500).json({ error: 'Failed to check moderator status' });
   }
 });
+
 
 
 // Get projects that a user has submitted timesheets for
@@ -1795,28 +1778,91 @@ app.post('/api/admin/guest-users', async (req, res) => {
 });
 
 // Update guest user (admin only)
+// Update guest user (admin only) - Modified to sync with Moderator database
 app.put('/api/admin/guest-users/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
     
     const guestUser = await GuestUser.findByIdAndUpdate(id, updates, { new: true });
+    
+    if (!guestUser) {
+      return res.status(404).json({ error: 'Guest user not found' });
+    }
+    
+    // If updating moderator status, sync with Moderator database
+    if (updates.hasOwnProperty('isModerator')) {
+      if (updates.isModerator === true) {
+        // Add to Moderator database
+        try {
+          await Moderator.findOneAndUpdate(
+            { email: guestUser.email },
+            {
+              email: guestUser.email,
+              addedBy: guestUser.invitedBy, // Use the person who invited them
+              addedDate: new Date(),
+              isActive: true
+            },
+            { upsert: true, new: true }
+          );
+          console.log(`Added ${guestUser.email} to Moderator database`);
+        } catch (moderatorError) {
+          console.error('Error adding to Moderator database:', moderatorError);
+          // Continue anyway - guest user was updated successfully
+        }
+      } else {
+        // Remove from Moderator database
+        try {
+          await Moderator.findOneAndDelete({ email: guestUser.email });
+          console.log(`Removed ${guestUser.email} from Moderator database`);
+        } catch (moderatorError) {
+          console.error('Error removing from Moderator database:', moderatorError);
+          // Continue anyway - guest user was updated successfully
+        }
+      }
+    }
+    
     res.json(guestUser);
   } catch (error) {
+    console.error('Error updating guest user:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+
 // Delete guest user (admin only)
+// Delete guest user (admin only) - Modified to sync with Moderator database
 app.delete('/api/admin/guest-users/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Find the guest user first to get their email
+    const guestUser = await GuestUser.findById(id);
+    
+    if (!guestUser) {
+      return res.status(404).json({ error: 'Guest user not found' });
+    }
+    
+    // Delete from GuestUser database
     await GuestUser.findByIdAndDelete(id);
+    
+    // Also remove from Moderator database if they were a moderator
+    if (guestUser.isModerator) {
+      try {
+        await Moderator.findOneAndDelete({ email: guestUser.email });
+        console.log(`Removed ${guestUser.email} from Moderator database`);
+      } catch (moderatorError) {
+        console.error('Error removing from Moderator database:', moderatorError);
+      }
+    }
+    
     res.json({ message: 'Guest user deleted successfully' });
   } catch (error) {
+    console.error('Error deleting guest user:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Guest login endpoint
 app.post('/api/auth/guest-login', async (req, res) => {
