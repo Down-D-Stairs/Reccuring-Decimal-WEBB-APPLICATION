@@ -873,7 +873,7 @@ const fetchTimeEntries = async () => {
         isHybrid: false,
         isActive: true
       });
-      setView('approvals');
+      setView('manage-projects');
       
     } catch (error) {
       console.error('Error updating project:', error);
@@ -2637,7 +2637,7 @@ return (
             
             <div className="form-buttons">
               <button onClick={() => {
-                setView('approvals');
+                setView('manage-projects');
                 setEditingProject(null);
               }}>Cancel</button>
               <button
