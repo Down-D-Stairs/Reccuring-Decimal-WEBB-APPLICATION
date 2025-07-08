@@ -556,42 +556,59 @@ function TimeTableManager({ onBack, user }) {
   // Update the fetchProjects function
   // Update the fetchProjects function
   const fetchProjects = async () => {
-    try {
-      // Fetch all projects first
-      const response = await fetch(`${API_URL}/api/projects`);
-      const data = await response.json();
-      
-      // Filter projects based on user role
-      let userProjects;
-      
-      if (isAdmin) {
-        // Admins can see all projects
-        userProjects = data;
-      } else {
-        // Regular users can only see projects where they are members
-        userProjects = data.filter(project => {
-          // Check if user is in projectMembers (comma-separated string)
-          if (project.projectMembers) {
-            const membersList = project.projectMembers.split(',').map(email => email.trim());
-            const isProjectMember = membersList.includes(user.username);
-            
-            // Also include system projects (PTO, Holiday) for everyone
-            const isSystemProject = project.isSystemProject;
-            
-            return isProjectMember || isSystemProject;
-          }
+  try {
+    // Fetch all projects first
+    const response = await fetch(`${API_URL}/api/projects`);
+    const data = await response.json();
+    
+    // Filter projects based on user role
+    let userProjects;
+    
+    if (isAdminOnly) {
+      // ONLY TRUE ADMINS can see all projects
+      userProjects = data;
+    } else if (isModerator) {
+      // MODERATORS can only see projects where they are approvers OR members
+      userProjects = data.filter(project => {
+        // Check if user is in approvers list
+        const approversList = project.approvers ? project.approvers.split(',').map(email => email.trim()) : [];
+        const isApprover = approversList.includes(user.username);
+        
+        // Check if user is in projectMembers list
+        const membersList = project.projectMembers ? project.projectMembers.split(',').map(email => email.trim()) : [];
+        const isProjectMember = membersList.includes(user.username);
+        
+        // Include system projects (PTO, Holiday) for everyone
+        const isSystemProject = project.isSystemProject;
+        
+        return isApprover || isProjectMember || isSystemProject;
+      });
+    } else {
+      // REGULAR USERS can only see projects where they are members
+      userProjects = data.filter(project => {
+        // Check if user is in projectMembers (comma-separated string)
+        if (project.projectMembers) {
+          const membersList = project.projectMembers.split(',').map(email => email.trim());
+          const isProjectMember = membersList.includes(user.username);
           
-          // Include system projects even if projectMembers is empty
-          return project.isSystemProject;
-        });
-      }
-      
-      console.log(`User ${user.username} can see ${userProjects.length} projects out of ${data.length} total`);
-      setProjects(userProjects);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
+          // Also include system projects (PTO, Holiday) for everyone
+          const isSystemProject = project.isSystemProject;
+          
+          return isProjectMember || isSystemProject;
+        }
+        
+        // Include system projects even if projectMembers is empty
+        return project.isSystemProject;
+      });
     }
-  };
+    
+    console.log(`User ${user.username} can see ${userProjects.length} projects out of ${data.length} total`);
+    setProjects(userProjects);
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+  }
+};
+
 
 
 
