@@ -1739,7 +1739,6 @@ app.get('/api/admin/project-data', async (req, res) => {
   }
 });
 
-const GuestUser = require('./models/GuestUser');
 
 // Get all guest users (admin only)
 app.get('/api/admin/guest-users', async (req, res) => {
