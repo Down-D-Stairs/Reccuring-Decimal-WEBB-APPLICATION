@@ -436,6 +436,27 @@ function TimeTableManager({ onBack, user }) {
   // Add this state variable
   const [activeTimesheetForComments, setActiveTimesheetForComments] = useState(null);
 
+  // Add these state variables with your other useState declarations
+  const [editingProject, setEditingProject] = useState(null);
+  const [editProjectForm, setEditProjectForm] = useState({
+    projectName: '',
+    clientName: '',
+    projectType: '',
+    poNumber: '',
+    contractNumber: '',
+    dateRange: { start: '', end: '' },
+    maxHours: '',
+    maxBudget: '',
+    approvers: '',
+    projectMembers: '',
+    location: '',
+    isHybrid: false,
+    isActive: true
+  });
+  const [showEditProjectConfirmation, setShowEditProjectConfirmation] = useState(false);
+  const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+
+
 
   
 
@@ -748,7 +769,9 @@ const fetchTimeEntries = async () => {
   };
 
 
-  // Add this function before your return statement
+  // Add these functions before your return statement
+
+  // Function to get editable projects based on user role
   const getEditableProjects = () => {
     if (isAdminOnly) {
       // True admins can see all projects
@@ -766,6 +789,100 @@ const fetchTimeEntries = async () => {
       return [];
     }
   };
+
+  // Function to start editing a project
+  const handleEditProject = (project) => {
+    setEditingProject(project);
+    setEditProjectForm({
+      projectName: project.projectName,
+      clientName: project.clientName,
+      projectType: project.projectType,
+      poNumber: project.poNumber || '',
+      contractNumber: project.contractNumber || '',
+      dateRange: {
+        start: project.dateRange.start.split('T')[0],
+        end: project.dateRange.end.split('T')[0]
+      },
+      maxHours: project.maxHours,
+      maxBudget: project.maxBudget,
+      approvers: project.approvers,
+      projectMembers: project.projectMembers,
+      location: project.location || '',
+      isHybrid: project.isHybrid,
+      isActive: project.isActive
+    });
+    setView('edit-project');
+  };
+
+  // Function to show confirmation modal
+  const handleEditProjectClick = () => {
+    // Validate required fields
+    if (!editProjectForm.projectName || !editProjectForm.clientName ||
+        !editProjectForm.dateRange.start || !editProjectForm.dateRange.end ||
+        !editProjectForm.maxHours || !editProjectForm.maxBudget ||
+        !editProjectForm.approvers || !editProjectForm.projectMembers) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    setShowEditProjectConfirmation(true);
+  };
+
+  // Function to actually update the project
+  const handleUpdateProject = async () => {
+    try {
+      setIsUpdatingProject(true);
+      
+      const response = await fetch(`${API_URL}/api/projects/${editingProject._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editProjectForm)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update project');
+      }
+
+      const updatedProject = await response.json();
+      
+      // Update the projects list
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project._id === editingProject._id ? updatedProject : project
+        )
+      );
+      
+      // Success - close modal and reset form
+      setShowEditProjectConfirmation(false);
+      setEditingProject(null);
+      setEditProjectForm({
+        projectName: '',
+        clientName: '',
+        projectType: '',
+        poNumber: '',
+        contractNumber: '',
+        dateRange: { start: '', end: '' },
+        maxHours: '',
+        maxBudget: '',
+        approvers: '',
+        projectMembers: '',
+        location: '',
+        isHybrid: false,
+        isActive: true
+      });
+      setView('approvals');
+      
+    } catch (error) {
+      console.error('Error updating project:', error);
+      alert('Failed to update project: ' + error.message);
+    } finally {
+      setIsUpdatingProject(false);
+    }
+  };
+
 
   
 
@@ -2361,6 +2478,182 @@ return (
           </div>
         </div>
       </div>
+      ) : view === 'edit-project' ? (
+        <div className="project-form-container">
+          <h2>Edit Project: {editingProject?.projectName}</h2>
+          <div className="project-form">
+            <div className="form-group">
+              <label>Project Name *</label>
+              <input
+                type="text"
+                value={editProjectForm.projectName}
+                onChange={(e) => setEditProjectForm({...editProjectForm, projectName: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Client Name *</label>
+              <input
+                type="text"
+                value={editProjectForm.clientName}
+                onChange={(e) => setEditProjectForm({...editProjectForm, clientName: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Project Type *</label>
+              <input
+                type="text"
+                value={editProjectForm.projectType}
+                onChange={(e) => setEditProjectForm({...editProjectForm, projectType: e.target.value})}
+                required
+              />
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label>PO Number</label>
+                <input
+                  type="text"
+                  value={editProjectForm.poNumber}
+                  onChange={(e) => setEditProjectForm({...editProjectForm, poNumber: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Contract Number</label>
+                <input
+                  type="text"
+                  value={editProjectForm.contractNumber}
+                  onChange={(e) => setEditProjectForm({...editProjectForm, contractNumber: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label>Start Date *</label>
+                <input
+                  type="date"
+                  value={editProjectForm.dateRange.start}
+                  onChange={(e) => setEditProjectForm({
+                    ...editProjectForm, 
+                    dateRange: {...editProjectForm.dateRange, start: e.target.value}
+                  })}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>End Date *</label>
+                <input
+                  type="date"
+                  value={editProjectForm.dateRange.end}
+                  onChange={(e) => setEditProjectForm({
+                    ...editProjectForm, 
+                    dateRange: {...editProjectForm.dateRange, end: e.target.value}
+                  })}
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label>Max Hours *</label>
+                <input
+                  type="number"
+                  value={editProjectForm.maxHours}
+                  onChange={(e) => setEditProjectForm({...editProjectForm, maxHours: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Max Budget *</label>
+                <input
+                  type="number"
+                  value={editProjectForm.maxBudget}
+                  onChange={(e) => setEditProjectForm({...editProjectForm, maxBudget: e.target.value})}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Approvers (comma-separated emails) *</label>
+              <input
+                type="text"
+                value={editProjectForm.approvers}
+                onChange={(e) => setEditProjectForm({...editProjectForm, approvers: e.target.value})}
+                placeholder="e.g. approver1@example.com, approver2@example.com"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Project Members (comma-separated emails) *</label>
+              <input
+                type="text"
+                value={editProjectForm.projectMembers}
+                onChange={(e) => setEditProjectForm({...editProjectForm, projectMembers: e.target.value})}
+                placeholder="e.g. member1@example.com, member2@example.com"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Location</label>
+              <input
+                type="text"
+                value={editProjectForm.location}
+                onChange={(e) => setEditProjectForm({...editProjectForm, location: e.target.value})}
+              />
+            </div>
+            
+            <div className="form-group checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={editProjectForm.isHybrid}
+                  onChange={(e) => setEditProjectForm({...editProjectForm, isHybrid: e.target.checked})}
+                />
+                Hybrid Project
+              </label>
+            </div>
+
+            <div className="form-group checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={editProjectForm.isActive}
+                  onChange={(e) => setEditProjectForm({...editProjectForm, isActive: e.target.checked})}
+                />
+                Project Active
+              </label>
+            </div>
+            
+            <div className="form-buttons">
+              <button onClick={() => {
+                setView('approvals');
+                setEditingProject(null);
+              }}>Cancel</button>
+              <button
+                onClick={handleEditProjectClick}
+                disabled={isUpdatingProject || !editProjectForm.projectName || !editProjectForm.clientName ||
+                        !editProjectForm.dateRange.start || !editProjectForm.dateRange.end ||
+                        !editProjectForm.maxHours || !editProjectForm.maxBudget ||
+                        !editProjectForm.approvers || !editProjectForm.projectMembers}
+              >
+                {isUpdatingProject ? 'Updating...' : 'Update Project'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+
     ) : view === 'approvals' ? (
       selectedProjectId ? (
         // LEVEL 2: Timesheets Table for Selected Project (4 per page)
@@ -3134,6 +3427,62 @@ return (
           <h3>Creating Your Project...</h3>
           <p>Setting up "{newProject.projectName}"</p>
           <p>Client: {newProject.clientName}</p>
+          <p>Please wait, do not close this window.</p>
+        </div>
+      </div>
+    )}
+    {/* Edit Project Confirmation Modal */}
+    {showEditProjectConfirmation && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>Confirm Project Update</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p>Are you sure you want to update this project?</p>
+            
+            <div className="submission-summary">
+              <p><strong>Project:</strong> {editProjectForm.projectName}</p>
+              <p><strong>Client:</strong> {editProjectForm.clientName}</p>
+              <p><strong>Type:</strong> {editProjectForm.projectType}</p>
+              <p><strong>Status:</strong> {editProjectForm.isActive ? 'Active' : 'Inactive'}</p>
+              <p><strong>Max Hours:</strong> {editProjectForm.maxHours}</p>
+              <p><strong>Max Budget:</strong> ${editProjectForm.maxBudget}</p>
+            </div>
+            
+            <p className="warning-text">
+              This will update the project for all members and timesheets.
+            </p>
+          </div>
+          
+          <div className="modal-actions">
+            <button
+              className="cancel-button"
+              onClick={() => setShowEditProjectConfirmation(false)}
+              disabled={isUpdatingProject}
+            >
+              Cancel
+            </button>
+            <button
+              className="confirm-submit-button"
+              onClick={handleUpdateProject}
+              disabled={isUpdatingProject}
+            >
+              Update Project
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Processing overlay for project update */}
+    {isUpdatingProject && (
+      <div className="processing-overlay">
+        <div className="processing-popup">
+          <div className="processing-spinner">⏳</div>
+          <h3>Updating Project...</h3>
+          <p>Updating "{editProjectForm.projectName}"</p>
           <p>Please wait, do not close this window.</p>
         </div>
       </div>
