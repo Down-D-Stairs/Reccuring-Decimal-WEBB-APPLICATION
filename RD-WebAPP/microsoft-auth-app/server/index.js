@@ -6,6 +6,7 @@ const { Project, TimeEntry } = require('./models/TimeProject');
 const Draft = require('./models/Draft');
 const Moderator = require('./models/Moderator');
 require('dotenv').config();
+const GuestUser = require('./models/GuestUser');
 
 const { sendStatusEmail } = require('./services/notificationService');
 const app = express();
@@ -1737,6 +1738,98 @@ app.get('/api/admin/project-data', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+const GuestUser = require('./models/GuestUser');
+
+// Get all guest users (admin only)
+app.get('/api/admin/guest-users', async (req, res) => {
+  try {
+    const guestUsers = await GuestUser.find().sort({ createdAt: -1 });
+    res.json(guestUsers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add guest user (admin only)
+app.post('/api/admin/guest-users', async (req, res) => {
+  try {
+    const { email, name, invitedBy } = req.body;
+    
+    const guestUser = new GuestUser({
+      email,
+      name,
+      invitedBy
+    });
+    
+    await guestUser.save();
+    res.json(guestUser);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(400).json({ error: 'Guest user already exists' });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+// Update guest user (admin only)
+app.put('/api/admin/guest-users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    const guestUser = await GuestUser.findByIdAndUpdate(id, updates, { new: true });
+    res.json(guestUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete guest user (admin only)
+app.delete('/api/admin/guest-users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await GuestUser.findByIdAndDelete(id);
+    res.json({ message: 'Guest user deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Guest login endpoint
+app.post('/api/auth/guest-login', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    const guestUser = await GuestUser.findOne({ 
+      email: email.toLowerCase(),
+      isActive: true 
+    });
+    
+    if (!guestUser) {
+      return res.status(401).json({ error: 'Guest access not found or inactive' });
+    }
+    
+    // Update last login
+    guestUser.lastLoginDate = new Date();
+    await guestUser.save();
+    
+    // Return user info (similar to Microsoft login)
+    res.json({
+      user: {
+        id: guestUser._id,
+        username: guestUser.email,
+        name: guestUser.name,
+        isGuest: true,
+        isModerator: guestUser.isModerator
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 
 
