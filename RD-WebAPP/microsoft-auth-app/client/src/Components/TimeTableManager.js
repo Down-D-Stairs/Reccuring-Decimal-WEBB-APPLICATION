@@ -515,7 +515,7 @@ function TimeTableManager({ onBack, user }) {
     const fetchApprovalCounts = async () => {
       if (view === 'approvals' && !selectedProjectId) {
         const approverProjects = projects.filter(project => {
-          if (isAdmin) return true;
+          if (isAdminOnly) return true;
           if (!project.approvers) return false;
           const approversList = project.approvers.split(',').map(email => email.trim());
           return approversList.includes(user.username);
@@ -746,6 +746,28 @@ const fetchTimeEntries = async () => {
       isHybrid: false
     });
   };
+
+
+  // Add this function before your return statement
+  const getEditableProjects = () => {
+    if (isAdminOnly) {
+      // True admins can see all projects
+      return projects;
+    } else if (isModerator) {
+      // Moderators can only see projects they're approvers or members of
+      return projects.filter(project => {
+        const approversList = project.approvers ? project.approvers.split(',').map(email => email.trim()) : [];
+        const membersList = project.projectMembers ? project.projectMembers.split(',').map(email => email.trim()) : [];
+        
+        return approversList.includes(user.username) || membersList.includes(user.username);
+      });
+    } else {
+      // Regular users can't edit projects
+      return [];
+    }
+  };
+
+  
 
   const handleAddTimeEntry = () => {
     if (!selectedProjectId) return;
@@ -1926,6 +1948,15 @@ return (
               Create New Project
             </button>
           )}
+           {(isAdminOnly || isModerator) && (
+            <button
+              className="create-project-button"
+              onClick={() => setView('manage-projects')}
+              style={{ backgroundColor: '#ff9800' }}
+            >
+              Manage Projects
+            </button>
+          )}
           {isUserAnApprover(user, projects) && (
             <button 
               className="approvals-button"
@@ -2598,6 +2629,7 @@ return (
           </div>
           
           {(() => {
+            const editableProjects = getEditableProjects();
             const approverProjects = projects.filter(project => {
               if (isAdmin) return true;
               if (!project.approvers) return false;
@@ -2647,6 +2679,16 @@ return (
                             >
                               Details
                             </button>
+                            {(isAdminOnly || isModerator) && (
+                              <button
+                                className="edit-button"
+                                onClick={() => handleEditProject(project)}
+                                style={{ backgroundColor: '#ff9800' }}
+                                title={isAdminOnly ? 'Admin: Edit any project' : 'Moderator: Edit projects you\'re involved with'}
+                              >
+                                Edit Project
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -2703,6 +2745,167 @@ return (
           })()}
         </div>
       )
+      // Add this new view after your existing views
+      ) : view === 'manage-projects' ? (
+        <div className="approval-table-view">
+          <div className="approval-header">
+            <h2>
+              {isAdminOnly ? 'Manage All Projects' : 'Manage Your Projects'}
+            </h2>
+            <button 
+              className="back-button"
+              onClick={() => setView('list')}
+            >
+              Back to Timesheet
+            </button>
+          </div>
+          
+          {(() => {
+            const editableProjects = getEditableProjects();
+            
+            return editableProjects.length === 0 ? (
+              <div className="no-reports">
+                <p>
+                  {isAdminOnly 
+                    ? 'No projects found in the system.' 
+                    : 'You are not assigned as an approver or member of any projects.'
+                  }
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="projects-summary">
+                  <p>
+                    {isAdminOnly 
+                      ? `Showing all ${editableProjects.length} projects in the system`
+                      : `Showing ${editableProjects.length} projects you can manage`
+                    }
+                  </p>
+                </div>
+                
+                <div className="approval-table-container">
+                  <table className="reports-table">
+                    <thead>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Client</th>
+                        <th>Project Type</th>
+                        <th>Date Range</th>
+                        <th>Max Hours</th>
+                        <th>Status</th>
+                        <th>Your Role</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getPaginatedProjects(editableProjects).map(project => {
+                        const isApprover = project.approvers && project.approvers.split(',').map(email => email.trim()).includes(user.username);
+                        const isMember = project.projectMembers && project.projectMembers.split(',').map(email => email.trim()).includes(user.username);
+                        
+                        return (
+                          <tr key={project._id} className="report-row">
+                            <td className="report-name">{project.projectName}</td>
+                            <td>{project.clientName}</td>
+                            <td>{project.projectType}</td>
+                            <td className="date-range">
+                              {new Date(project.dateRange.start).toLocaleDateString('en-US', { timeZone: 'UTC' })} - 
+                              {new Date(project.dateRange.end).toLocaleDateString('en-US', { timeZone: 'UTC' })}
+                            </td>
+                            <td className="amount">{project.maxHours} hrs</td>
+                            <td>
+                              <span className={`status-badge ${project.isActive ? 'active' : 'inactive'}`}>
+                                {project.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td className="role-cell">
+                              {isAdminOnly ? (
+                                <span className="admin-badge">Admin</span>
+                              ) : (
+                                <div className="role-badges">
+                                  {isApprover && <span className="role-badge approver">Approver</span>}
+                                  {isMember && <span className="role-badge member">Member</span>}
+                                </div>
+                              )}
+                            </td>
+                            <td className="actions-cell-horizontal">
+                              <button
+                                className="edit-button"
+                                onClick={() => handleEditProject(project)}
+                                title="Edit this project"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="details-button"
+                                onClick={() => setSelectedProjectDetails(project)}
+                              >
+                                Details
+                              </button>
+                              {isApprover && (
+                                <button
+                                  className="edit-button"
+                                  onClick={() => handleViewProjectTimesheets(project._id)}
+                                  style={{ backgroundColor: '#28a745' }}
+                                >
+                                  Timesheets
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Add this after the table in manage-projects view */}
+                <div className="pagination-container">
+                  <div className="pagination-info">
+                    Showing {Math.min((currentProjectPage - 1) * projectsPerPage + 1, editableProjects.length)} to {Math.min(currentProjectPage * projectsPerPage, editableProjects.length)} of {editableProjects.length} projects
+                  </div>
+                  
+                  <div className="pagination-controls">
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => setCurrentProjectPage(1)}
+                      disabled={currentProjectPage === 1}
+                    >
+                      First
+                    </button>
+                    
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => setCurrentProjectPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentProjectPage === 1}
+                    >
+                      Previous
+                    </button>
+                    
+                    <span className="page-info">
+                      Page {currentProjectPage} of {Math.ceil(editableProjects.length / projectsPerPage)}
+                    </span>
+                    
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => setCurrentProjectPage(prev => Math.min(prev + 1, Math.ceil(editableProjects.length / projectsPerPage)))}
+                      disabled={currentProjectPage === Math.ceil(editableProjects.length / projectsPerPage)}
+                    >
+                      Next
+                    </button>
+                    
+                    <button 
+                      className="pagination-btn"
+                      onClick={() => setCurrentProjectPage(Math.ceil(editableProjects.length / projectsPerPage))}
+                      disabled={currentProjectPage === Math.ceil(editableProjects.length / projectsPerPage)}
+                    >
+                      Last
+                    </button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
     ) : view === 'history' ? (
       <HistoryView
         userHistoryProjects={userHistoryProjects}

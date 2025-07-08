@@ -1985,3 +1985,71 @@
   border-left: 4px solid #2196f3;
 }
 
+/* Status badge styles */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-badge.active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Role badge styles */
+.role-cell {
+  text-align: center;
+}
+
+.role-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.role-badge {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.role-badge.approver {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.role-badge.member {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.admin-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: #f0ad4e;
+  color: white;
+}
+
+/* Projects summary */
+.projects-summary {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-style: italic;
+  color: #6c757d;
+}
