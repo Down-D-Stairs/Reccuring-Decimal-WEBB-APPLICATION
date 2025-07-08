@@ -123,7 +123,7 @@ function ExpenseManager({ onBack, user }) {
         })
         .catch(err => console.error('Failed to check moderator status:', err));
     }
-  }, [user]);
+  }, [user, isModerator]);
  
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -131,25 +131,30 @@ function ExpenseManager({ onBack, user }) {
     try {
       console.log('Current user:', user.username);
       console.log('Is admin?', ADMIN_EMAILS.includes(user.username));
-      console.log('Is moderator?', isModerator); // Add this debug line
-       
+      
+      // For guest users, use the isModerator from user object, otherwise use local state
+      const userIsModerator = user.isGuest ? user.isModerator : isModerator;
+      console.log('Is moderator?', userIsModerator);
+      
       const response = await fetch(`${API_URL}/api/trips?email=${user.username}`);
       if (!response.ok) {
         throw new Error('Failed to fetch trips');
       }
       const data = await response.json();
       console.log('All trips from server:', data);
-       
-      const filteredTrips = (ADMIN_EMAILS.includes(user.username) || isModerator)
+      
+      // Updated logic: Show all trips if user is admin OR moderator
+      const filteredTrips = (ADMIN_EMAILS.includes(user.username) || userIsModerator)
         ? data
         : data.filter(trip => trip.email === user.username);
-       
+      
       console.log('Filtered trips:', filteredTrips);
-      setTrips(filteredTrips); // Keep only this setTrips call
+      setTrips(filteredTrips);
     } catch (error) {
       console.error('Failed to fetch trips:', error);
     }
   };
+
  
   const applyFilters = (trips) => {
     let filteredTrips = trips.filter(trip => {
@@ -845,7 +850,7 @@ const fetchProjects = async () => {
           }}>
             {expenseView === 'list' ? 'New Report' : 'View Reports'}
           </button>
-          {(ADMIN_EMAILS.includes(user?.username) || isModerator) && (
+          {(ADMIN_EMAILS.includes(user?.username) || (user?.isGuest ? user?.isModerator : isModerator)) && (
             <button
               className="approve-deny-btn"
               onClick={() => setExpenseView('approve')}
