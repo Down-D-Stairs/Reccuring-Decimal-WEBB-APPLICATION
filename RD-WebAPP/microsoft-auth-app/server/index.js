@@ -24,23 +24,43 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB Error:', err));
 
 // Get all trips
+// Get all trips
 app.get('/api/trips', async (req, res) => {
   try {
     console.log('Incoming request query:', req.query);
-    // Let's try fetching ALL trips first to see what's in the database
-    const allTrips = await Trip.find({});
-    console.log('All trips in database:', allTrips);
-   
-    // Then let's see what we get with the email filter
-    const userTrips = await Trip.find({ email: req.query.email }).populate('expenses');
-    console.log('User filtered trips:', userTrips);
-   
-    res.json(userTrips);
+    const { email } = req.query;
+    
+    // Check if user is admin
+    const ADMIN_EMAILS = ['pgupta@recurringdecimal.com', 'kkarumudi@recurringdecimal.com', 'sn@recurringdecimal.com'];
+    const isAdmin = ADMIN_EMAILS.includes(email);
+    
+    // Check if user is moderator
+    const moderator = await Moderator.findOne({ email, isActive: true });
+    const isModerator = !!moderator;
+    
+    console.log('=== TRIPS ACCESS CHECK ===');
+    console.log('User email:', email);
+    console.log('Is admin?', isAdmin);
+    console.log('Is moderator?', isModerator);
+    
+    let trips;
+    if (isAdmin || isModerator) {
+      // Admins and moderators see ALL trips
+      trips = await Trip.find({}).populate('expenses');
+      console.log('Returning ALL trips for admin/moderator:', trips.length);
+    } else {
+      // Regular users see only their own trips
+      trips = await Trip.find({ email }).populate('expenses');
+      console.log('Returning user trips:', trips.length);
+    }
+    
+    res.json(trips);
   } catch (error) {
     console.error('Database query error:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Create new trip
 app.post('/api/trips', async (req, res) => {
