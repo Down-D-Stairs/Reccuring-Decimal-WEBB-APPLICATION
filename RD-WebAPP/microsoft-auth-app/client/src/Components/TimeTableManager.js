@@ -1150,7 +1150,7 @@ const fetchTimeEntries = async () => {
   const ApprovalsView = () => {
     // Get projects where user is an approver
     const approverProjects = projects.filter(project => {
-      if (isAdmin) return true;
+      if (isAdminOnly) return true;
       if (!project.approvers) return false;
       const approversList = project.approvers.split(',').map(email => email.trim());
       return approversList.includes(user.username);
@@ -2924,7 +2924,7 @@ return (
           {(() => {
             const editableProjects = getEditableProjects();
             const approverProjects = projects.filter(project => {
-              if (isAdmin) return true;
+              if (isAdminOnly) return true;
               if (!project.approvers) return false;
               const approversList = project.approvers.split(',').map(email => email.trim());
               return approversList.includes(user.username);
