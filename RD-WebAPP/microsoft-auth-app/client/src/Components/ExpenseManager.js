@@ -123,6 +123,7 @@ function ExpenseManager({ onBack, user }) {
     try {
       console.log('Current user:', user.username);
       console.log('Is admin?', ADMIN_EMAILS.includes(user.username));
+      console.log('Is moderator?', isModerator); // Add this debug line
        
       const response = await fetch(`${API_URL}/api/trips?email=${user.username}`);
       if (!response.ok) {
@@ -131,7 +132,7 @@ function ExpenseManager({ onBack, user }) {
       const data = await response.json();
       console.log('All trips from server:', data);
        
-      const filteredTrips = ADMIN_EMAILS.includes(user.username)
+      const filteredTrips = (ADMIN_EMAILS.includes(user.username) || isModerator)
         ? data
         : data.filter(trip => trip.email === user.username);
        
