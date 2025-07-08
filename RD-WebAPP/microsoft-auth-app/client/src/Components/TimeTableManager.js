@@ -108,7 +108,7 @@ const HistoryView = React.memo(({
                                 
                                 {/* Approval information */}
                                 {timesheet.approverEmail && (
-                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'rejected' ? 'rejected-status' : ''}`}>
+                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
                                     <h4>Approval Details:</h4>
                                     <div className="detail-row">
                                       <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
@@ -1196,7 +1196,7 @@ const fetchTimeEntries = async () => {
     try {
       // Add a reason prompt if denying
       let reason = '';
-      if (newStatus === 'rejected') {
+      if (newStatus === 'denied') {
         reason = prompt('Please provide a reason for denial:');
         if (!reason) return; // Cancel if no reason provided
       }
@@ -1227,7 +1227,7 @@ const fetchTimeEntries = async () => {
         )
       );
       
-      alert(`Timesheet ${newStatus === 'approved' ? 'approved' : 'rejected'} successfully!`);
+      alert(`Timesheet ${newStatus === 'approved' ? 'approved' : 'denied'} successfully!`);
     } catch (error) {
       console.error('Error updating timesheet status:', error);
       alert('Failed to update timesheet status');
@@ -1931,7 +1931,7 @@ const fetchTimeEntries = async () => {
                     <option value="all">All Status</option>
                     <option value="submitted">Submitted</option>
                     <option value="approved">Approved</option>
-                    <option value="rejected">Denied</option>
+                    <option value="denied">Denied</option>
                   </select>
                 </div>
                 
@@ -2011,7 +2011,7 @@ const fetchTimeEntries = async () => {
                     <option value="all">All Status</option>
                     <option value="submitted">Submitted</option>
                     <option value="approved">Approved</option>
-                    <option value="rejected">Denied</option>
+                    <option value="denied">Denied</option>
                   </select>
                 </div>
                 
@@ -2763,7 +2763,7 @@ return (
                             >
                               <option value="submitted">Submitted</option>
                               <option value="approved">Approved</option>
-                              <option value="rejected">Denied</option>
+                              <option value="denied">Denied</option>
                             </select>
                           </td>
                           <td>
@@ -2789,7 +2789,7 @@ return (
                                 !timesheetStatusUpdates[timesheet._id] ||
                                 timesheetStatusUpdates[timesheet._id]?.status === timesheet.status ||
                                 ((timesheetStatusUpdates[timesheet._id]?.status === 'approved' || 
-                                  timesheetStatusUpdates[timesheet._id]?.status === 'rejected') &&
+                                  timesheetStatusUpdates[timesheet._id]?.status === 'denied') &&
                                 !timesheetStatusUpdates[timesheet._id]?.approvalComments)
                               }
                             >
@@ -2812,7 +2812,7 @@ return (
                                 
                                 {/* Approval information */}
                                 {timesheet.approverEmail && (
-                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'rejected' ? 'rejected-status' : ''}`}>
+                                  <div className={`approval-info-section ${timesheet.status === 'approved' ? 'approved-status' : timesheet.status === 'denied' ? 'denied-status' : ''}`}>
                                     <h4>Approval Details:</h4>
                                     <div className="detail-row">
                                       <span className="detail-label">{timesheet.status === 'approved' ? 'Approved by:' : 'Denied by:'}</span>
