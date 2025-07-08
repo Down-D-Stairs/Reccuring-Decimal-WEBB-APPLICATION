@@ -19,7 +19,7 @@ const dayEntrySchema = new mongoose.Schema({
 const timeEntrySchema = new mongoose.Schema({
   employeeId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    
     required: false
   },
   employeeName: {
@@ -57,7 +57,7 @@ const timeEntrySchema = new mongoose.Schema({
   approvedDate: Date,
   approvedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    
   },
   comments: 
   {
@@ -149,7 +149,7 @@ const projectSchema = new mongoose.Schema({
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    
   },
   createdAt: {
     type: Date,

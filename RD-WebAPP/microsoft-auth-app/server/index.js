@@ -341,8 +341,8 @@ app.get('/api/projects/:projectId', async (req, res) => {
     
     // Get time entries for this project
     const timeEntries = await TimeEntry.find({ projectId: req.params.projectId })
-      .populate('employeeId', 'name email', 'email')
-      .populate('approvedBy', 'name email', 'email');
+      .populate('employeeId', 'name email')
+      .populate('approvedBy', 'name email');
     
     console.log('Found project with time entries');
     res.json({
