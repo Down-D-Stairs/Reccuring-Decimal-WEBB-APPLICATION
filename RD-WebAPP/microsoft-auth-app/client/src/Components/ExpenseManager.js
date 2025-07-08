@@ -110,9 +110,17 @@ function ExpenseManager({ onBack, user }) {
     checkForDraft();
     fetchProjects(); // ADD THIS LINE
     if (user?.username) {
+      console.log('=== MODERATOR DEBUG ===');
+      console.log('User object:', user);
+      console.log('User email being checked:', user.username);
+      console.log('Making request to:', `${API_URL}/api/moderators/check/${user.username}`);
+      
       fetch(`${API_URL}/api/moderators/check/${user.username}`)
         .then(res => res.json())
-        .then(data => setIsModerator(data.isModerator))
+        .then(data => {
+          console.log('Moderator check response:', data);
+          setIsModerator(data.isModerator);
+        })
         .catch(err => console.error('Failed to check moderator status:', err));
     }
   }, [user]);

@@ -954,16 +954,24 @@ app.delete('/api/moderators/:email', async (req, res) => {
 // Check if user is moderator (for frontend)
 // Check if user is moderator (for frontend) - Updated to include guest users
 // Simplified moderator check - now works for both regular and guest moderators
+// Simplified moderator check - now works for both regular and guest moderators
 app.get('/api/moderators/check/:email', async (req, res) => {
   try {
     const { email } = req.params;
+    console.log('=== MODERATOR CHECK SERVER ===');
+    console.log('Looking for email:', email);
+    
     const moderator = await Moderator.findOne({ email, isActive: true });
+    console.log('Found moderator:', moderator);
+    console.log('Is moderator?', !!moderator);
+    
     res.json({ isModerator: !!moderator });
   } catch (error) {
     console.error('Error checking moderator status:', error);
     res.status(500).json({ error: 'Failed to check moderator status' });
   }
 });
+
 
 
 
