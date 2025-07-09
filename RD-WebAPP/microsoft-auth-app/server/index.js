@@ -7,7 +7,8 @@ const Draft = require('./models/Draft');
 const Moderator = require('./models/Moderator');
 require('dotenv').config();
 const GuestUser = require('./models/GuestUser');
-
+const { sendTimesheetDenialEmail } = require('./services/emailService');
+const { sendExpenseDenialEmail } = require('./services/expenseEmailService');
 const { sendStatusEmail } = require('./services/notificationService');
 const app = express();
 
@@ -136,6 +137,17 @@ app.put('/api/trips/:tripId/status', async (req, res) => {
       },
       { new: true }
     ).populate('expenses');
+
+    // Send denial email if expense is denied
+    if (req.body.status === 'denied') {
+      try {
+        await sendExpenseDenialEmail(updatedTrip); // or sendTimesheetDenialEmail if using same service
+        console.log('Expense denial email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send expense denial email:', emailError);
+        // Continue with the response even if email fails
+      }
+    }
 
    const token = req.headers.authorization?.split(' ')[1];
 
@@ -889,6 +901,17 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
     
     if (!timesheet) {
       return res.status(404).json({ error: 'Timesheet not found' });
+    }
+
+    // Send email if timesheet is denied
+    if (status === 'denied') {
+      try {
+        await sendTimesheetDenialEmail(timesheet);
+        console.log('Denial email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send denial email:', emailError);
+        // Continue with the response even if email fails
+      }
     }
     
     res.json(timesheet);
