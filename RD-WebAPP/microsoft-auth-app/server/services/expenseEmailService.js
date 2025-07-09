@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Function to send expense denial email
+// Function to send expense denial emailasdasd
 const sendExpenseDenialEmail = async (trip) => {
   try {
     const mailOptions = {
