@@ -758,7 +758,7 @@ const fetchProjects = async () => {
         const tripEndDate = new Date(trip.dateRange.end);
         
         const matchesMonth = (tripStartDate <= endOfMonth && tripEndDate >= startOfMonth);
-        const matchesStatus = trip.status === analyticsStatus;
+        const matchesStatus = analyticsStatus === 'all' || trip.status === analyticsStatus;
         
         return matchesMonth && matchesStatus;
       });
@@ -1517,6 +1517,7 @@ const fetchProjects = async () => {
                     value={analyticsStatus} 
                     onChange={(e) => setAnalyticsStatus(e.target.value)}
                   >
+                    <option value="all">All Statuses</option>
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
                     <option value="denied">Denied</option>
@@ -1543,7 +1544,9 @@ const fetchProjects = async () => {
                             '#9966FF',
                             '#FF9F40',
                             '#FF6384',
-                            '#C9CBCF'
+                            '#C9CBCF',
+                            '#E7E9ED',
+                            '#71B37C'
                           ],
                           borderWidth: 1
                         }]
