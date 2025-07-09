@@ -1182,21 +1182,18 @@ app.get('/api/admin/day-details', async (req, res) => {
 // Optimize the employee data endpoint
 app.get('/api/admin/employee-data', async (req, res) => {
   try {
-    const startTime = Date.now(); // Performance tracking
-    
     const { employee, range, status } = req.query;
-    
+
     if (!employee) {
       return res.status(400).json({ error: 'Employee parameter is required' });
     }
-    
-    // Calculate date range (same as before)
+
+    // Calculate date range (same logic as above)
     let startDate, endDate;
     const now = new Date();
-    
+
     switch (range) {
       case 'week':
-        // Calculate Monday-Sunday week (same as frontend)
         const day = now.getDay();
         const diff = now.getDate() - day + (day === 0 ? -6 : 1);
         startDate = new Date(now.getFullYear(), now.getMonth(), diff);
@@ -1204,71 +1201,67 @@ app.get('/api/admin/employee-data', async (req, res) => {
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
         endDate.setHours(23, 59, 59, 999);
-        
-        // ADD THIS DEBUG LOG
-        console.log('Week calculation debug:', {
-          today: now,
-          startDate: startDate,
-          endDate: endDate,
-          employee: employee
-        });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Beginning of day
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999); // End of day
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate.setHours(0, 0, 0, 0); // Beginning of month
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999); // End of month
+        endDate.setHours(23, 59, 59, 999);
         break;
     }
-    
-    // Build optimized query
+
+    // Build query - get timesheets that have day entries in the date range
     let query = {
       employeeName: employee,
-      weekStartDate: { $gte: startDate },
-      weekEndDate: { $lte: endDate }
+      'dayEntries.date': {
+        $gte: startDate,
+        $lte: endDate
+      }
     };
-    
+
     if (status && status !== 'all') {
       query.status = status;
     }
-    
-    // Use aggregation pipeline for better performance
-    const result = await TimeEntry.aggregate([
-      { $match: query },
-      {
-        $lookup: {
-          from: 'projects',
-          localField: 'projectId',
-          foreignField: '_id',
-          as: 'project'
+
+    const timeEntries = await TimeEntry.find(query).populate('projectId');
+
+    // Group by project and calculate totals from filtered day entries only
+    const projectBreakdown = {};
+    let totalHours = 0;
+
+    timeEntries.forEach(entry => {
+      const projectName = entry.projectId ? entry.projectId.projectName : 'Unknown Project';
+      
+      if (!projectBreakdown[projectName]) {
+        projectBreakdown[projectName] = 0;
+      }
+
+      // Only count hours from day entries within the date range
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date);
+        if (dayDate >= startDate && dayDate <= endDate) {
+          projectBreakdown[projectName] += day.hours;
+          totalHours += day.hours;
         }
-      },
-      {
-        $group: {
-          _id: '$projectId',
-          projectName: { $first: { $arrayElemAt: ['$project.projectName', 0] } },
-          totalHours: { $sum: '$totalHours' }
-        }
-      },
-      { $match: { totalHours: { $gt: 0 } } },
-      { $sort: { totalHours: -1 } }
-    ]);
-    
-    const endTime = Date.now();
-    console.log(`Employee data query took ${endTime - startTime}ms`);
-    
-    res.json(result.map(item => ({
-      projectName: item.projectName || 'Unknown Project',
-      totalHours: item.totalHours
-    })));
-    
+      });
+    });
+
+    // Convert to array format expected by frontend
+    const result = Object.keys(projectBreakdown).map(projectName => ({
+      projectName,
+      totalHours: projectBreakdown[projectName]
+    })).filter(item => item.totalHours > 0)
+      .sort((a, b) => b.totalHours - a.totalHours);
+
+    res.json(result);
+
   } catch (error) {
     console.error('Error fetching employee data:', error);
     res.status(500).json({ error: error.message });
@@ -1277,27 +1270,26 @@ app.get('/api/admin/employee-data', async (req, res) => {
 
 
 
+
 // Get project data (all employees working on a specific project)
 // Update the project data endpoint to accept time range
 // Get project timesheet data with status filtering for admin calendar
 // Optimize the project data endpoint
+// Replace the existing /api/admin/project-data endpoint with this:
 app.get('/api/admin/project-data', async (req, res) => {
   try {
-    const startTime = Date.now(); // Performance tracking
-    
     const { projectId, range, status } = req.query;
-    
+
     if (!projectId) {
       return res.status(400).json({ error: 'ProjectId parameter is required' });
     }
-    
-    // Calculate date range (same logic as employee endpoint)
+
+    // Calculate date range
     let startDate, endDate;
     const now = new Date();
-    
+
     switch (range) {
       case 'week':
-        // Calculate Monday-Sunday week (same as frontend)
         const day = now.getDay();
         const diff = now.getDate() - day + (day === 0 ? -6 : 1);
         startDate = new Date(now.getFullYear(), now.getMonth(), diff);
@@ -1305,68 +1297,73 @@ app.get('/api/admin/project-data', async (req, res) => {
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
         endDate.setHours(23, 59, 59, 999);
-        
-        // ADD THIS DEBUG LOG
-        console.log('Week calculation debug:', {
-          today: now,
-          startDate: startDate,
-          endDate: endDate,
-          employee: employee
-        });
         break;
       case '2weeks':
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Beginning of day
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999); // End of day
+        endDate.setHours(23, 59, 59, 999);
         break;
       case 'month':
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        startDate.setHours(0, 0, 0, 0); // Beginning of month
+        startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        endDate.setHours(23, 59, 59, 999); // End of month
+        endDate.setHours(23, 59, 59, 999);
         break;
     }
-    
-    // Build optimized query
+
+    // Build query - get timesheets that have day entries in the date range
     let query = {
-      projectId: new mongoose.Types.ObjectId(projectId),
-      weekStartDate: { $gte: startDate },
-      weekEndDate: { $lte: endDate }
+      projectId: projectId,
+      'dayEntries.date': {
+        $gte: startDate,
+        $lte: endDate
+      }
     };
-    
+
     if (status && status !== 'all') {
       query.status = status;
     }
-    
-    // Use aggregation pipeline for better performance
-    const result = await TimeEntry.aggregate([
-      { $match: query },
-      {
-        $group: {
-          _id: '$employeeName',
-          employeeName: { $first: '$employeeName' },
-          totalHours: { $sum: '$totalHours' }
+
+    const timeEntries = await TimeEntry.find(query).populate('projectId');
+
+    // Group by employee and calculate totals from filtered day entries only
+    const employeeBreakdown = {};
+    let totalHours = 0;
+
+    timeEntries.forEach(entry => {
+      const employeeName = entry.employeeName;
+      
+      if (!employeeBreakdown[employeeName]) {
+        employeeBreakdown[employeeName] = 0;
+      }
+
+      // Only count hours from day entries within the date range
+      entry.dayEntries.forEach(day => {
+        const dayDate = new Date(day.date);
+        if (dayDate >= startDate && dayDate <= endDate) {
+          employeeBreakdown[employeeName] += day.hours;
+          totalHours += day.hours;
         }
-      },
-      { $match: { totalHours: { $gt: 0 } } },
-      { $sort: { totalHours: -1 } }
-    ]);
-    
-    const endTime = Date.now();
-    console.log(`Project data query took ${endTime - startTime}ms`);
-    
-    res.json(result.map(item => ({
-      employeeName: item.employeeName,
-      totalHours: item.totalHours
-    })));
-    
+      });
+    });
+
+    // Convert to array format expected by frontend
+    const result = Object.keys(employeeBreakdown).map(employeeName => ({
+      employeeName,
+      totalHours: employeeBreakdown[employeeName]
+    })).filter(item => item.totalHours > 0)
+      .sort((a, b) => b.totalHours - a.totalHours);
+
+    res.json(result);
+
   } catch (error) {
     console.error('Error fetching project data:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 
