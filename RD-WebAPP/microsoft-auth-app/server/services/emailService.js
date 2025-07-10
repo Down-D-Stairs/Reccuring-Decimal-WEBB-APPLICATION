@@ -1,11 +1,7 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-console.log('=== EMAIL SERVICE INITIALIZATION ===');
-console.log('EMAIL_USER1:', process.env.EMAIL_USER1);
-console.log('EMAIL_PASS exists:', !!process.env.EMAIL_PASS);
-console.log('EMAIL_PASS length:', process.env.EMAIL_PASS?.length);
-
+// Create transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -14,92 +10,49 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const sendTestEmail = async () => {
-  console.log('=== SENDING TEST EMAIL ===');
-  
-  try {
-    // Test connection first
-    console.log('Testing SMTP connection...');
-    await transporter.verify();
-    console.log('✅ SMTP connection successful');
-    
-    // Send email
-    console.log('Sending email...');
-    const mailOptions = {
-      from: process.env.EMAIL_USER1,
-      to: process.env.EMAIL_USER1, // Send to yourself
-      subject: 'Test Email from Node.js - ' + new Date().toISOString(),
-      html: `
-        <h2>Test Email</h2>
-        <p>This email was sent at: ${new Date().toISOString()}</p>
-        <p>From server: ${process.env.NODE_ENV || 'development'}</p>
-        <p>If you see this, your email service is working!</p>
-      `
-    };
-    
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully!');
-    console.log('Message ID:', info.messageId);
-    console.log('Response:', info.response);
-    
-    return {
-      success: true,
-      messageId: info.messageId,
-      response: info.response
-    };
-    
-  } catch (error) {
-    console.error('❌ Email failed:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response
-    });
-    
-    return {
-      success: false,
-      error: error.message,
-      details: error
-    };
-  }
-};
-
-const sendExpenseDenialEmail = async ({ email, tripName, reason }) => {
-  console.log('=== SENDING EXPENSE DENIAL EMAIL ===');
-  console.log('To:', email);
-  console.log('Trip:', tripName);
-  console.log('Reason:', reason);
-  
+// Function to send timesheet denial email
+const sendTimesheetDenialEmail = async (timesheet) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER1,
-      to: email,
-      subject: `Expense Report Denied - ${tripName}`,
+      to: timesheet.employeeName, // This should be the employee's email
+      subject: `Timesheet Denied - Week of ${new Date(timesheet.weekStartDate).toLocaleDateString()}`,
       html: `
-        <h2>Expense Report Denied</h2>
-        <p>Dear ${email},</p>
-        <p>Your expense report "<strong>${tripName}</strong>" has been denied.</p>
-        <p><strong>Reason:</strong> ${reason || 'No reason provided'}</p>
-        <p>Please review and resubmit with the necessary corrections.</p>
-        <br>
-        <p>Best regards,<br>Expense Management Team</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #d32f2f;">Timesheet Denied</h2>
+          
+          <p>Dear ${timesheet.employeeName},</p>
+          
+          <p>Your timesheet for the week of <strong>${new Date(timesheet.weekStartDate).toLocaleDateString()} - ${new Date(timesheet.weekEndDate).toLocaleDateString()}</strong> has been <strong style="color: #d32f2f;">denied</strong>.</p>
+          
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3>Timesheet Details:</h3>
+            <p><strong>Total Hours:</strong> ${timesheet.totalHours}</p>
+            <p><strong>Status:</strong> ${timesheet.status}</p>
+            <p><strong>Denied by:</strong> ${timesheet.approverEmail}</p>
+            ${timesheet.approvalComments ? `<p><strong>Reason:</strong> ${timesheet.approvalComments}</p>` : ''}
+          </div>
+          
+          <p>Please review the feedback and resubmit your timesheet with the necessary corrections.</p>
+          
+          <p>If you have any questions, please contact your supervisor or the HR department.</p>
+          
+          <p>Best regards,<br>
+          HR Department<br>
+          Recurring Decimal</p>
+        </div>
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Expense denial email sent successfully!');
-    console.log('Message ID:', info.messageId);
-    
-    return info;
-    
+    await transporter.sendMail(mailOptions);
+    console.log(`Timesheet denial email sent to ${timesheet.employeeName}`);
   } catch (error) {
-    console.error('❌ Failed to send expense denial email:', error);
+    console.error('Error sending timesheet denial email:', error);
     throw error;
   }
 };
 
 module.exports = {
-  sendTestEmail,
-  sendExpenseDenialEmail
+    transporter,
+    sendTimesheetDenialEmail
 };
