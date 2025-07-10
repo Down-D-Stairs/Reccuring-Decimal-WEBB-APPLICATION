@@ -1203,9 +1203,7 @@ const fetchProjects = async () => {
               />
               {isProcessingReceipt && <span className="processing-text">Processing receipt...
               </span>}
-              {expenseDetails.receipt && renderReceiptPreview(
-                <img src={expenseDetails.receipt} alt="Receipt Preview" className="receipt-preview"/>
-              )}
+              {expenseDetails.receipt && renderReceiptPreview(expenseDetails.receipt)}
             </div>
             <div className="button-group">
               <button onClick={() => handleExpenseSubmit(false)}
