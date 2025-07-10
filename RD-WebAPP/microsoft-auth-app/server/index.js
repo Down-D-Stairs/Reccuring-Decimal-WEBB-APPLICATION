@@ -1946,8 +1946,6 @@ app.post('/api/auth/guest-login', async (req, res) => {
   }
 });
 
-const { testEmail } = require('./services/emailService');
-
 // Add this test route
 app.get('/test-email', async (req, res) => {
   try {
