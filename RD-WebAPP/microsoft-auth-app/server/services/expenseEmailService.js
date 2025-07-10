@@ -57,5 +57,6 @@ const sendExpenseDenialEmail = async (trip) => {
 
 
 module.exports = {
-  sendExpenseDenialEmail
+    transporter,
+    sendExpenseDenialEmail
 };

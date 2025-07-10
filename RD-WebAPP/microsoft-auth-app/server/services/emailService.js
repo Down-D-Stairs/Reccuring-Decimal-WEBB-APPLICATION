@@ -53,5 +53,6 @@ const sendTimesheetDenialEmail = async (timesheet) => {
 };
 
 module.exports = {
-  sendTimesheetDenialEmail
+    transporter,
+    sendTimesheetDenialEmail
 };
