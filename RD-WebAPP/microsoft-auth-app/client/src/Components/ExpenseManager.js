@@ -636,7 +636,6 @@ const fetchProjects = async () => {
       }
 
       setHasDraft(true);
-      alert('Draft saved successfully!');
       setExpenseView('list');
     } catch (error) {
       console.error('Error saving draft:', error);
