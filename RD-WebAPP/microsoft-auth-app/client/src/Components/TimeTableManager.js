@@ -455,6 +455,8 @@ function TimeTableManager({ onBack, user }) {
   });
   const [showEditProjectConfirmation, setShowEditProjectConfirmation] = useState(false);
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+  const [showHourLimitModal, setShowHourLimitModal] = useState(false);
+  const [hourLimitDetails, setHourLimitDetails] = useState({ day: '', hours: 0, dayTotal: 0 });
 
 
 
@@ -1311,6 +1313,26 @@ const fetchTimeEntries = async () => {
     }
   }, [user.username]); // Remove API_URL from dependencies
 
+  const validateDayHours = (day, newHours) => {
+  // Calculate existing hours for this day across all projects
+  const existingDayTotal = weeklyEntries.reduce((total, entry) => {
+    return total + (Number(entry[day.toLowerCase()] || 0));
+  }, 0);
+  
+  const totalHours = existingDayTotal + Number(newHours);
+  
+    if (totalHours > 8) {
+      setHourLimitDetails({
+        day: day.charAt(0).toUpperCase() + day.slice(1),
+        hours: newHours,
+        dayTotal: totalHours
+      });
+      setShowHourLimitModal(true);
+      return false;
+    }
+    
+    return true;
+  };
 
 
   
@@ -2185,7 +2207,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.monday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, monday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('monday', hours)) {
+                        setDayHours({...dayHours, monday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -2194,7 +2221,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.tuesday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, tuesday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('tuesday', hours)) {
+                        setDayHours({...dayHours, tuesday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -2203,7 +2235,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.wednesday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, wednesday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('wednesday', hours)) {
+                        setDayHours({...dayHours, wednesday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -2212,7 +2249,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.thursday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, thursday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('thursday', hours)) {
+                        setDayHours({...dayHours, thursday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -2221,7 +2263,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.friday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, friday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('friday', hours)) {
+                        setDayHours({...dayHours, friday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -2230,7 +2277,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.saturday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, saturday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('saturday', hours)) {
+                        setDayHours({...dayHours, saturday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -2239,7 +2291,12 @@ return (
                     min="0" 
                     max="24" 
                     value={dayHours.sunday || ''} 
-                    onChange={(e) => setDayHours({...dayHours, sunday: e.target.value})}
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('sunday', hours)) {
+                        setDayHours({...dayHours, sunday: hours});
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -3471,6 +3528,42 @@ return (
               disabled={isUpdatingProject}
             >
               Update Project
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {showHourLimitModal && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>⚠️ Daily Hour Limit Exceeded</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p className="warning-text">
+              You cannot enter more than <strong>8 hours</strong> in a single day.
+            </p>
+            
+            <div className="hour-limit-details">
+              <p><strong>Day:</strong> {hourLimitDetails.day}</p>
+              <p><strong>Hours you tried to enter:</strong> {hourLimitDetails.hours}</p>
+              <p><strong>Total hours for this day:</strong> {hourLimitDetails.dayTotal}</p>
+            </div>
+            
+            <div className="hour-limit-explanation">
+              <p>This includes hours from other projects you've already entered for {hourLimitDetails.day}.</p>
+              <p>Please adjust your hours to stay within the 8-hour daily limit.</p>
+            </div>
+          </div>
+          
+          <div className="modal-actions">
+            <button
+              className="confirm-button"
+              onClick={() => setShowHourLimitModal(false)}
+            >
+              Understood
             </button>
           </div>
         </div>
