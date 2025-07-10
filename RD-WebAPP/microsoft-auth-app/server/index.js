@@ -11,7 +11,9 @@ const { sendTimesheetDenialEmail } = require('./services/emailService');
 const { sendExpenseDenialEmail } = require('./services/expenseEmailService');
 const { sendStatusEmail } = require('./services/notificationService');
 const { testEmail } = require('./services/emailService');
+const emailService = require('./services/emailService');
 const app = express();
+
 
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
@@ -1956,7 +1958,51 @@ app.get('/test-email', async (req, res) => {
   }
 });
 
+// Debug route to check environment variables
+app.get('/debug-env', (req, res) => {
+  res.json({
+    NODE_ENV: process.env.NODE_ENV,
+    EMAIL_USER1: process.env.EMAIL_USER1,
+    EMAIL_PASS_SET: !!process.env.EMAIL_PASS,
+    EMAIL_PASS_LENGTH: process.env.EMAIL_PASS?.length,
+    // Don't expose the actual password
+  });
+});
 
+// Test email route
+app.get('/test-email', async (req, res) => {
+  try {
+    console.log('Test email route called');
+    const result = await emailService.sendTestEmail();
+    res.json(result);
+  } catch (error) {
+    console.error('Test email route error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack 
+    });
+  }
+});
+
+// Test expense denial email
+app.get('/test-denial-email', async (req, res) => {
+  try {
+    console.log('Test denial email route called');
+    const result = await emailService.sendExpenseDenialEmail({
+      email: process.env.EMAIL_USER1, // Send to yourself
+      tripName: 'Test Trip',
+      reason: 'This is a test denial email'
+    });
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error('Test denial email error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
 
 
 
