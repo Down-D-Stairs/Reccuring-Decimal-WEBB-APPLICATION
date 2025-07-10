@@ -50,6 +50,9 @@ function ExpenseManager({ onBack, user }) {
   // Add these state variables
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+
 
 
 
@@ -537,8 +540,8 @@ const fetchProjects = async () => {
         comments: '',
         receipt: null
       });
-      // Success message
-      alert(`✅ Report "${tripDetails.tripName}" submitted successfully!\nTotal: $${totalAmount.toFixed(2)}`);
+    
+      
         
     } catch (error) {
       console.error('Error submitting report:', error);
@@ -608,6 +611,7 @@ const fetchProjects = async () => {
   };
 
   const handleSaveDraft = async () => {
+    setIsSavingDraft(true);
     try {
       const draftData = {
         tripName: tripDetails.tripName,
@@ -637,9 +641,12 @@ const fetchProjects = async () => {
     } catch (error) {
       console.error('Error saving draft:', error);
       alert('Failed to save draft');
+    } finally {
+      setIsSavingDraft(false);
     }
   };
   const handleLoadDraft = async () => {
+    setIsLoadingDraft(true);
     try {
       const response = await fetch(`${API_URL}/api/drafts/${user.username}`);
       
@@ -663,6 +670,8 @@ const fetchProjects = async () => {
     } catch (error) {
       console.error('Error loading draft:', error);
       alert('Failed to load draft');
+    } finally {
+      setIsLoadingDraft(false);
     }
   };  
     const downloadReceipt = (expense) => {
@@ -1963,19 +1972,45 @@ const fetchProjects = async () => {
                 <button
                   className="load-draft-btn"
                   onClick={handleLoadDraft}
-                  style={{ background: '#28a745', color: 'white', marginRight: '10px' }}
+                  disabled={isLoadingDraft}
+                  style={{ 
+                    background: isLoadingDraft ? '#6c757d' : '#28a745', 
+                    color: 'white', 
+                    marginRight: '10px',
+                    cursor: isLoadingDraft ? 'not-allowed' : 'pointer'
+                  }}
                 >
-                  Continue Previous Draft
+                  {isLoadingDraft ? (
+                    <>
+                      <span className="processing-spinner"></span>
+                      Loading Draft...
+                    </>
+                  ) : (
+                    'Continue Previous Draft'
+                  )}
                 </button>
               )}
               <button
                 className="save-draft-btn"
                 onClick={handleSaveDraft}
-                style={{ background: '#ffc107', color: 'black', marginRight: '10px' }}
+                disabled={isSavingDraft}
+                style={{ 
+                  background: isSavingDraft ? '#6c757d' : '#ffc107', 
+                  color: 'black', 
+                  marginRight: '10px',
+                  cursor: isSavingDraft ? 'not-allowed' : 'pointer'
+                }}
               >
-                Save as Draft
+                {isSavingDraft ? (
+                  <>
+                    <span className="processing-spinner"></span>
+                    Saving Draft...
+                  </>
+                ) : (
+                  'Save as Draft'
+                )}
               </button>
-            </div>        
+            </div>    
             <button
               className="submit-trip"
               onClick={handleSubmit}
@@ -2103,6 +2138,27 @@ const fetchProjects = async () => {
         </div>
       )}
 
+      {isSavingDraft && (
+        <div className="processing-overlay">
+          <div className="processing-popup">
+            <div className="processing-spinner">⏳</div>
+            <h3>Saving Draft...</h3>
+            <p>Saving your progress</p>
+            <p>Please wait, do not close this window.</p>
+          </div>
+        </div>
+      )}
+
+      {isLoadingDraft && (
+        <div className="processing-overlay">
+          <div className="processing-popup">
+            <div className="processing-spinner">⏳</div>
+            <h3>Loading Draft...</h3>
+            <p>Restoring your previous work</p>
+            <p>Please wait, do not close this window.</p>
+          </div>
+      </div>
+    )}
 
       {showSubmitConfirmation && (
         <div className="expense-modal-overlay" onClick={() => setShowSubmitConfirmation(false)}>
