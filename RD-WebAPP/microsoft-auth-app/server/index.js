@@ -10,6 +10,7 @@ const GuestUser = require('./models/GuestUser');
 const { sendTimesheetDenialEmail } = require('./services/emailService');
 const { sendExpenseDenialEmail } = require('./services/expenseEmailService');
 const { sendStatusEmail } = require('./services/notificationService');
+const { testEmail } = require('./services/emailService');
 const app = express();
 
 app.use(cors());
@@ -1944,6 +1945,19 @@ app.post('/api/auth/guest-login', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+const { testEmail } = require('./services/emailService');
+
+// Add this test route
+app.get('/test-email', async (req, res) => {
+  try {
+    const result = await testEmail();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 
 
 
