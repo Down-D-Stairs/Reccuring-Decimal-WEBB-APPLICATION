@@ -258,47 +258,55 @@ const fetchProjects = async () => {
   };
 
   const handleReceiptUpload = async (file) => {
-  setIsProcessingReceipt(true); // Start loading
-  
-  const formData = new FormData();
-  formData.append('document', file);
-
-  try {
-    const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Token 13de7c14cd271b1f3415142a1c19e5a3'
-      },
-      body: formData
-    });
-
-    const result = await response.json();
+    setIsProcessingReceipt(true);
     
-    if (result.document) {
-      const { total_amount, date, supplier_name } = result.document.inference.prediction;
-      
-      const base64Promise = new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append('document', file);
+
+    try {
+      const response = await fetch('https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Token 13de7c14cd271b1f3415142a1c19e5a3'
+        },
+        body: formData
       });
 
-      const base64Receipt = await base64Promise;
+      const result = await response.json();
       
-      setExpenseDetails({
-        ...expenseDetails,
-        amount: total_amount.value,
-        date: date.value,
-        vendor: supplier_name.value,
-        receipt: base64Receipt
-      });
+      if (result.document) {
+        const { total_amount, date, supplier_name } = result.document.inference.prediction;
+        
+        const base64Promise = new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            console.log('FileReader result:', reader.result);
+            console.log('FileReader result type:', typeof reader.result);
+            resolve(reader.result);
+          };
+          reader.readAsDataURL(file);
+        });
+
+        const base64Receipt = await base64Promise;
+        
+        console.log('Setting expenseDetails with receipt:', base64Receipt);
+        console.log('base64Receipt type:', typeof base64Receipt);
+        
+        setExpenseDetails({
+          ...expenseDetails,
+          amount: total_amount.value,
+          date: date.value,
+          vendor: supplier_name.value,
+          receipt: base64Receipt
+        });
+      }
+    } catch (error) {
+      console.error('Error processing receipt:', error);
+    } finally {
+      setIsProcessingReceipt(false);
     }
-  } catch (error) {
-    console.error('Error processing receipt:', error);
-  } finally {
-    setIsProcessingReceipt(false); // End loading
-  }
-};
+  };
+
 
 
   const handleExpenseSubmit = (addAnother = false) => {
@@ -683,59 +691,76 @@ const fetchProjects = async () => {
 
 
   const renderReceiptPreview = (receipt) => {
-    if (!receipt) return null;
+    console.log('renderReceiptPreview called with:', receipt);
+    console.log('Type:', typeof receipt);
     
-    const isPDF = receipt.includes('data:application/pdf') || receipt.toLowerCase().includes('.pdf');
+    if (!receipt) {
+      console.log('No receipt provided');
+      return null;
+    }
     
-    if (isPDF) {
-      return (
-        <div className="pdf-preview-container">
-          <Document
-            file={receipt}
-            onLoadSuccess={({ numPages }) => {
-              console.log('PDF loaded successfully, pages:', numPages);
-              setNumPages(numPages);
-            }}
-            onLoadError={(error) => {
-              console.error('PDF load error:', error);
-              console.log('Receipt data length:', receipt.length);
-              console.log('Receipt starts with:', receipt.substring(0, 50));
-            }}
-            loading={<div>Loading PDF...</div>}
-            error={<div>Failed to load PDF. <button onClick={() => window.open(receipt, '_blank')}>Open in new tab</button></div>}
-          >
-            <Page 
-              pageNumber={pageNumber} 
-              width={500} // Keep your current width
-              scale={1.5} // Scale up the entire page (makes it bigger overall)
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-              onLoadSuccess={() => console.log('Page loaded successfully')}
-              onLoadError={(error) => console.error('Page load error:', error)}
-            />
-          </Document>
-          
-          {numPages > 1 && (
-            <div className="pdf-navigation">
-              <button 
-                onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
-                disabled={pageNumber <= 1}
-              >
-                Previous
-              </button>
-              <span>Page {pageNumber} of {numPages}</span>
-              <button 
-                onClick={() => setPageNumber(Math.min(numPages, pageNumber + 1))}
-                disabled={pageNumber >= numPages}
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
-      );
-    } else {
-      return <img src={receipt} alt="Receipt Preview" className="receipt-preview" />;
+    if (typeof receipt !== 'string') {
+      console.error('Receipt is not a string:', receipt);
+      console.error('Receipt type:', typeof receipt);
+      return <div>Error: Invalid receipt data (not a string)</div>;
+    }
+    
+    try {
+      const isPDF = receipt.includes('data:application/pdf') || receipt.toLowerCase().includes('.pdf');
+      
+      if (isPDF) {
+        return (
+          <div className="pdf-preview-container">
+            <Document
+              file={receipt}
+              onLoadSuccess={({ numPages }) => {
+                console.log('PDF loaded successfully, pages:', numPages);
+                setNumPages(numPages);
+              }}
+              onLoadError={(error) => {
+                console.error('PDF load error:', error);
+                console.log('Receipt data length:', receipt.length);
+                console.log('Receipt starts with:', receipt.substring(0, 50));
+              }}
+              loading={<div>Loading PDF...</div>}
+              error={<div>Failed to load PDF. <button onClick={() => window.open(receipt, '_blank')}>Open in new tab</button></div>}
+            >
+              <Page
+                pageNumber={pageNumber}
+                width={500}
+                scale={1.5}
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
+                onLoadSuccess={() => console.log('Page loaded successfully')}
+                onLoadError={(error) => console.error('Page load error:', error)}
+              />
+            </Document>
+            
+            {numPages > 1 && (
+              <div className="pdf-navigation">
+                <button
+                  onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
+                  disabled={pageNumber <= 1}
+                >
+                  Previous
+                </button>
+                <span>Page {pageNumber} of {numPages}</span>
+                <button
+                  onClick={() => setPageNumber(Math.min(numPages, pageNumber + 1))}
+                  disabled={pageNumber >= numPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      } else {
+        return <img src={receipt} alt="Receipt Preview" className="receipt-preview" />;
+      }
+    } catch (error) {
+      console.error('Error in renderReceiptPreview:', error);
+      return <div>Error rendering receipt preview</div>;
     }
   };
 
@@ -1844,7 +1869,13 @@ const fetchProjects = async () => {
                     {isProcessingReceipt && (
                       <span className="processing-text">Processing receipt...</span>
                     )}
-                    {expenseDetails.receipt && renderReceiptPreview(expenseDetails.receipt)}
+                    {expenseDetails.receipt && (() => {
+                      console.log('About to render receipt preview');
+                      console.log('expenseDetails.receipt:', expenseDetails.receipt);
+                      console.log('Type of expenseDetails.receipt:', typeof expenseDetails.receipt);
+                      console.log('Is it a string?', typeof expenseDetails.receipt === 'string');
+                      return renderReceiptPreview(expenseDetails.receipt);
+                    })()}
                   </div>
                   
                   <div className="modal-actions">
