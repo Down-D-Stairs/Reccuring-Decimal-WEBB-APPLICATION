@@ -1759,7 +1759,7 @@ const fetchTimeEntries = async () => {
   const validateHolidayHours = (day, hours) => {
     if (Number(hours) > 0) {
       const weekStart = new Date(selectedWeek.start);
-      const dayIndex = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(day.toLowerCase());
+      const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(day.toLowerCase());
       const targetDate = new Date(weekStart);
       targetDate.setDate(weekStart.getDate() + dayIndex);
       
