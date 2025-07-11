@@ -473,31 +473,25 @@ function TimeTableManager({ onBack, user }) {
     const today = new Date();
     const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     
-    // Calculate how many days to go back to get to Monday
-    let daysBack;
-    if (currentDay === 0) {
-      // Sunday: go back 6 days to get Monday
-      daysBack = 6;
-    } else {
-      // Any other day: go back (currentDay - 1) days to get Monday
-      daysBack = currentDay - 1;
-    }
+    // Calculate how many days to go back to get to Sunday (not Monday)
+    const daysBack = currentDay; // Sunday = 0 days back, Monday = 1 day back, etc.
     
-    // Create Monday date
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - daysBack);
-    monday.setHours(0, 0, 0, 0);
-    
-    // Create Sunday date (6 days after Monday)
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+    // Create Sunday date
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - daysBack);
     sunday.setHours(0, 0, 0, 0);
     
+    // Create Saturday date (6 days after Sunday)
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+    saturday.setHours(0, 0, 0, 0);
+    
     return {
-      start: monday.toISOString().split('T')[0],
-      end: sunday.toISOString().split('T')[0]
+      start: sunday.toISOString().split('T')[0],
+      end: saturday.toISOString().split('T')[0]
     };
   }
+
 
 
 
