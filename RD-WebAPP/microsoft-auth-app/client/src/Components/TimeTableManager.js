@@ -473,7 +473,7 @@ function TimeTableManager({ onBack, user }) {
     const today = new Date();
     const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     
-    // Calculate how many days to go back to get to Sunday (not Monday)
+    // Calculate how many days to go back to get to Sunday
     const daysBack = currentDay; // Sunday = 0 days back, Monday = 1 day back, etc.
     
     // Create Sunday date
@@ -486,11 +486,21 @@ function TimeTableManager({ onBack, user }) {
     saturday.setDate(sunday.getDate() + 6);
     saturday.setHours(0, 0, 0, 0);
     
+    // Format dates in local timezone (NOT UTC!)
+    const sundayString = sunday.getFullYear() + '-' + 
+                        String(sunday.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(sunday.getDate()).padStart(2, '0');
+    
+    const saturdayString = saturday.getFullYear() + '-' + 
+                          String(saturday.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(saturday.getDate()).padStart(2, '0');
+    
     return {
-      start: sunday.toISOString().split('T')[0],
-      end: saturday.toISOString().split('T')[0]
+      start: sundayString,
+      end: saturdayString
     };
   }
+
 
 
 
