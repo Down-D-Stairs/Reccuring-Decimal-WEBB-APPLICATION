@@ -463,37 +463,54 @@ function TimeTableManager({ onBack, user }) {
   
 
 
-  // Get default week (current week starting Monday)
   function getDefaultWeek() {
     const today = new Date();
-    const day = today.getDay(); // 0 is Sunday, 1 is Monday
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    const monday = new Date(today.setDate(diff));
-    monday.setHours(0, 0, 0, 0);
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+    // Calculate the Sunday of this week
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - dayOfWeek);
+    sunday.setHours(0, 0, 0, 0);
+    
+    // Calculate the Saturday of this week
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+    saturday.setHours(0, 0, 0, 0);
+    
+    // Format as YYYY-MM-DD in local timezone
+    const formatDate = (date) => {
+      return date.getFullYear() + '-' + 
+            String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+            String(date.getDate()).padStart(2, '0');
+    };
     
     return {
-      start: monday.toISOString().split('T')[0],
-      end: sunday.toISOString().split('T')[0]
+      start: formatDate(sunday),
+      end: formatDate(saturday)
     };
   }
 
+  
+
   // Get day names for the selected week
   function getWeekDayNames() {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const startDate = new Date(selectedWeek.start);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    // Parse the start date properly
+    const startParts = selectedWeek.start.split('-');
+    const startDate = new Date(startParts[0], startParts[1] - 1, startParts[2]);
     
     return days.map((day, index) => {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + index);
+      
       return {
         name: day,
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       };
     });
   }
+
   
   // Helper functions for date ranges
   function startOfCurrentMonth() {
