@@ -468,36 +468,19 @@ function TimeTableManager({ onBack, user }) {
   
 
 
-  // Get default week (current week starting Monday)
   function getDefaultWeek() {
     const today = new Date();
-    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const day = today.getDay(); // 0 is Sunday, 1 is Monday
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const monday = new Date(today.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
     
-    // Calculate how many days to go back to get to Sunday
-    const daysBack = currentDay; // Sunday = 0 days back, Monday = 1 day back, etc.
-    
-    // Create Sunday date
-    const sunday = new Date(today);
-    sunday.setDate(today.getDate() - daysBack);
-    sunday.setHours(0, 0, 0, 0);
-    
-    // Create Saturday date (6 days after Sunday)
-    const saturday = new Date(sunday);
-    saturday.setDate(sunday.getDate() + 6);
-    saturday.setHours(0, 0, 0, 0);
-    
-    // Format dates in local timezone (NOT UTC!)
-    const sundayString = sunday.getFullYear() + '-' + 
-                        String(sunday.getMonth() + 1).padStart(2, '0') + '-' + 
-                        String(sunday.getDate()).padStart(2, '0');
-    
-    const saturdayString = saturday.getFullYear() + '-' + 
-                          String(saturday.getMonth() + 1).padStart(2, '0') + '-' + 
-                          String(saturday.getDate()).padStart(2, '0');
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
     
     return {
-      start: sundayString,
-      end: saturdayString
+      start: monday.toISOString().split('T')[0],
+      end: sunday.toISOString().split('T')[0]
     };
   }
 
