@@ -472,12 +472,8 @@ function TimeTableManager({ onBack, user }) {
   function getDefaultWeek() {
     const today = new Date();
     const day = today.getDay(); // 0 is Sunday, 1 is Monday
-    
-    // Calculate days to subtract to get to Monday
-    const daysToSubtract = day === 0 ? 6 : day - 1; // If Sunday, go back 6 days; otherwise go back (day - 1) days
-    
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - daysToSubtract);
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const monday = new Date(today.setDate(diff));
     monday.setHours(0, 0, 0, 0);
     
     const sunday = new Date(monday);
@@ -488,7 +484,6 @@ function TimeTableManager({ onBack, user }) {
       end: sunday.toISOString().split('T')[0]
     };
   }
-
 
   // Get day names for the selected week
   function getWeekDayNames() {
