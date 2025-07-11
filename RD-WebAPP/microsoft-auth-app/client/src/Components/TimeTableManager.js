@@ -457,17 +457,13 @@ function TimeTableManager({ onBack, user }) {
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [showHourLimitModal, setShowHourLimitModal] = useState(false);
   const [hourLimitDetails, setHourLimitDetails] = useState({ day: '', hours: 0, dayTotal: 0 });
-  const [showHolidayCalendar, setShowHolidayCalendar] = useState(false);
-  const [holidays, setHolidays] = useState([]);
-  const [holidayCalendarDate, setHolidayCalendarDate] = useState(new Date());
-  const [showHolidayWarning, setShowHolidayWarning] = useState(false);
-  const [holidayWarningDetails, setHolidayWarningDetails] = useState({ date: '', day: '' });
 
 
 
   
 
 
+  // Get default week (current week starting Monday)
   function getDefaultWeek() {
     const today = new Date();
     const day = today.getDay(); // 0 is Sunday, 1 is Monday
@@ -484,13 +480,9 @@ function TimeTableManager({ onBack, user }) {
     };
   }
 
-
-
-
-
   // Get day names for the selected week
   function getWeekDayNames() {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const startDate = new Date(selectedWeek.start);
     
     return days.map((day, index) => {
@@ -1686,116 +1678,6 @@ const fetchTimeEntries = async () => {
     }
   };
 
-  // Update fetchHolidays to work with the new data structure
-  const fetchHolidays = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/holidays`);
-      if (response.ok) {
-        const data = await response.json();
-        setHolidays(data); // Store the full holiday objects
-      }
-    } catch (error) {
-      console.error('Error fetching holidays:', error);
-    }
-  };
-
-  // Add this useEffect to fetch holidays when component mounts
-  useEffect(() => {
-    fetchHolidays();
-  }, []);
-
-  const toggleHoliday = async (date) => {
-    // Convert to local timezone string format
-    const dateString = date.getFullYear() + '-' + 
-                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                      String(date.getDate()).padStart(2, '0');
-    
-    console.log('Toggling holiday for:', dateString);
-    
-    const isCurrentlyHoliday = holidays.some(h => (h.date || h) === dateString);
-    
-    try {
-      if (isCurrentlyHoliday) {
-        const response = await fetch(`${API_URL}/api/holidays/${dateString}`, {
-          method: 'DELETE'
-        });
-        if (response.ok) {
-          setHolidays(holidays.filter(h => (h.date || h) !== dateString));
-          console.log('Holiday removed');
-        }
-      } else {
-        const response = await fetch(`${API_URL}/api/holidays`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            date: dateString,
-            name: 'Company Holiday',
-            createdBy: user.username || user.name || 'Admin'
-          })
-        });
-        if (response.ok) {
-          const newHoliday = await response.json();
-          setHolidays([...holidays, newHoliday]);
-          console.log('Holiday added:', newHoliday);
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling holiday:', error);
-    }
-  };
-
-
-
-  const isHoliday = (date) => {
-    // Convert date to local timezone string format
-    const dateString = date.getFullYear() + '-' + 
-                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                      String(date.getDate()).padStart(2, '0');
-    
-    console.log('Checking if', dateString, 'is in holidays:', holidays.map(h => h.date || h));
-    return holidays.some(h => (h.date || h) === dateString);
-  };
-
-
-
-  const validateHolidayHours = (day, hours) => {
-  if (Number(hours) > 0) {
-    // Fix: Create date in local timezone, not UTC
-    const weekStartParts = selectedWeek.start.split('-');
-    const weekStart = new Date(weekStartParts[0], weekStartParts[1] - 1, weekStartParts[2]);
-    
-    const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(day.toLowerCase());
-    
-    const targetDate = new Date(weekStart);
-    targetDate.setDate(weekStart.getDate() + dayIndex);
-    
-    // Convert to string in local timezone format
-    const targetDateString = targetDate.getFullYear() + '-' + 
-                           String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                           String(targetDate.getDate()).padStart(2, '0');
-    
-    console.log('=== HOLIDAY DEBUG (FIXED) ===');
-    console.log('Day clicked:', day);
-    console.log('Week start string:', selectedWeek.start);
-    console.log('WeekStart date object:', weekStart);
-    console.log('Day index:', dayIndex);
-    console.log('Target date:', targetDate);
-    console.log('Target date string:', targetDateString);
-    console.log('Holidays array:', holidays);
-    console.log('==================');
-    
-    if (holidays.some(h => (h.date || h) === targetDateString)) {
-      setHolidayWarningDetails({
-        date: targetDate.toLocaleDateString(),
-        day: day.charAt(0).toUpperCase() + day.slice(1)
-      });
-      setShowHolidayWarning(true);
-      return false;
-    }
-  }
-  return true;
-};
-
 
 
 
@@ -2197,91 +2079,6 @@ const fetchTimeEntries = async () => {
     );
   };
 
-  const HolidayCalendar = () => {
-    const getDaysInMonth = (date) => {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const daysInMonth = lastDay.getDate();
-      const startingDayOfWeek = firstDay.getDay();
-      
-      const days = [];
-      
-      // Add empty cells for days before the first day of the month
-      for (let i = 0; i < startingDayOfWeek; i++) {
-        days.push(null);
-      }
-      
-      // Add all days of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        days.push(new Date(year, month, day));
-      }
-      
-      return days;
-    };
-
-    const formatMonthYear = (date) => {
-      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    };
-
-    const handlePrevMonth = () => {
-      setHolidayCalendarDate(new Date(holidayCalendarDate.getFullYear(), holidayCalendarDate.getMonth() - 1, 1));
-    };
-
-    const handleNextMonth = () => {
-      setHolidayCalendarDate(new Date(holidayCalendarDate.getFullYear(), holidayCalendarDate.getMonth() + 1, 1));
-    };
-
-    const days = getDaysInMonth(holidayCalendarDate);
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    return (
-      <div className="holiday-calendar-container">
-        <div className="holiday-calendar-header">
-          <h2>Manage Company Holidays</h2>
-          <button 
-            className="close-holiday-calendar"
-            onClick={() => setShowHolidayCalendar(false)}
-          >
-            ×
-          </button>
-        </div>
-        
-        <div className="holiday-instructions">
-          <p>Click on dates to toggle holiday status. Red dates are holidays.</p>
-        </div>
-        
-        <div className="holiday-calendar">
-          <div className="calendar-navigation">
-            <button onClick={handlePrevMonth}>‹</button>
-            <h3>{formatMonthYear(holidayCalendarDate)}</h3>
-            <button onClick={handleNextMonth}>›</button>
-          </div>
-          
-          <div className="calendar-grid">
-            {dayNames.map(day => (
-              <div key={day} className="calendar-day-header">{day}</div>
-            ))}
-            
-            {days.map((date, index) => (
-              <div
-                key={index}
-                className={`calendar-day ${date ? 'active' : 'inactive'} ${date && isHoliday(date) ? 'holiday' : ''}`}
-                onClick={() => date && toggleHoliday(date)}
-              >
-                {date && (
-                  <div className="day-number">{date.getDate()}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-
 
 
 
@@ -2305,14 +2102,6 @@ return (
               onClick={() => setView('new-project')}
             >
               Create New Project
-            </button>
-          )}
-          {isAdmin && (
-            <button
-              className="holiday-manager-button"
-              onClick={() => setShowHolidayCalendar(true)}
-            >
-              Manage Holidays
             </button>
           )}
            {(isAdminOnly || isModerator) && (
@@ -2421,7 +2210,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('monday', hours)) {
-                        validateHolidayHours('monday', hours);
                         setDayHours({...dayHours, monday: hours});
                       }
                     }}
@@ -2436,7 +2224,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('tuesday', hours)) {
-                        validateHolidayHours('tuesday', hours);
                         setDayHours({...dayHours, tuesday: hours});
                       }
                     }}
@@ -2451,7 +2238,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('wednesday', hours)) {
-                        validateHolidayHours('wednesday', hours);
                         setDayHours({...dayHours, wednesday: hours});
                       }
                     }}
@@ -2466,7 +2252,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('thursday', hours)) {
-                        validateHolidayHours('thursday', hours);
                         setDayHours({...dayHours, thursday: hours});
                       }
                     }}
@@ -2481,7 +2266,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('friday', hours)) {
-                        validateHolidayHours('friday', hours);
                         setDayHours({...dayHours, friday: hours});
                       }
                     }}
@@ -2496,7 +2280,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('saturday', hours)) {
-                        validateHolidayHours('saturday', hours);
                         setDayHours({...dayHours, saturday: hours});
                       }
                     }}
@@ -2511,7 +2294,6 @@ return (
                     onChange={(e) => {
                       const hours = e.target.value;
                       if (hours === '' || validateDayHours('sunday', hours)) {
-                        validateHolidayHours('sunday', hours);
                         setDayHours({...dayHours, sunday: hours});
                       }
                     }}
@@ -3796,44 +3578,6 @@ return (
           <h3>Updating Project...</h3>
           <p>Updating "{editProjectForm.projectName}"</p>
           <p>Please wait, do not close this window.</p>
-        </div>
-      </div>
-    )}
-
-    {showHolidayCalendar && (
-      <div className="modal-overlay">
-        <div className="modal-content holiday-modal">
-          <HolidayCalendar />
-        </div>
-      </div>
-    )}
-
-    {showHolidayWarning && (
-      <div className="modal-overlay">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h3>🎉 Company Holiday Notice</h3>
-          </div>
-          
-          <div className="modal-body">
-            <p className="holiday-warning-text">
-              <strong>{holidayWarningDetails.date}</strong> ({holidayWarningDetails.day}) is a company holiday.
-            </p>
-            
-            <div className="holiday-notice">
-              <p>You are free to work on this day if you wish to do so.</p>
-              <p>Please ensure you have proper approval if required.</p>
-            </div>
-          </div>
-          
-          <div className="modal-actions">
-            <button
-              className="confirm-button"
-              onClick={() => setShowHolidayWarning(false)}
-            >
-              Understood, Continue
-            </button>
-          </div>
         </div>
       </div>
     )}
