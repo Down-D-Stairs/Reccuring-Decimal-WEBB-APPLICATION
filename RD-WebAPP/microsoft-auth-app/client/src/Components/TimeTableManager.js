@@ -971,25 +971,37 @@ const fetchTimeEntries = async () => {
           return hasHours;
         })
         .map(entry => {
-          const dayEntries = [];
-          const weekStart = new Date(selectedWeek.start);
-          
-          // Create day entries for each day of the week with hours > 0
-          const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          
-          daysOfWeek.forEach((day, index) => {
-            const hours = Number(entry[day] || 0);
-            if (hours > 0) {
-              const date = new Date(weekStart);
-              date.setDate(weekStart.getDate() + index);
-              
-              dayEntries.push({
-                date: date.toISOString(),
-                hours: hours,
-                notes: ''
-              });
-            }
-          });
+        const dayEntries = [];
+        const weekStartParts = selectedWeek.start.split('-');
+        const weekStart = new Date(weekStartParts[0], weekStartParts[1] - 1, weekStartParts[2]);
+        
+        console.log('=== SUBMISSION DEBUG ===');
+        console.log('selectedWeek.start:', selectedWeek.start);
+        console.log('weekStart object:', weekStart);
+        
+        const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        daysOfWeek.forEach((day, index) => {
+          const hours = Number(entry[day] || 0);
+          if (hours > 0) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + index);
+            
+            console.log(`${day} (index ${index}):`, {
+              hours: hours,
+              calculatedDate: date,
+              dateString: date.toISOString().split('T')[0]
+            });
+            
+            dayEntries.push({
+              date: date.toISOString(),
+              hours: hours,
+              notes: ''
+            });
+          }
+        });
+        
+        console.log('========================');
           
           return {
             employeeId: user.id,
