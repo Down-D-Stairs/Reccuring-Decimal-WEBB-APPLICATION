@@ -2434,6 +2434,21 @@ return (
                     type="number" 
                     min="0" 
                     max="24" 
+                    value={dayHours.sunday || ''} 
+                    onChange={(e) => {
+                      const hours = e.target.value;
+                      if (hours === '' || validateDayHours('sunday', hours)) {
+                        validateHolidayHours('sunday', hours);
+                        setDayHours({...dayHours, sunday: hours});
+                      }
+                    }}
+                  />
+                </td>
+                <td>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="24" 
                     value={dayHours.monday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
@@ -2515,21 +2530,6 @@ return (
                       if (hours === '' || validateDayHours('saturday', hours)) {
                         validateHolidayHours('saturday', hours);
                         setDayHours({...dayHours, saturday: hours});
-                      }
-                    }}
-                  />
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    min="0" 
-                    max="24" 
-                    value={dayHours.sunday || ''} 
-                    onChange={(e) => {
-                      const hours = e.target.value;
-                      if (hours === '' || validateDayHours('sunday', hours)) {
-                        validateHolidayHours('sunday', hours);
-                        setDayHours({...dayHours, sunday: hours});
                       }
                     }}
                   />
