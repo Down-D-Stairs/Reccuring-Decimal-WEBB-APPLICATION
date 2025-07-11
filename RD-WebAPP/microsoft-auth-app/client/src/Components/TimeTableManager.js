@@ -503,7 +503,7 @@ function TimeTableManager({ onBack, user }) {
 
   // Get day names for the selected week
   function getWeekDayNames() {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const startDate = new Date(selectedWeek.start);
     
     return days.map((day, index) => {
