@@ -1718,14 +1718,17 @@ const fetchTimeEntries = async () => {
   }, []);
 
   const toggleHoliday = async (date) => {
-    const dateString = date.toISOString().split('T')[0];
+    // Convert to local timezone string format
+    const dateString = date.getFullYear() + '-' + 
+                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(date.getDate()).padStart(2, '0');
+    
     console.log('Toggling holiday for:', dateString);
     
     const isCurrentlyHoliday = holidays.some(h => (h.date || h) === dateString);
     
     try {
       if (isCurrentlyHoliday) {
-        // Remove holiday
         const response = await fetch(`${API_URL}/api/holidays/${dateString}`, {
           method: 'DELETE'
         });
@@ -1734,7 +1737,6 @@ const fetchTimeEntries = async () => {
           console.log('Holiday removed');
         }
       } else {
-        // Add holiday
         const response = await fetch(`${API_URL}/api/holidays`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1756,45 +1758,56 @@ const fetchTimeEntries = async () => {
   };
 
 
+
   const isHoliday = (date) => {
-    const dateString = date.toISOString().split('T')[0];
+    // Convert date to local timezone string format
+    const dateString = date.getFullYear() + '-' + 
+                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(date.getDate()).padStart(2, '0');
+    
     console.log('Checking if', dateString, 'is in holidays:', holidays.map(h => h.date || h));
     return holidays.some(h => (h.date || h) === dateString);
   };
 
 
+
   const validateHolidayHours = (day, hours) => {
-    if (Number(hours) > 0) {
-      const weekStart = new Date(selectedWeek.start);
-      const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(day.toLowerCase());
-      const targetDate = new Date(weekStart);
-      targetDate.setDate(weekStart.getDate() + dayIndex);
-      
-      // ADD THIS DEBUG LOGGING:
-      console.log('=== HOLIDAY DEBUG ===');
-      console.log('Day clicked:', day);
-      console.log('Week start:', selectedWeek.start);
-      console.log('WeekStart date object:', weekStart);
-      console.log('Day index:', dayIndex);
-      console.log('Target date:', targetDate);
-      console.log('Target date string:', targetDate.toISOString().split('T')[0]);
-      console.log('Holidays array:', holidays);
-      console.log('Is holiday?', isHoliday(targetDate));
-      console.log('==================');
-      
-      if (isHoliday(targetDate)) {
-        setHolidayWarningDetails({
-          date: targetDate.toLocaleDateString(),
-          day: day.charAt(0).toUpperCase() + day.slice(1)
-        });
-        setShowHolidayWarning(true);
-        return false;
-      }
+  if (Number(hours) > 0) {
+    // Fix: Create date in local timezone, not UTC
+    const weekStartParts = selectedWeek.start.split('-');
+    const weekStart = new Date(weekStartParts[0], weekStartParts[1] - 1, weekStartParts[2]);
+    
+    const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(day.toLowerCase());
+    
+    const targetDate = new Date(weekStart);
+    targetDate.setDate(weekStart.getDate() + dayIndex);
+    
+    // Convert to string in local timezone format
+    const targetDateString = targetDate.getFullYear() + '-' + 
+                           String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(targetDate.getDate()).padStart(2, '0');
+    
+    console.log('=== HOLIDAY DEBUG (FIXED) ===');
+    console.log('Day clicked:', day);
+    console.log('Week start string:', selectedWeek.start);
+    console.log('WeekStart date object:', weekStart);
+    console.log('Day index:', dayIndex);
+    console.log('Target date:', targetDate);
+    console.log('Target date string:', targetDateString);
+    console.log('Holidays array:', holidays);
+    console.log('==================');
+    
+    if (holidays.some(h => (h.date || h) === targetDateString)) {
+      setHolidayWarningDetails({
+        date: targetDate.toLocaleDateString(),
+        day: day.charAt(0).toUpperCase() + day.slice(1)
+      });
+      setShowHolidayWarning(true);
+      return false;
     }
-    return true;
-  };
-
-
+  }
+  return true;
+};
 
 
 
