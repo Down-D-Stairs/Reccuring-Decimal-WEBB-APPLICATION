@@ -975,7 +975,7 @@ const fetchTimeEntries = async () => {
           const weekStart = new Date(selectedWeek.start);
           
           // Create day entries for each day of the week with hours > 0
-          const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+          const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           
           daysOfWeek.forEach((day, index) => {
             const hours = Number(entry[day] || 0);
