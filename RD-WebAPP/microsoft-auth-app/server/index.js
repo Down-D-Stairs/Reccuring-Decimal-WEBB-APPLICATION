@@ -10,6 +10,7 @@ const GuestUser = require('./models/GuestUser');
 const { sendTimesheetDenialEmail } = require('./services/emailService');
 const { sendExpenseDenialEmail } = require('./services/expenseEmailService');
 const { sendStatusEmail } = require('./services/notificationService');
+const Holiday = require('./models/Holiday'); // Add this import at the top
 const app = express();
 
 app.use(cors());
@@ -1945,6 +1946,104 @@ app.post('/api/auth/guest-login', async (req, res) => {
   }
 });
 
+
+// Get all holidays
+app.get('/api/holidays', async (req, res) => {
+  try {
+    const holidays = await Holiday.find({}).sort({ date: 1 });
+    res.json(holidays);
+  } catch (error) {
+    console.error('Error fetching holidays:', error);
+    res.status(500).json({ error: 'Failed to fetch holidays' });
+  }
+});
+
+// Add a new holiday
+app.post('/api/holidays', async (req, res) => {
+  try {
+    const { date, name, createdBy } = req.body;
+    
+    // Check if holiday already exists
+    const existingHoliday = await Holiday.findOne({ date });
+    if (existingHoliday) {
+      return res.status(400).json({ error: 'Holiday already exists for this date' });
+    }
+    
+    const holiday = new Holiday({
+      date,
+      name: name || 'Company Holiday',
+      createdBy: createdBy || 'Admin'
+    });
+    
+    await holiday.save();
+    res.status(201).json(holiday);
+  } catch (error) {
+    console.error('Error adding holiday:', error);
+    res.status(500).json({ error: 'Failed to add holiday' });
+  }
+});
+
+// Remove a holiday
+app.delete('/api/holidays/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+    
+    const deletedHoliday = await Holiday.findOneAndDelete({ date });
+    
+    if (!deletedHoliday) {
+      return res.status(404).json({ error: 'Holiday not found' });
+    }
+    
+    res.json({ message: 'Holiday deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting holiday:', error);
+    res.status(500).json({ error: 'Failed to delete holiday' });
+  }
+});
+
+// Get holidays for a specific date range (optional - for performance)
+app.get('/api/holidays/range', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    
+    const query = {};
+    if (startDate && endDate) {
+      query.date = {
+        $gte: startDate,
+        $lte: endDate
+      };
+    }
+    
+    const holidays = await Holiday.find(query).sort({ date: 1 });
+    res.json(holidays);
+  } catch (error) {
+    console.error('Error fetching holidays in range:', error);
+    res.status(500).json({ error: 'Failed to fetch holidays' });
+  }
+});
+
+// Update holiday name (optional)
+app.put('/api/holidays/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+    const { name } = req.body;
+    
+    const updatedHoliday = await Holiday.findOneAndUpdate(
+      { date },
+      { name },
+      { new: true }
+    );
+    
+    if (!updatedHoliday) {
+      return res.status(404).json({ error: 'Holiday not found' });
+    }
+    
+    res.json(updatedHoliday);
+  } catch (error) {
+    console.error('Error updating holiday:', error);
+    res.status(500).json({ error: 'Failed to update holiday' });
+  }
+});
 
 
 
