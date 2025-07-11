@@ -503,7 +503,7 @@ function TimeTableManager({ onBack, user }) {
 
   // Get day names for the selected week
   function getWeekDayNames() {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const startDate = new Date(selectedWeek.start);
     
     return days.map((day, index) => {
@@ -1719,16 +1719,19 @@ const fetchTimeEntries = async () => {
 
   const toggleHoliday = async (date) => {
     const dateString = date.toISOString().split('T')[0];
-    const isHoliday = holidays.some(h => h.date === dateString);
+    console.log('Toggling holiday for:', dateString);
+    
+    const isCurrentlyHoliday = holidays.some(h => (h.date || h) === dateString);
     
     try {
-      if (isHoliday) {
+      if (isCurrentlyHoliday) {
         // Remove holiday
         const response = await fetch(`${API_URL}/api/holidays/${dateString}`, {
           method: 'DELETE'
         });
         if (response.ok) {
-          setHolidays(holidays.filter(h => h.date !== dateString));
+          setHolidays(holidays.filter(h => (h.date || h) !== dateString));
+          console.log('Holiday removed');
         }
       } else {
         // Add holiday
@@ -1744,6 +1747,7 @@ const fetchTimeEntries = async () => {
         if (response.ok) {
           const newHoliday = await response.json();
           setHolidays([...holidays, newHoliday]);
+          console.log('Holiday added:', newHoliday);
         }
       }
     } catch (error) {
@@ -1751,17 +1755,32 @@ const fetchTimeEntries = async () => {
     }
   };
 
+
   const isHoliday = (date) => {
     const dateString = date.toISOString().split('T')[0];
-    return holidays.some(h => h.date === dateString);
+    console.log('Checking if', dateString, 'is in holidays:', holidays.map(h => h.date || h));
+    return holidays.some(h => (h.date || h) === dateString);
   };
+
 
   const validateHolidayHours = (day, hours) => {
     if (Number(hours) > 0) {
       const weekStart = new Date(selectedWeek.start);
-      const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(day.toLowerCase());
+      const dayIndex = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].indexOf(day.toLowerCase());
       const targetDate = new Date(weekStart);
       targetDate.setDate(weekStart.getDate() + dayIndex);
+      
+      // ADD THIS DEBUG LOGGING:
+      console.log('=== HOLIDAY DEBUG ===');
+      console.log('Day clicked:', day);
+      console.log('Week start:', selectedWeek.start);
+      console.log('WeekStart date object:', weekStart);
+      console.log('Day index:', dayIndex);
+      console.log('Target date:', targetDate);
+      console.log('Target date string:', targetDate.toISOString().split('T')[0]);
+      console.log('Holidays array:', holidays);
+      console.log('Is holiday?', isHoliday(targetDate));
+      console.log('==================');
       
       if (isHoliday(targetDate)) {
         setHolidayWarningDetails({
@@ -1769,11 +1788,12 @@ const fetchTimeEntries = async () => {
           day: day.charAt(0).toUpperCase() + day.slice(1)
         });
         setShowHolidayWarning(true);
-        return false; // Allow them to proceed after seeing the warning
+        return false;
       }
     }
     return true;
   };
+
 
 
 
