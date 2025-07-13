@@ -1070,19 +1070,8 @@ const fetchTimeEntries = async () => {
       
       // Success - close modal and refresh
       setShowSubmitConfirmation(false);
-      // Clear the form completely
-      setWeeklyEntries([]);
-      setWeekComments('');
-      setActiveTimesheetForComments(null);
-      setSelectedProjectId('');
-      setIsBillable(true);
-      setDayHours({
-        monday: 0, tuesday: 0, wednesday: 0, thursday: 0,
-        friday: 0, saturday: 0, sunday: 0
-      });
-      
-      // Refresh time entries to show submitted data
       fetchTimeEntries();
+      setWeekComments('');
       
       // You could show a success modal here instead of alert
       
