@@ -687,6 +687,16 @@ const fetchTimeEntries = async () => {
         const dayName = getDayNameFromIndex(dayOfWeek);
         days[dayName.toLowerCase()] = day.hours;
       });
+
+      // Handle special project names
+      let projectName;
+      if (entry.projectId === 'holiday') {
+        projectName = 'Holiday';
+      } else if (entry.projectId === 'pto') {
+        projectName = 'PTO';
+      } else {
+        projectName = projects.find(p => p._id === entry.projectId)?.projectName || 'Unknown Project';
+      }
       
       return {
         id: entry._id,
@@ -926,6 +936,17 @@ const fetchTimeEntries = async () => {
     if (!selectedProjectId) return;
     
     const newEntryId = `temp-${Date.now()}`;
+
+    // Handle project name for special cases
+    let projectName;
+    if (selectedProjectId === 'holiday') {
+      projectName = 'Holiday';
+    } else if (selectedProjectId === 'pto') {
+      projectName = 'PTO';
+    } else {
+      projectName = projects.find(p => p._id === selectedProjectId)?.projectName || 'Unknown Project';
+    }
+
     const newEntry = {
       id: newEntryId,
       projectId: selectedProjectId,
