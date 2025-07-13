@@ -1945,7 +1945,77 @@ app.post('/api/auth/guest-login', async (req, res) => {
   }
 });
 
-
+// Update the user history projects route to include holiday and pto:
+app.get('/api/timeentries/user-projects/:employeeName', async (req, res) => {
+  try {
+    const { employeeName } = req.params;
+    
+    console.log('Fetching user history projects for:', employeeName);
+    
+    const pipeline = [
+      { $match: { employeeName: employeeName } },
+      {
+        $group: {
+          _id: '$projectId',
+          timesheetCount: { $sum: 1 },
+          totalHours: { $sum: '$totalHours' },
+          lastSubmitted: { $max: '$submittedDate' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'projects',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'projectInfo'
+        }
+      },
+      {
+        $addFields: {
+          projectName: {
+            $cond: {
+              if: { $eq: ['$_id', 'holiday'] },
+              then: 'Holiday',
+              else: {
+                $cond: {
+                  if: { $eq: ['$_id', 'pto'] },
+                  then: 'PTO',
+                  else: { $arrayElemAt: ['$projectInfo.projectName', 0] }
+                }
+              }
+            }
+          },
+          clientName: {
+            $cond: {
+              if: { $in: ['$_id', ['holiday', 'pto']] },
+              then: 'Company',
+              else: { $arrayElemAt: ['$projectInfo.clientName', 0] }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          projectName: 1,
+          clientName: 1,
+          timesheetCount: 1,
+          totalHours: 1,
+          lastSubmitted: 1
+        }
+      },
+      { $sort: { lastSubmitted: -1 } }
+    ];
+    
+    const projects = await TimeEntry.aggregate(pipeline);
+    
+    console.log('User history projects found:', projects.length);
+    res.json(projects);
+  } catch (error) {
+    console.error('Error fetching user history projects:', error);
+    res.status(500).json({ error: 'Failed to fetch user history projects' });
+  }
+});
 
 
 
