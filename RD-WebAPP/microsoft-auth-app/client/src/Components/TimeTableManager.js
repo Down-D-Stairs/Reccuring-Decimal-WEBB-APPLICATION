@@ -587,11 +587,8 @@ function TimeTableManager({ onBack, user }) {
       // ONLY TRUE ADMINS can see all projects
       userProjects = data;
     } else if (isModerator) {
-      
       // MODERATORS can only see projects where they are approvers OR members
       userProjects = data.filter(project => {
-        // Always include system projects (PTO, Holiday) for everyone
-        if (project.isSystemProject) return true;
         // Check if user is in approvers list
         const approversList = project.approvers ? project.approvers.split(',').map(email => email.trim()) : [];
         const isApprover = approversList.includes(user.username);
@@ -608,8 +605,6 @@ function TimeTableManager({ onBack, user }) {
     } else {
       // REGULAR USERS can only see projects where they are members
       userProjects = data.filter(project => {
-        // Always include system projects (PTO, Holiday) for everyone
-        if (project.isSystemProject) return true;
         // Check if user is in projectMembers (comma-separated string)
         if (project.projectMembers) {
           const membersList = project.projectMembers.split(',').map(email => email.trim());
@@ -692,16 +687,6 @@ const fetchTimeEntries = async () => {
         const dayName = getDayNameFromIndex(dayOfWeek);
         days[dayName.toLowerCase()] = day.hours;
       });
-
-      // Handle special project names
-      let projectName;
-      if (entry.projectId === 'holiday') {
-        projectName = 'Holiday';
-      } else if (entry.projectId === 'pto') {
-        projectName = 'PTO';
-      } else {
-        projectName = projects.find(p => p._id === entry.projectId)?.projectName || 'Unknown Project';
-      }
       
       return {
         id: entry._id,
@@ -941,17 +926,6 @@ const fetchTimeEntries = async () => {
     if (!selectedProjectId) return;
     
     const newEntryId = `temp-${Date.now()}`;
-
-    // Handle project name for special cases
-    let projectName;
-    if (selectedProjectId === 'holiday') {
-      projectName = 'Holiday';
-    } else if (selectedProjectId === 'pto') {
-      projectName = 'PTO';
-    } else {
-      projectName = projects.find(p => p._id === selectedProjectId)?.projectName || 'Unknown Project';
-    }
-
     const newEntry = {
       id: newEntryId,
       projectId: selectedProjectId,
@@ -2168,8 +2142,6 @@ return (
               Manage Projects
             </button>
           )}
-          
-          
           {isUserAnApprover(user, projects) && (
             <button 
               className="approvals-button"
