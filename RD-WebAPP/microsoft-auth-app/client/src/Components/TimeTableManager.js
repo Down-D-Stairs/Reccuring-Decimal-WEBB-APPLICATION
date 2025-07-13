@@ -457,10 +457,7 @@ function TimeTableManager({ onBack, user }) {
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [showHourLimitModal, setShowHourLimitModal] = useState(false);
   const [hourLimitDetails, setHourLimitDetails] = useState({ day: '', hours: 0, dayTotal: 0 });
-  // Add these state variables with your other useState declarations
-  const [holidays, setHolidays] = useState([]);
-  const [showHolidayWarning, setShowHolidayWarning] = useState(false);
-  const [holidayWarningDetails, setHolidayWarningDetails] = useState({});
+
 
 
   
@@ -2111,7 +2108,10 @@ const fetchTimeEntries = async () => {
     );
   };
 
-  
+
+
+
+
 
 // Now update the return statement
 return (
