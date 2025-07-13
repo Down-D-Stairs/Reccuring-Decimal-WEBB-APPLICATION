@@ -2019,6 +2019,78 @@ app.get('/api/timeentries/user-projects/:employeeName', async (req, res) => {
 
 
 
+// Add this route to create system projects (run this once)
+app.post('/api/setup-system-projects', async (req, res) => {
+  try {
+    // Check if Holiday project already exists
+    const existingHoliday = await Project.findOne({ projectName: 'Holiday', isSystemProject: true });
+    const existingPTO = await Project.findOne({ projectName: 'PTO', isSystemProject: true });
+    
+    const systemProjects = [];
+    
+    if (!existingHoliday) {
+      const holidayProject = new Project({
+        projectName: 'Holiday',
+        clientName: 'Company',
+        projectType: 'System',
+        dateRange: {
+          start: new Date('2020-01-01'),
+          end: new Date('2030-12-31')
+        },
+        maxHours: 999999,
+        maxBudget: 0,
+        approvers: 'system@company.com',
+        projectMembers: 'all@company.com',
+        location: 'Various',
+        isHybrid: false,
+        isActive: true,
+        isSystemProject: true,
+        createdBy: null
+      });
+      
+      await holidayProject.save();
+      systemProjects.push(holidayProject);
+    }
+    
+    if (!existingPTO) {
+      const ptoProject = new Project({
+        projectName: 'PTO',
+        clientName: 'Company',
+        projectType: 'System',
+        dateRange: {
+          start: new Date('2020-01-01'),
+          end: new Date('2030-12-31')
+        },
+        maxHours: 99999999999999,
+        maxBudget: 0,
+        approvers: 'system@company.com',
+        projectMembers: 'all@company.com',
+        location: 'Various',
+        isHybrid: false,
+        isActive: true,
+        isSystemProject: true,
+        createdBy: null
+      });
+      
+      await ptoProject.save();
+      systemProjects.push(ptoProject);
+    }
+    
+    res.json({ 
+      message: 'System projects created successfully', 
+      projects: systemProjects,
+      existing: { holiday: !!existingHoliday, pto: !!existingPTO }
+    });
+  } catch (error) {
+    console.error('Error creating system projects:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));

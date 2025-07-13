@@ -587,6 +587,8 @@ function TimeTableManager({ onBack, user }) {
       // ONLY TRUE ADMINS can see all projects
       userProjects = data;
     } else if (isModerator) {
+      // Always include system projects (PTO, Holiday) for everyone
+      if (project.isSystemProject) return true;
       // MODERATORS can only see projects where they are approvers OR members
       userProjects = data.filter(project => {
         // Check if user is in approvers list
@@ -605,6 +607,8 @@ function TimeTableManager({ onBack, user }) {
     } else {
       // REGULAR USERS can only see projects where they are members
       userProjects = data.filter(project => {
+        // Always include system projects (PTO, Holiday) for everyone
+        if (project.isSystemProject) return true;
         // Check if user is in projectMembers (comma-separated string)
         if (project.projectMembers) {
           const membersList = project.projectMembers.split(',').map(email => email.trim());
@@ -2163,6 +2167,28 @@ return (
               Manage Projects
             </button>
           )}
+          
+          {isAdminOnly && (
+            <button
+              className="setup-button"
+              onClick={async () => {
+                try {
+                  const response = await fetch(`${API_URL}/api/setup-system-projects`, {
+                    method: 'POST'
+                  });
+                  const result = await response.json();
+                  console.log('Setup result:', result);
+                  alert('System projects created!');
+                  fetchProjects(); // Refresh the projects list
+                } catch (error) {
+                  console.error('Setup failed:', error);
+                  alert('Setup failed');
+                }
+              }}
+            >
+              Setup System Projects
+            </button>
+          )}
           {isUserAnApprover(user, projects) && (
             <button 
               className="approvals-button"
@@ -2238,8 +2264,7 @@ return (
                         {project.projectName} {project.isSystemProject ? '' : `(${project.clientName})`}
                       </option>
                     ))}
-                    <option value="holiday">Holiday</option>
-                    <option value="pto">PTO</option>
+                    
                   </select>
                 </td>
                 <td>
