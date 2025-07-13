@@ -587,10 +587,11 @@ function TimeTableManager({ onBack, user }) {
       // ONLY TRUE ADMINS can see all projects
       userProjects = data;
     } else if (isModerator) {
-      // Always include system projects (PTO, Holiday) for everyone
-      if (project.isSystemProject) return true;
+      
       // MODERATORS can only see projects where they are approvers OR members
       userProjects = data.filter(project => {
+        // Always include system projects (PTO, Holiday) for everyone
+        if (project.isSystemProject) return true;
         // Check if user is in approvers list
         const approversList = project.approvers ? project.approvers.split(',').map(email => email.trim()) : [];
         const isApprover = approversList.includes(user.username);
