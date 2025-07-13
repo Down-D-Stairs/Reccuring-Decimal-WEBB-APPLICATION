@@ -1070,8 +1070,19 @@ const fetchTimeEntries = async () => {
       
       // Success - close modal and refresh
       setShowSubmitConfirmation(false);
-      fetchTimeEntries();
+      // Clear the form completely
+      setWeeklyEntries([]);
       setWeekComments('');
+      setActiveTimesheetForComments(null);
+      setSelectedProjectId('');
+      setIsBillable(true);
+      setDayHours({
+        monday: 0, tuesday: 0, wednesday: 0, thursday: 0,
+        friday: 0, saturday: 0, sunday: 0
+      });
+      
+      // Refresh time entries to show submitted data
+      fetchTimeEntries();
       
       // You could show a success modal here instead of alert
       
@@ -2169,27 +2180,7 @@ return (
             </button>
           )}
           
-          {isAdminOnly && (
-            <button
-              className="setup-button"
-              onClick={async () => {
-                try {
-                  const response = await fetch(`${API_URL}/api/setup-system-projects`, {
-                    method: 'POST'
-                  });
-                  const result = await response.json();
-                  console.log('Setup result:', result);
-                  alert('System projects created!');
-                  fetchProjects(); // Refresh the projects list
-                } catch (error) {
-                  console.error('Setup failed:', error);
-                  alert('Setup failed');
-                }
-              }}
-            >
-              Setup System Projects
-            </button>
-          )}
+          
           {isUserAnApprover(user, projects) && (
             <button 
               className="approvals-button"
