@@ -2171,4 +2171,139 @@
   background-color: #45a049;
 }
 
+/* Holiday Management Calendar Styles */
+
+.holiday-management-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.holiday-list-section {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.holiday-calendar-section {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.calendar-instructions {
+  font-style: italic;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.holiday-calendar {
+  max-width: 400px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-nav-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.calendar-nav-btn:hover {
+  background-color: #0056b3;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.calendar-day-header {
+  background-color: #f8f9fa;
+  padding: 8px 4px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.calendar-day {
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid #eee;
+  position: relative;
+}
+
+.calendar-day.active:hover {
+  background-color: #e9ecef;
+}
+
+.calendar-day.inactive {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.calendar-day.holiday {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+.calendar-day.holiday:hover {
+  background-color: #ffeaa7;
+}
+
+.calendar-day.today {
+  background-color: #cce5ff;
+  border-color: #007bff;
+  font-weight: bold;
+}
+
+.day-number {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.holiday-indicator {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .holiday-management-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .calendar-grid {
+    font-size: 12px;
+  }
+  
+  .calendar-day {
+    min-height: 35px;
+  }
+}
+
 

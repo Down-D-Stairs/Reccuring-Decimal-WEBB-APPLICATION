@@ -464,6 +464,12 @@ function TimeTableManager({ onBack, user }) {
   // Add these state variables with your other useState declarations
   const [showDeleteHolidayConfirmation, setShowDeleteHolidayConfirmation] = useState(false);
   const [holidayToDelete, setHolidayToDelete] = useState(null);
+  // Add these state variables with your other useState declarations
+  const [holidayCalendarDate, setHolidayCalendarDate] = useState(new Date());
+  const [showAddHolidayModal, setShowAddHolidayModal] = useState(false);
+  const [selectedDateForHoliday, setSelectedDateForHoliday] = useState(null);
+  const [newHolidayName, setNewHolidayName] = useState('');
+
 
 
   
@@ -1198,8 +1204,6 @@ const fetchTimeEntries = async () => {
     setSelectedProjectId(null);
   }, []);
 
-
-
   // Fetch holidays from server
   const fetchHolidays = async () => {
     try {
@@ -1281,14 +1285,103 @@ const fetchTimeEntries = async () => {
     return true; // Allow the input
   };
 
+  
+
   // Add useEffect to fetch holidays when component mounts
   useEffect(() => {
     fetchHolidays();
   }, []);
 
-  
+  // Add these functions before your return statement
 
+  // Calendar helper functions for holiday management
+  const getHolidayCalendarDays = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Add all days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day));
+    }
+    
+    return days;
+  };
 
+  const formatHolidayCalendarMonthYear = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const isDateHoliday = (date) => {
+    if (!date) return false;
+    const dateString = date.getFullYear() + '-' + 
+                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(date.getDate()).padStart(2, '0');
+    return holidays.find(h => h.date === dateString);
+  };
+
+  const handleCalendarDateClick = (date) => {
+    if (!date) return;
+    
+    const existingHoliday = isDateHoliday(date);
+    
+    if (existingHoliday) {
+      // If it's already a holiday, ask to remove it
+      setHolidayToDelete(existingHoliday);
+      setShowDeleteHolidayConfirmation(true);
+    } else {
+      // If it's not a holiday, ask to add one
+      setSelectedDateForHoliday(date);
+      setShowAddHolidayModal(true);
+    }
+  };
+
+  const handleAddHoliday = async () => {
+    if (!selectedDateForHoliday || !newHolidayName.trim()) return;
+    
+    const dateString = selectedDateForHoliday.getFullYear() + '-' + 
+                      String(selectedDateForHoliday.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(selectedDateForHoliday.getDate()).padStart(2, '0');
+    
+    try {
+      const response = await fetch(`${API_URL}/api/holidays`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          date: dateString,
+          name: newHolidayName.trim(),
+          createdBy: user.username || user.name || 'Admin'
+        })
+      });
+      
+      if (response.ok) {
+        const newHoliday = await response.json();
+        setHolidays([...holidays, newHoliday]);
+        console.log('Holiday added for:', dateString);
+        
+        // Close modal and reset
+        setShowAddHolidayModal(false);
+        setSelectedDateForHoliday(null);
+        setNewHolidayName('');
+      } else {
+        const error = await response.json();
+        alert('Failed to add holiday: ' + error.error);
+      }
+    } catch (error) {
+      console.error('Error adding holiday:', error);
+      alert('Failed to add holiday');
+    }
+  };
 
 
 
@@ -2531,50 +2624,112 @@ return (
           </button>
         </div>
       </div>
+      // Replace your existing holiday-management view with this enhanced version:
       ) : view === 'holiday-management' ? (
-      <div className="holiday-management-view">
-        <div className="approval-header">
-          <h2>Holiday Management</h2>
-          <button 
-            className="back-button"
-            onClick={() => setView('list')}
-          >
-            Back to Timesheet
-          </button>
-        </div>
-        
-        <div className="holiday-list">
-          <h3>Current Holidays</h3>
-          {holidays.length === 0 ? (
-            <p>No holidays configured</p>
-          ) : (
-            <div className="holidays-grid">
-              {holidays.map(holiday => (
-                <div key={holiday.date} className="holiday-item">
-                  <div className="holiday-info">
-                    <strong>{holiday.name}</strong>
-                    <span>{new Date(holiday.date + 'T00:00:00').toLocaleDateString()}</span>
-                  </div>
-                  <button
-                  className="delete-holiday-btn"
-                  onClick={() => {
-                    setHolidayToDelete(holiday);
-                    setShowDeleteHolidayConfirmation(true);
-                  }}
-                >
-                  Remove
-                </button>
+        <div className="holiday-management-view">
+          <div className="approval-header">
+            <h2>Holiday Management</h2>
+            <button 
+              className="back-button"
+              onClick={() => setView('list')}
+            >
+              Back to Timesheet
+            </button>
+          </div>
+          
+          <div className="holiday-management-content">
+            {/* Left side - Holiday List */}
+            <div className="holiday-list-section">
+              <h3>Current Holidays ({holidays.length})</h3>
+              {holidays.length === 0 ? (
+                <p>No holidays configured</p>
+              ) : (
+                <div className="holidays-grid">
+                  {holidays.map(holiday => (
+                    <div key={holiday.date} className="holiday-item">
+                      <div className="holiday-info">
+                        <strong>{holiday.name}</strong>
+                        <span>{new Date(holiday.date + 'T00:00:00').toLocaleDateString()}</span>
+                      </div>
+                      <button
+                        className="delete-holiday-btn"
+                        onClick={() => {
+                          setHolidayToDelete(holiday);
+                          setShowDeleteHolidayConfirmation(true);
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+            
+            {/* Right side - Calendar */}
+            <div className="holiday-calendar-section">
+              <h3>Add/Remove Holidays</h3>
+              <p className="calendar-instructions">
+                Click on any date to add a holiday. Click on existing holidays to remove them.
+              </p>
+              
+              <div className="holiday-calendar">
+                <div className="calendar-header">
+                  <button 
+                    className="calendar-nav-btn"
+                    onClick={() => {
+                      const newDate = new Date(holidayCalendarDate);
+                      newDate.setMonth(newDate.getMonth() - 1);
+                      setHolidayCalendarDate(newDate);
+                    }}
+                  >
+                    ‹
+                  </button>
+                  <h4>{formatHolidayCalendarMonthYear(holidayCalendarDate)}</h4>
+                  <button 
+                    className="calendar-nav-btn"
+                    onClick={() => {
+                      const newDate = new Date(holidayCalendarDate);
+                      newDate.setMonth(newDate.getMonth() + 1);
+                      setHolidayCalendarDate(newDate);
+                    }}
+                  >
+                    ›
+                  </button>
+                </div>
+                
+                <div className="calendar-grid">
+                  {/* Day headers */}
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="calendar-day-header">{day}</div>
+                  ))}
+                  
+                  {/* Calendar days */}
+                  {getHolidayCalendarDays(holidayCalendarDate).map((date, index) => {
+                    const isHoliday = isDateHoliday(date);
+                    const isToday = date && date.toDateString() === new Date().toDateString();
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`calendar-day ${date ? 'active' : 'inactive'} ${isHoliday ? 'holiday' : ''} ${isToday ? 'today' : ''}`}
+                        onClick={() => handleCalendarDateClick(date)}
+                        title={isHoliday ? `Holiday: ${isHoliday.name}` : date ? 'Click to add holiday' : ''}
+                      >
+                        {date && (
+                          <>
+                            <div className="day-number">{date.getDate()}</div>
+                            {isHoliday && <div className="holiday-indicator">🎉</div>}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div className="add-holiday-section">
-          <h3>Add New Holiday</h3>
-          <p>Click on any date in the calendar below to add/remove holidays:</p>
-        </div>
-      </div>
     ) : view === 'new-project' ? (
       <div className="project-form-container">
         <h2>Create New Project</h2>
@@ -3798,45 +3953,92 @@ return (
         </div>
       </div>
     )}
-    {showDeleteHolidayConfirmation && holidayToDelete && (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h3>Confirm Holiday Removal</h3>
-        </div>
-        
-        <div className="modal-body">
-          <p>Are you sure you want to remove this holiday?</p>
-          <div className="holiday-details">
-            <p><strong>Holiday:</strong> {holidayToDelete.name}</p>
-            <p><strong>Date:</strong> {new Date(holidayToDelete.date + 'T00:00:00').toLocaleDateString()}</p>
+    {/* Add Holiday Modal */}
+    {showAddHolidayModal && selectedDateForHoliday && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>Add Holiday</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p>Add a holiday for <strong>{selectedDateForHoliday.toLocaleDateString()}</strong></p>
+            
+            <div className="form-group">
+              <label>Holiday Name:</label>
+              <input
+                type="text"
+                value={newHolidayName}
+                onChange={(e) => setNewHolidayName(e.target.value)}
+                placeholder="e.g., Christmas Day, New Year's Day"
+                autoFocus
+              />
+            </div>
+          </div>
+          
+          <div className="modal-actions">
+            <button
+              className="cancel-button"
+              onClick={() => {
+                setShowAddHolidayModal(false);
+                setSelectedDateForHoliday(null);
+                setNewHolidayName('');
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className="confirm-button"
+              onClick={handleAddHoliday}
+              disabled={!newHolidayName.trim()}
+            >
+              Add Holiday
+            </button>
           </div>
         </div>
-        
-        <div className="modal-actions">
-          <button
-            className="cancel-button"
-            onClick={() => {
-              setShowDeleteHolidayConfirmation(false);
-              setHolidayToDelete(null);
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            className="confirm-button"
-            onClick={() => {
-              toggleHoliday(new Date(holidayToDelete.date + 'T00:00:00'));
-              setShowDeleteHolidayConfirmation(false);
-              setHolidayToDelete(null);
-            }}
-          >
-            Remove Holiday
-          </button>
+      </div>
+    )}
+
+    {/* Delete Holiday Confirmation Modal */}
+    {showDeleteHolidayConfirmation && holidayToDelete && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>Confirm Holiday Removal</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p>Are you sure you want to remove this holiday?</p>
+            <div className="holiday-details">
+              <p><strong>Holiday:</strong> {holidayToDelete.name}</p>
+              <p><strong>Date:</strong> {new Date(holidayToDelete.date + 'T00:00:00').toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <div className="modal-actions">
+            <button
+              className="cancel-button"
+              onClick={() => {
+                setShowDeleteHolidayConfirmation(false);
+                setHolidayToDelete(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className="confirm-button"
+              onClick={() => {
+                toggleHoliday(new Date(holidayToDelete.date + 'T00:00:00'));
+                setShowDeleteHolidayConfirmation(false);
+                setHolidayToDelete(null);
+              }}
+            >
+              Remove Holiday
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  )}
+    )}
   </div>
 );
 
