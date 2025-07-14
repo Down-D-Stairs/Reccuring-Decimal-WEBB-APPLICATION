@@ -693,16 +693,40 @@ const fetchTimeEntries = async () => {
       setWeeklyEntries([]);
       return;
     }
+    
+    console.log('=== DEBUGGING TIMEZONE ISSUE ===');
+    console.log('Selected week:', selectedWeek);
+    
     const formattedEntries = entries.map(entry => {
+      console.log('Processing entry:', entry);
       const days = {};
+      
       entry.dayEntries.forEach(day => {
-        const dateStr = day.date.split('T')[0]; // Get just the YYYY-MM-DD part
+        console.log('Raw day entry:', day);
+        
+        // OLD WAY (causing the issue):
+        const oldWay = new Date(day.date).getDay();
+        const oldDayName = getDayNameFromIndex(oldWay);
+        
+        // NEW WAY (should fix it):
+        const dateStr = day.date.split('T')[0]; // Get just YYYY-MM-DD
         const [year, month, dayOfMonth] = dateStr.split('-');
-        const date = new Date(year, month - 1, dayOfMonth); // Create date in local timezone
-        const dayOfWeek = date.getDay();
-        const dayName = getDayNameFromIndex(dayOfWeek);
-        days[dayName.toLowerCase()] = day.hours;
+        const newWay = new Date(year, month - 1, dayOfMonth).getDay();
+        const newDayName = getDayNameFromIndex(newWay);
+        
+        console.log('Date comparison:', {
+          originalDate: day.date,
+          dateStr: dateStr,
+          oldWay: { dayOfWeek: oldWay, dayName: oldDayName },
+          newWay: { dayOfWeek: newWay, dayName: newDayName },
+          hours: day.hours
+        });
+        
+        // Use the NEW WAY
+        days[newDayName.toLowerCase()] = day.hours;
       });
+      
+      console.log('Final days object:', days);
       
       return {
         id: entry._id,
@@ -713,8 +737,10 @@ const fetchTimeEntries = async () => {
       };
     });
     
+    console.log('=== END DEBUGGING ===');
     setWeeklyEntries(formattedEntries);
   };
+
 
   const getDayNameFromIndex = (index) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
