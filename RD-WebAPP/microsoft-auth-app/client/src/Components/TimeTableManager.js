@@ -686,60 +686,32 @@ const fetchTimeEntries = async () => {
 };
 
 
-    
-    const formatWeeklyEntries = (entries) => {
+  const formatWeeklyEntries = (entries) => {
+    // Check if entries is an array before trying to map
     if (!Array.isArray(entries)) {
       console.error('Expected entries to be an array, got:', entries);
       setWeeklyEntries([]);
       return;
     }
-    
-    console.log('=== VISUAL DISPLAY DEBUG ===');
-    
     const formattedEntries = entries.map(entry => {
       const days = {};
       entry.dayEntries.forEach(day => {
-        console.log('Processing day entry for display:', day);
-        
-        // OLD WAY (causing visual issue):
-        // const dayOfWeek = new Date(day.date).getDay();
-        
-        // NEW WAY (should fix visual display):
-        const dateStr = day.date.split('T')[0]; // Get just YYYY-MM-DD
-        const [year, month, dayOfMonth] = dateStr.split('-');
-        const localDate = new Date(year, month - 1, dayOfMonth); // Create in local timezone
-        const dayOfWeek = localDate.getDay();
+        const dayOfWeek = new Date(day.date).getDay();
         const dayName = getDayNameFromIndex(dayOfWeek);
-        
-        console.log('Visual display mapping:', {
-          originalDate: day.date,
-          dateStr: dateStr,
-          localDate: localDate,
-          dayOfWeek: dayOfWeek,
-          dayName: dayName,
-          hours: day.hours
-        });
-        
         days[dayName.toLowerCase()] = day.hours;
       });
-      
-      console.log('Final visual days object:', days);
       
       return {
         id: entry._id,
         projectId: entry.projectId,
         projectName: projects.find(p => p._id === entry.projectId)?.projectName || 'Unknown Project',
         isBillable: entry.isBillable,
-        comments: entry.comments || '',
         ...days
       };
     });
     
-    console.log('=== END VISUAL DEBUG ===');
     setWeeklyEntries(formattedEntries);
   };
-
-
 
   const getDayNameFromIndex = (index) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -972,13 +944,13 @@ const fetchTimeEntries = async () => {
       projectId: selectedProjectId,
       projectName: projects.find(p => p._id === selectedProjectId)?.projectName || 'Unknown Project',
       isBillable,
+      sunday: dayHours.sunday || 0,
       monday: dayHours.monday || 0,
       tuesday: dayHours.tuesday || 0,
       wednesday: dayHours.wednesday || 0,
       thursday: dayHours.thursday || 0,
       friday: dayHours.friday || 0,
       saturday: dayHours.saturday || 0,
-      sunday: dayHours.sunday || 0,
       comments: '' // Will be filled when user adds comments
     };
     
