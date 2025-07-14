@@ -686,60 +686,59 @@ const fetchTimeEntries = async () => {
 };
 
 
-  const formatWeeklyEntries = (entries) => {
-    // Check if entries is an array before trying to map
+    
+    const formatWeeklyEntries = (entries) => {
     if (!Array.isArray(entries)) {
       console.error('Expected entries to be an array, got:', entries);
       setWeeklyEntries([]);
       return;
     }
     
-    console.log('=== DEBUGGING TIMEZONE ISSUE ===');
-    console.log('Selected week:', selectedWeek);
+    console.log('=== VISUAL DISPLAY DEBUG ===');
     
     const formattedEntries = entries.map(entry => {
-      console.log('Processing entry:', entry);
       const days = {};
-      
       entry.dayEntries.forEach(day => {
-        console.log('Raw day entry:', day);
+        console.log('Processing day entry for display:', day);
         
-        // OLD WAY (causing the issue):
-        const oldWay = new Date(day.date).getDay();
-        const oldDayName = getDayNameFromIndex(oldWay);
+        // OLD WAY (causing visual issue):
+        // const dayOfWeek = new Date(day.date).getDay();
         
-        // NEW WAY (should fix it):
+        // NEW WAY (should fix visual display):
         const dateStr = day.date.split('T')[0]; // Get just YYYY-MM-DD
         const [year, month, dayOfMonth] = dateStr.split('-');
-        const newWay = new Date(year, month - 1, dayOfMonth).getDay();
-        const newDayName = getDayNameFromIndex(newWay);
+        const localDate = new Date(year, month - 1, dayOfMonth); // Create in local timezone
+        const dayOfWeek = localDate.getDay();
+        const dayName = getDayNameFromIndex(dayOfWeek);
         
-        console.log('Date comparison:', {
+        console.log('Visual display mapping:', {
           originalDate: day.date,
           dateStr: dateStr,
-          oldWay: { dayOfWeek: oldWay, dayName: oldDayName },
-          newWay: { dayOfWeek: newWay, dayName: newDayName },
+          localDate: localDate,
+          dayOfWeek: dayOfWeek,
+          dayName: dayName,
           hours: day.hours
         });
         
-        // Use the NEW WAY
-        days[newDayName.toLowerCase()] = day.hours;
+        days[dayName.toLowerCase()] = day.hours;
       });
       
-      console.log('Final days object:', days);
+      console.log('Final visual days object:', days);
       
       return {
         id: entry._id,
         projectId: entry.projectId,
         projectName: projects.find(p => p._id === entry.projectId)?.projectName || 'Unknown Project',
         isBillable: entry.isBillable,
+        comments: entry.comments || '',
         ...days
       };
     });
     
-    console.log('=== END DEBUGGING ===');
+    console.log('=== END VISUAL DEBUG ===');
     setWeeklyEntries(formattedEntries);
   };
+
 
 
   const getDayNameFromIndex = (index) => {
