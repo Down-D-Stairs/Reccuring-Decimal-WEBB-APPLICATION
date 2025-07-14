@@ -1,8 +1,8 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Create Gmail transporter
-const transporter = nodemailer.createTransporter({
+// Create Gmail transporter - FIXED: createTransport (not createTransporter)
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER1,
@@ -15,7 +15,7 @@ const sendExpenseDenialEmail = async (trip) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER1,
-      to: trip.email, // Employee's work email
+      to: trip.email,
       subject: `Expense Report Denied - ${trip.tripName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
