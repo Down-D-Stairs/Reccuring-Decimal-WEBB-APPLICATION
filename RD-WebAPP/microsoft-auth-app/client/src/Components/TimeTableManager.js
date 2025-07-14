@@ -646,11 +646,13 @@ function TimeTableManager({ onBack, user }) {
 
 const fetchTimeEntries = async () => {
   try {
+    // Check if user.id exists before making the request
     if (!user || !user.username) {
       console.error('User ID is missing');
       return;
     }
 
+    // Log what we're sending to help debug
     console.log('Fetching time entries with params:', {
       employeeName: user.username,
       weekStart: selectedWeek.start,
@@ -667,23 +669,7 @@ const fetchTimeEntries = async () => {
 
     const data = await response.json();
     
-    // ADD THIS DEBUG:
-    console.log('=== RAW SERVER DATA ===');
-    console.log('Full server response:', data);
-    if (data.length > 0) {
-      console.log('First entry dayEntries:', data[0].dayEntries);
-      data[0].dayEntries.forEach(day => {
-        console.log('Server day entry:', {
-          date: day.date,
-          hours: day.hours,
-          jsDate: new Date(day.date),
-          dayOfWeek: new Date(day.date).getDay(),
-          dayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(day.date).getDay()]
-        });
-      });
-    }
-    console.log('=== END SERVER DATA ===');
-    
+    // Verify data is an array
     if (!Array.isArray(data)) {
       console.error('Expected array response, got:', data);
       setTimeEntries([]);
@@ -698,7 +684,6 @@ const fetchTimeEntries = async () => {
     setWeeklyEntries([]);
   }
 };
-
 
 
   const formatWeeklyEntries = (entries) => {
@@ -2396,13 +2381,14 @@ return (
                     {entry.comments && <span className="has-comments-indicator"> 💬</span>}
                   </td>
                   <td>{entry.isBillable ? 'Yes' : 'No'}</td>
+                  <td><input type="number" min="0" max="24" value={entry.sunday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.monday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.tuesday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.wednesday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.thursday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.friday || 0} readOnly /></td>
                   <td><input type="number" min="0" max="24" value={entry.saturday || 0} readOnly /></td>
-                  <td><input type="number" min="0" max="24" value={entry.sunday || 0} readOnly /></td>
+                  
                   <td>
                     <div className="timesheet-actions">
                       <button onClick={() => handleDeleteEntry(entry.id)}>Delete</button>
