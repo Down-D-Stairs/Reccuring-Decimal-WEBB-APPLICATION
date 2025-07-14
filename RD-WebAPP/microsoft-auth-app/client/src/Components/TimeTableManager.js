@@ -646,13 +646,11 @@ function TimeTableManager({ onBack, user }) {
 
 const fetchTimeEntries = async () => {
   try {
-    // Check if user.id exists before making the request
     if (!user || !user.username) {
       console.error('User ID is missing');
       return;
     }
 
-    // Log what we're sending to help debug
     console.log('Fetching time entries with params:', {
       employeeName: user.username,
       weekStart: selectedWeek.start,
@@ -669,7 +667,23 @@ const fetchTimeEntries = async () => {
 
     const data = await response.json();
     
-    // Verify data is an array
+    // ADD THIS DEBUG:
+    console.log('=== RAW SERVER DATA ===');
+    console.log('Full server response:', data);
+    if (data.length > 0) {
+      console.log('First entry dayEntries:', data[0].dayEntries);
+      data[0].dayEntries.forEach(day => {
+        console.log('Server day entry:', {
+          date: day.date,
+          hours: day.hours,
+          jsDate: new Date(day.date),
+          dayOfWeek: new Date(day.date).getDay(),
+          dayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(day.date).getDay()]
+        });
+      });
+    }
+    console.log('=== END SERVER DATA ===');
+    
     if (!Array.isArray(data)) {
       console.error('Expected array response, got:', data);
       setTimeEntries([]);
@@ -684,6 +698,7 @@ const fetchTimeEntries = async () => {
     setWeeklyEntries([]);
   }
 };
+
 
 
   const formatWeeklyEntries = (entries) => {
@@ -944,13 +959,13 @@ const fetchTimeEntries = async () => {
       projectId: selectedProjectId,
       projectName: projects.find(p => p._id === selectedProjectId)?.projectName || 'Unknown Project',
       isBillable,
-      sunday: dayHours.sunday || 0,
       monday: dayHours.monday || 0,
       tuesday: dayHours.tuesday || 0,
       wednesday: dayHours.wednesday || 0,
       thursday: dayHours.thursday || 0,
       friday: dayHours.friday || 0,
       saturday: dayHours.saturday || 0,
+      sunday: dayHours.sunday || 0,
       comments: '' // Will be filled when user adds comments
     };
     
