@@ -19,7 +19,7 @@ transporter.verify((error, success) => {
     // Try sending a test email
     const mailOptions = {
       from: process.env.EMAIL_USER1,
-      to: 'your-test-email@gmail.com', // Replace with your email
+      to: 'kaushik.karumudi@gmail.com', // Replace with your email
       subject: 'Test Email from Timesheet App',
       text: 'This is a test email to verify the email service is working.'
     };

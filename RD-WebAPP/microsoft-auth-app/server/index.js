@@ -21,6 +21,10 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 console.log('🔍 Environment check:');
 console.log('📍 MONGODB_URI exists:', !!process.env.MONGODB_URI);
 console.log('📍 MONGODB_URI preview:', process.env.MONGODB_URI);
+// Add this temporarily at the top of your server/index.js to debug
+console.log('EMAIL_USER1:', process.env.EMAIL_USER1);
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'NOT SET');
+
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB Connected! 🚀'))
@@ -886,6 +890,10 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
   try {
     const { timesheetId } = req.params;
     const { status, comments, reason, approverEmail, approvedDate } = req.body;
+
+    console.log('=== TIMESHEET UPDATE DEBUG ===');
+    console.log('Status:', status);
+    console.log('Will send email?', status === 'denied' || status === 'approved')
     
     console.log('Updating timesheet:', {
       timesheetId,
@@ -913,21 +921,21 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
     }
 
     // Send email if timesheet is denied
-    if (status === 'denied') {
+     if (status === 'denied') {
+      console.log('🔥 ATTEMPTING TO SEND DENIAL EMAIL...');
       try {
-        await sendTimesheetDenialEmail(timesheet);
-        console.log('Timesheet denial email sent successfully');
+        const emailResult = await sendTimesheetDenialEmail(timesheet);
+        console.log('✅ Email result:', emailResult);
       } catch (emailError) {
-        console.error('Failed to send timesheet denial email:', emailError);
-        // Continue with the response even if email fails
+        console.error('❌ Email error:', emailError);
       }
     } else if (status === 'approved') {
+      console.log('🔥 ATTEMPTING TO SEND APPROVAL EMAIL...');
       try {
-        await sendTimesheetApprovalEmail(timesheet);
-        console.log('Timesheet approval email sent successfully');
+        const emailResult = await sendTimesheetApprovalEmail(timesheet);
+        console.log('✅ Email result:', emailResult);
       } catch (emailError) {
-        console.error('Failed to send timesheet approval email:', emailError);
-        // Continue with the response even if email fails
+        console.error('❌ Email error:', emailError);
       }
     }
     
