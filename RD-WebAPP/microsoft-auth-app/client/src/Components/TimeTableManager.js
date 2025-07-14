@@ -457,7 +457,10 @@ function TimeTableManager({ onBack, user }) {
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [showHourLimitModal, setShowHourLimitModal] = useState(false);
   const [hourLimitDetails, setHourLimitDetails] = useState({ day: '', hours: 0, dayTotal: 0 });
-
+  // Add these state variables with your other useState declarations
+  const [holidays, setHolidays] = useState([]);
+  const [showHolidayWarning, setShowHolidayWarning] = useState(false);
+  const [holidayWarningDetails, setHolidayWarningDetails] = useState({});
 
 
   
@@ -1191,6 +1194,112 @@ const fetchTimeEntries = async () => {
   const handleBackToProjectsFromApprovals = useCallback(() => {
     setSelectedProjectId(null);
   }, []);
+
+
+
+  // Fetch holidays from server
+  const fetchHolidays = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/holidays`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Holidays fetched:', data);
+        setHolidays(data);
+      }
+    } catch (error) {
+      console.error('Error fetching holidays:', error);
+    }
+  };
+
+  // Check if a date is a holiday
+  const isHoliday = (date) => {
+    const dateString = date.getFullYear() + '-' + 
+                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(date.getDate()).padStart(2, '0');
+    
+    return holidays.find(h => h.date === dateString);
+  };
+
+  // Toggle holiday status (for admins only)
+  const toggleHoliday = async (date) => {
+    const dateString = date.getFullYear() + '-' + 
+                      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(date.getDate()).padStart(2, '0');
+    
+    const existingHoliday = holidays.find(h => h.date === dateString);
+    
+    try {
+      if (existingHoliday) {
+        // Remove holiday
+        const response = await fetch(`${API_URL}/api/holidays/${dateString}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          setHolidays(holidays.filter(h => h.date !== dateString));
+          console.log('Holiday removed for:', dateString);
+        }
+      } else {
+        // Add holiday
+        const holidayName = prompt('Enter holiday name:');
+        if (!holidayName) return;
+        
+        const response = await fetch(`${API_URL}/api/holidays`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            date: dateString,
+            name: holidayName,
+            createdBy: user.username || user.name || 'Admin'
+          })
+        });
+        if (response.ok) {
+          const newHoliday = await response.json();
+          setHolidays([...holidays, newHoliday]);
+          console.log('Holiday added for:', dateString);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling holiday:', error);
+    }
+  };
+
+  // Check for holiday conflicts when adding hours
+  const checkHolidayConflict = (dayName, hours) => {
+    if (hours <= 0) return true; // No hours, no conflict
+    
+    // Calculate the date for this day
+    const weekStartParts = selectedWeek.start.split('-');
+    const weekStart = new Date(weekStartParts[0], weekStartParts[1] - 1, weekStartParts[2]);
+    
+    const dayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(dayName.toLowerCase());
+    const targetDate = new Date(weekStart);
+    targetDate.setDate(weekStart.getDate() + dayIndex);
+    
+    const holiday = isHoliday(targetDate);
+    
+    if (holiday) {
+      setHolidayWarningDetails({
+        day: dayName.charAt(0).toUpperCase() + dayName.slice(1),
+        date: targetDate.toLocaleDateString(),
+        holidayName: holiday.name,
+        hours: hours
+      });
+      setShowHolidayWarning(true);
+      return false; // Block the input
+    }
+    
+    return true; // Allow the input
+  };
+
+  // Add useEffect to fetch holidays when component mounts
+  useEffect(() => {
+    fetchHolidays();
+  }, []);
+
+  
+
+
+
 
 
 
@@ -2142,6 +2251,15 @@ return (
               Manage Projects
             </button>
           )}
+          {isAdminOnly && (
+            <button
+              className="holiday-management-button"
+              onClick={() => setView('holiday-management')}
+              style={{ backgroundColor: '#4caf50' }}
+            >
+              Manage Holidays
+            </button>
+          )}
           {isUserAnApprover(user, projects) && (
             <button 
               className="approvals-button"
@@ -2237,7 +2355,7 @@ return (
                     value={dayHours.sunday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('sunday', hours)) {
+                      if (hours === '' || (validateDayHours('sunday', hours) && checkHolidayConflict('sunday', hours))) {
                         setDayHours({...dayHours, sunday: hours});
                       }
                     }}
@@ -2251,7 +2369,7 @@ return (
                     value={dayHours.monday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('monday', hours)) {
+                      if (hours === '' || (validateDayHours('monday', hours) && checkHolidayConflict('monday', hours))) {
                         setDayHours({...dayHours, monday: hours});
                       }
                     }}
@@ -2265,7 +2383,7 @@ return (
                     value={dayHours.tuesday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('tuesday', hours)) {
+                      if (hours === '' || (validateDayHours('tuesday', hours) && checkHolidayConflict('tuesday', hours))) {
                         setDayHours({...dayHours, tuesday: hours});
                       }
                     }}
@@ -2279,7 +2397,7 @@ return (
                     value={dayHours.wednesday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('wednesday', hours)) {
+                      if (hours === '' || (validateDayHours('wednesday', hours) && checkHolidayConflict('wednesday', hours))) {
                         setDayHours({...dayHours, wednesday: hours});
                       }
                     }}
@@ -2293,7 +2411,7 @@ return (
                     value={dayHours.thursday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('thursday', hours)) {
+                      if (hours === '' || (validateDayHours('thursday', hours) && checkHolidayConflict('thursday', hours))) {
                         setDayHours({...dayHours, thursday: hours});
                       }
                     }}
@@ -2307,7 +2425,7 @@ return (
                     value={dayHours.friday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('friday', hours)) {
+                      if (hours === '' || (validateDayHours('friday', hours) && checkHolidayConflict('friday', hours))) {
                         setDayHours({...dayHours, friday: hours});
                       }
                     }}
@@ -2321,12 +2439,14 @@ return (
                     value={dayHours.saturday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || validateDayHours('saturday', hours)) {
+                      if (hours === '' || (validateDayHours('saturday', hours) && checkHolidayConflict('saturday', hours))) {
                         setDayHours({...dayHours, saturday: hours});
                       }
                     }}
                   />
                 </td>
+
+
                 
                 <td>
                   <button 
@@ -2421,6 +2541,51 @@ return (
           </button>
         </div>
       </div>
+      ) : view === 'holiday-management' ? (
+    <div className="holiday-management-view">
+      <div className="approval-header">
+        <h2>Holiday Management</h2>
+        <button 
+          className="back-button"
+          onClick={() => setView('list')}
+        >
+          Back to Timesheet
+        </button>
+      </div>
+      
+      <div className="holiday-list">
+        <h3>Current Holidays</h3>
+        {holidays.length === 0 ? (
+          <p>No holidays configured</p>
+        ) : (
+          <div className="holidays-grid">
+            {holidays.map(holiday => (
+              <div key={holiday.date} className="holiday-item">
+                <div className="holiday-info">
+                  <strong>{holiday.name}</strong>
+                  <span>{new Date(holiday.date + 'T00:00:00').toLocaleDateString()}</span>
+                </div>
+                <button
+                  className="delete-holiday-btn"
+                  onClick={() => {
+                    if (confirm(`Remove holiday "${holiday.name}"?`)) {
+                      toggleHoliday(new Date(holiday.date + 'T00:00:00'));
+                    }
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      <div className="add-holiday-section">
+        <h3>Add New Holiday</h3>
+        <p>Click on any date in the calendar below to add/remove holidays:</p>
+      </div>
+    </div>
     ) : view === 'new-project' ? (
       <div className="project-form-container">
         <h2>Create New Project</h2>
@@ -3607,6 +3772,40 @@ return (
           <h3>Updating Project...</h3>
           <p>Updating "{editProjectForm.projectName}"</p>
           <p>Please wait, do not close this window.</p>
+        </div>
+      </div>
+    )}
+    {showHolidayWarning && (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>🎉 Holiday Detected</h3>
+          </div>
+          
+          <div className="modal-body">
+            <p className="warning-text">
+              <strong>{holidayWarningDetails.date}</strong> is a company holiday: <strong>{holidayWarningDetails.holidayName}</strong>
+            </p>
+            
+            <div className="holiday-warning-details">
+              <p><strong>Day:</strong> {holidayWarningDetails.day}</p>
+              <p><strong>Hours you tried to enter:</strong> {holidayWarningDetails.hours}</p>
+            </div>
+            
+            <div className="holiday-warning-explanation">
+              <p>You typically shouldn't log work hours on company holidays.</p>
+              <p>Consider using the "Holiday" project instead if you need to track this day.</p>
+            </div>
+          </div>
+          
+          <div className="modal-actions">
+            <button
+              className="confirm-button"
+              onClick={() => setShowHolidayWarning(false)}
+            >
+              Got it, thanks!
+            </button>
+          </div>
         </div>
       </div>
     )}

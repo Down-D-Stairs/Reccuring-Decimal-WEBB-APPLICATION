@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 
 const holidaySchema = new mongoose.Schema({
   date: {
-    type: String, // Store as YYYY-MM-DD format
+    type: String, // Store as YYYY-MM-DD string for easy comparison
     required: true,
     unique: true
   },
   name: {
     type: String,
-    default: 'Company Holiday'
+    required: true
   },
   createdBy: {
     type: String,
@@ -20,4 +20,6 @@ const holidaySchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Holiday', holidaySchema);
+const Holiday = mongoose.model('Holiday', holidaySchema);
+
+module.exports = Holiday;
