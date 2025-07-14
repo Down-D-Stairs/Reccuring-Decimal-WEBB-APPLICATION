@@ -469,7 +469,8 @@ function TimeTableManager({ onBack, user }) {
   const [showAddHolidayModal, setShowAddHolidayModal] = useState(false);
   const [selectedDateForHoliday, setSelectedDateForHoliday] = useState(null);
   const [newHolidayName, setNewHolidayName] = useState('');
-
+  // Add this state variable with your other useState declarations:
+  const [pendingHolidayHours, setPendingHolidayHours] = useState(null);
 
 
   
@@ -1276,7 +1277,8 @@ const fetchTimeEntries = async () => {
         day: dayName.charAt(0).toUpperCase() + dayName.slice(1),
         date: targetDate.toLocaleDateString(),
         holidayName: holiday.name,
-        hours: hours
+        hours: hours,
+        dayName: dayName 
       });
       setShowHolidayWarning(true);
       return false; // Block the input
@@ -2438,8 +2440,13 @@ return (
                     value={dayHours.sunday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('sunday', hours) && checkHolidayConflict('sunday', hours))) {
-                        setDayHours({...dayHours, sunday: hours});
+                      if (hours === '' || validateDayHours('sunday', hours)) {
+                        if (checkHolidayConflict('sunday', hours)) {
+                          // No holiday conflict, set hours normally
+                          setDayHours({...dayHours, sunday: hours});
+                        }
+                        // If there's a holiday conflict, the modal will handle it
+                        // Don't set hours here - let the modal handle the decision
                       }
                     }}
                   />
@@ -2452,8 +2459,10 @@ return (
                     value={dayHours.monday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('monday', hours) && checkHolidayConflict('monday', hours))) {
-                        setDayHours({...dayHours, monday: hours});
+                      if (hours === '' || validateDayHours('monday', hours)) {
+                        if (checkHolidayConflict('monday', hours)) {
+                          setDayHours({...dayHours, monday: hours});
+                        }
                       }
                     }}
                   />
@@ -2466,8 +2475,10 @@ return (
                     value={dayHours.tuesday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('tuesday', hours) && checkHolidayConflict('tuesday', hours))) {
-                        setDayHours({...dayHours, tuesday: hours});
+                      if (hours === '' || validateDayHours('tuesday', hours)) {
+                        if (checkHolidayConflict('tuesday', hours)) {
+                          setDayHours({...dayHours, tuesday: hours});
+                        }
                       }
                     }}
                   />
@@ -2480,8 +2491,10 @@ return (
                     value={dayHours.wednesday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('wednesday', hours) && checkHolidayConflict('wednesday', hours))) {
-                        setDayHours({...dayHours, wednesday: hours});
+                      if (hours === '' || validateDayHours('wednesday', hours)) {
+                        if (checkHolidayConflict('wednesday', hours)) {
+                          setDayHours({...dayHours, wednesday: hours});
+                        }
                       }
                     }}
                   />
@@ -2494,8 +2507,10 @@ return (
                     value={dayHours.thursday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('thursday', hours) && checkHolidayConflict('thursday', hours))) {
-                        setDayHours({...dayHours, thursday: hours});
+                      if (hours === '' || validateDayHours('thursday', hours)) {
+                        if (checkHolidayConflict('thursday', hours)) {
+                          setDayHours({...dayHours, thursday: hours});
+                        }
                       }
                     }}
                   />
@@ -2508,8 +2523,10 @@ return (
                     value={dayHours.friday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('friday', hours) && checkHolidayConflict('friday', hours))) {
-                        setDayHours({...dayHours, friday: hours});
+                      if (hours === '' || validateDayHours('friday', hours)) {
+                        if (checkHolidayConflict('friday', hours)) {
+                          setDayHours({...dayHours, friday: hours});
+                        }
                       }
                     }}
                   />
@@ -2522,12 +2539,15 @@ return (
                     value={dayHours.saturday || ''} 
                     onChange={(e) => {
                       const hours = e.target.value;
-                      if (hours === '' || (validateDayHours('saturday', hours) && checkHolidayConflict('saturday', hours))) {
-                        setDayHours({...dayHours, saturday: hours});
+                      if (hours === '' || validateDayHours('saturday', hours)) {
+                        if (checkHolidayConflict('saturday', hours)) {
+                          setDayHours({...dayHours, saturday: hours});
+                        }
                       }
                     }}
                   />
                 </td>
+
 
 
                 
@@ -3939,15 +3959,38 @@ return (
             <div className="holiday-warning-explanation">
               <p>You typically shouldn't log work hours on company holidays.</p>
               <p>Consider using the "Holiday" project instead if you need to track this day.</p>
+              <p><strong>Do you still want to proceed with logging these hours?</strong></p>
             </div>
           </div>
           
           <div className="modal-actions">
             <button
-              className="confirm-button"
-              onClick={() => setShowHolidayWarning(false)}
+              className="cancel-button"
+              onClick={() => {
+                setShowHolidayWarning(false);
+                setPendingHolidayHours(null);
+                // Don't set the hours - just close the modal
+              }}
             >
-              Got it, thanks!
+              Cancel
+            </button>
+            <button
+              className="confirm-button"
+              onClick={() => {
+                // Allow the hours to be set
+                const dayName = holidayWarningDetails.dayName;
+                const hours = holidayWarningDetails.hours;
+                
+                setDayHours(prev => ({
+                  ...prev,
+                  [dayName]: hours
+                }));
+                
+                setShowHolidayWarning(false);
+                setPendingHolidayHours(null);
+              }}
+            >
+              Proceed Anyway
             </button>
           </div>
         </div>
