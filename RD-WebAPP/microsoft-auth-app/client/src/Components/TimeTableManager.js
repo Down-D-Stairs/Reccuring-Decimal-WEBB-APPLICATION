@@ -696,7 +696,10 @@ const fetchTimeEntries = async () => {
     const formattedEntries = entries.map(entry => {
       const days = {};
       entry.dayEntries.forEach(day => {
-        const dayOfWeek = new Date(day.date).getDay();
+        const dateStr = day.date.split('T')[0]; // Get just the YYYY-MM-DD part
+        const [year, month, dayOfMonth] = dateStr.split('-');
+        const date = new Date(year, month - 1, dayOfMonth); // Create date in local timezone
+        const dayOfWeek = date.getDay();
         const dayName = getDayNameFromIndex(dayOfWeek);
         days[dayName.toLowerCase()] = day.hours;
       });
