@@ -1,3 +1,14 @@
+// Add this at the very top, before everything else
+console.log('🔍 ALL ENVIRONMENT VARIABLES CONTAINING "EMAIL":');
+Object.keys(process.env).forEach(key => {
+  if (key.includes('EMAIL')) {
+    console.log(`${key}: ${process.env[key]}`);
+  }
+});
+
+console.log('🔍 ALL ENVIRONMENT VARIABLES:');
+console.log(Object.keys(process.env).sort());
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
