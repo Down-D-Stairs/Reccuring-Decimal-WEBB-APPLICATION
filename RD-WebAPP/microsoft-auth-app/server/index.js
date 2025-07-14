@@ -32,6 +32,12 @@ const { sendStatusEmail } = require('./services/notificationService');
 const Holiday = require('./models/Holiday');
 const app = express();
 
+console.log('🔍 Environment check:');
+console.log('📍 MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log('📍 EMAIL_USER:', process.env.EMAIL_USER);
+console.log('📍 EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? 'SET' : 'NOT SET');
+
+
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
