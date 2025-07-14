@@ -142,20 +142,27 @@ app.put('/api/trips/:tripId/status', async (req, res) => {
 
     // Send denial email if expense is denied
     if (req.body.status === 'denied') {
-      try {
-        await sendExpenseDenialEmail(updatedTrip); // or sendTimesheetDenialEmail if using same service
-        console.log('Expense denial email sent successfully');
-      } catch (emailError) {
-        console.error('Failed to send expense denial email:', emailError);
-        // Continue with the response even if email fails
+        try {
+          await sendExpenseDenialEmail(updatedTrip);
+          console.log('Expense denial email sent successfully');
+        } catch (emailError) {
+          console.error('Failed to send expense denial email:', emailError);
+          // Continue with the response even if email fails
+        }
+      } else if (req.body.status === 'approved') {
+        try {
+          await sendExpenseApprovalEmail(updatedTrip);
+          console.log('Expense approval email sent successfully');
+        } catch (emailError) {
+          console.error('Failed to send expense approval email:', emailError);
+          // Continue with the response even if email fails
+        }
       }
-    }
 
-   const token = req.headers.authorization?.split(' ')[1];
-
-   if(token) {
-    await sendStatusEmail(token, updatedTrip);
-   }
+      const token = req.headers.authorization?.split(' ')[1];
+      if(token) {
+        await sendStatusEmail(token, updatedTrip);
+      }
 
     res.json(updatedTrip);
   } catch (error) {
@@ -909,9 +916,17 @@ app.put('/api/timeentries/:timesheetId', async (req, res) => {
     if (status === 'denied') {
       try {
         await sendTimesheetDenialEmail(timesheet);
-        console.log('Denial email sent successfully');
+        console.log('Timesheet denial email sent successfully');
       } catch (emailError) {
-        console.error('Failed to send denial email:', emailError);
+        console.error('Failed to send timesheet denial email:', emailError);
+        // Continue with the response even if email fails
+      }
+    } else if (status === 'approved') {
+      try {
+        await sendTimesheetApprovalEmail(timesheet);
+        console.log('Timesheet approval email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send timesheet approval email:', emailError);
         // Continue with the response even if email fails
       }
     }
