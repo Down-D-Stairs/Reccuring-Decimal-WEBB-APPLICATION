@@ -461,6 +461,9 @@ function TimeTableManager({ onBack, user }) {
   const [holidays, setHolidays] = useState([]);
   const [showHolidayWarning, setShowHolidayWarning] = useState(false);
   const [holidayWarningDetails, setHolidayWarningDetails] = useState({});
+  // Add these state variables with your other useState declarations
+  const [showDeleteHolidayConfirmation, setShowDeleteHolidayConfirmation] = useState(false);
+  const [holidayToDelete, setHolidayToDelete] = useState(null);
 
 
   
@@ -1221,6 +1224,7 @@ const fetchTimeEntries = async () => {
   };
 
   // Toggle holiday status (for admins only)
+  // Update the toggleHoliday function to remove the prompt
   const toggleHoliday = async (date) => {
     const dateString = date.getFullYear() + '-' + 
                       String(date.getMonth() + 1).padStart(2, '0') + '-' + 
@@ -1239,29 +1243,15 @@ const fetchTimeEntries = async () => {
           console.log('Holiday removed for:', dateString);
         }
       } else {
-        // Add holiday
-        const holidayName = prompt('Enter holiday name:');
-        if (!holidayName) return;
-        
-        const response = await fetch(`${API_URL}/api/holidays`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            date: dateString,
-            name: holidayName,
-            createdBy: user.username || user.name || 'Admin'
-          })
-        });
-        if (response.ok) {
-          const newHoliday = await response.json();
-          setHolidays([...holidays, newHoliday]);
-          console.log('Holiday added for:', dateString);
-        }
+        // For adding holidays, you'll need a proper form instead of prompt
+        // We can implement this later if needed
+        console.log('Adding holidays requires a proper form');
       }
     } catch (error) {
       console.error('Error toggling holiday:', error);
     }
   };
+
 
   // Check for holiday conflicts when adding hours
   const checkHolidayConflict = (dayName, hours) => {
@@ -2542,50 +2532,49 @@ return (
         </div>
       </div>
       ) : view === 'holiday-management' ? (
-    <div className="holiday-management-view">
-      <div className="approval-header">
-        <h2>Holiday Management</h2>
-        <button 
-          className="back-button"
-          onClick={() => setView('list')}
-        >
-          Back to Timesheet
-        </button>
-      </div>
-      
-      <div className="holiday-list">
-        <h3>Current Holidays</h3>
-        {holidays.length === 0 ? (
-          <p>No holidays configured</p>
-        ) : (
-          <div className="holidays-grid">
-            {holidays.map(holiday => (
-              <div key={holiday.date} className="holiday-item">
-                <div className="holiday-info">
-                  <strong>{holiday.name}</strong>
-                  <span>{new Date(holiday.date + 'T00:00:00').toLocaleDateString()}</span>
-                </div>
-                <button
+      <div className="holiday-management-view">
+        <div className="approval-header">
+          <h2>Holiday Management</h2>
+          <button 
+            className="back-button"
+            onClick={() => setView('list')}
+          >
+            Back to Timesheet
+          </button>
+        </div>
+        
+        <div className="holiday-list">
+          <h3>Current Holidays</h3>
+          {holidays.length === 0 ? (
+            <p>No holidays configured</p>
+          ) : (
+            <div className="holidays-grid">
+              {holidays.map(holiday => (
+                <div key={holiday.date} className="holiday-item">
+                  <div className="holiday-info">
+                    <strong>{holiday.name}</strong>
+                    <span>{new Date(holiday.date + 'T00:00:00').toLocaleDateString()}</span>
+                  </div>
+                  <button
                   className="delete-holiday-btn"
                   onClick={() => {
-                    if (confirm(`Remove holiday "${holiday.name}"?`)) {
-                      toggleHoliday(new Date(holiday.date + 'T00:00:00'));
-                    }
+                    setHolidayToDelete(holiday);
+                    setShowDeleteHolidayConfirmation(true);
                   }}
                 >
                   Remove
                 </button>
-              </div>
-            ))}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <div className="add-holiday-section">
+          <h3>Add New Holiday</h3>
+          <p>Click on any date in the calendar below to add/remove holidays:</p>
+        </div>
       </div>
-      
-      <div className="add-holiday-section">
-        <h3>Add New Holiday</h3>
-        <p>Click on any date in the calendar below to add/remove holidays:</p>
-      </div>
-    </div>
     ) : view === 'new-project' ? (
       <div className="project-form-container">
         <h2>Create New Project</h2>
@@ -3809,6 +3798,45 @@ return (
         </div>
       </div>
     )}
+    {showDeleteHolidayConfirmation && holidayToDelete && (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h3>Confirm Holiday Removal</h3>
+        </div>
+        
+        <div className="modal-body">
+          <p>Are you sure you want to remove this holiday?</p>
+          <div className="holiday-details">
+            <p><strong>Holiday:</strong> {holidayToDelete.name}</p>
+            <p><strong>Date:</strong> {new Date(holidayToDelete.date + 'T00:00:00').toLocaleDateString()}</p>
+          </div>
+        </div>
+        
+        <div className="modal-actions">
+          <button
+            className="cancel-button"
+            onClick={() => {
+              setShowDeleteHolidayConfirmation(false);
+              setHolidayToDelete(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className="confirm-button"
+            onClick={() => {
+              toggleHoliday(new Date(holidayToDelete.date + 'T00:00:00'));
+              setShowDeleteHolidayConfirmation(false);
+              setHolidayToDelete(null);
+            }}
+          >
+            Remove Holiday
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
   </div>
 );
 

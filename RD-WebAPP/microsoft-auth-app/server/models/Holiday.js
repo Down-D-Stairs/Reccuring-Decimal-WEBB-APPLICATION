@@ -8,7 +8,7 @@ const holidaySchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    default: 'Company Holiday'
   },
   createdBy: {
     type: String,
