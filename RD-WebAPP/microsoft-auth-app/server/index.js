@@ -5,7 +5,14 @@ const { Trip, Expense } = require('./models/Expense');
 const { Project, TimeEntry } = require('./models/TimeProject');
 const Draft = require('./models/Draft');
 const Moderator = require('./models/Moderator');
+// Add this RIGHT at the very top of your server/index.js file, before any other code
+console.log('🔍 Raw environment variables:');
+console.log('EMAIL_USER1 (raw):', process.env.EMAIL_USER1);
+console.log('EMAIL_PASS (raw):', process.env.EMAIL_PASS);
 require('dotenv').config();
+console.log('🔍 After dotenv.config():');
+console.log('EMAIL_USER1 (after dotenv):', process.env.EMAIL_USER1);
+console.log('EMAIL_PASS (after dotenv):', process.env.EMAIL_PASS);
 const GuestUser = require('./models/GuestUser');
 const { sendTimesheetDenialEmail } = require('./services/emailService');
 const { sendExpenseDenialEmail } = require('./services/expenseEmailService');

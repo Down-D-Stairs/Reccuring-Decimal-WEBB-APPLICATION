@@ -1,5 +1,8 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+// Add debug logging
+console.log('🔍 Email service environment check:');
+console.log('EMAIL_USER1:', process.env.EMAIL_USER1);
+console.log('EMAIL_PASS exists:', process.env.EMAIL_PASS ? 'YES' : 'NO');
 
 // Create Gmail transporter - FIXED: createTransport (not createTransporter)
 const transporter = nodemailer.createTransport({
