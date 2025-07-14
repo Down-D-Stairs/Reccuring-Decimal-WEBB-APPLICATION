@@ -99,8 +99,14 @@ const sendTimesheetDenialEmail = async (timesheet) => {
 // Function to send timesheet approval email
 const sendTimesheetApprovalEmail = async (timesheet) => {
   try {
+    console.log('🔥 Sending approval email...');
+    
+    // Test connection first
+    await transporter.verify();
+    console.log('✅ SMTP connection successful for approval email');
+    
     const mailOptions = {
-      from: process.env.EMAIL_USER1,
+      from: 'kaushik.karumudi@gmail.com',
       to: timesheet.employeeName,
       subject: `Timesheet Approved - Week of ${new Date(timesheet.weekStartDate).toLocaleDateString()}`,
       html: `
@@ -121,37 +127,67 @@ const sendTimesheetApprovalEmail = async (timesheet) => {
                 <td style="padding: 8px 0; border-bottom: 1px solid #ddd;">${timesheet.totalHours} hours</td>
               </tr>
               <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #ddd;"><strong>Status:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #ddd;"><span style="color: #28a745; font-weight: bold;">APPROVED</span></td>
+              </tr>
+              <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #ddd;"><strong>Approved by:</strong></td>
                 <td style="padding: 8px 0; border-bottom: 1px solid #ddd;">${timesheet.approverEmail}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0;"><strong>Approved on:</strong></td>
-                <td style="padding: 8px 0;">${new Date(timesheet.approvedDate).toLocaleDateString()}</td>
+                <td style="padding: 8px 0;">${new Date(timesheet.approvedDate || new Date()).toLocaleDateString()}</td>
               </tr>
             </table>
           </div>
           
-          <p>Thank you for submitting your timesheet on time!</p>
+          ${timesheet.comments ? `
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #856404;">Your Week Comments:</h4>
+              <p style="margin-bottom: 0; color: #856404;">${timesheet.comments}</p>
+            </div>
+          ` : ''}
+          
+          ${timesheet.approvalComments ? `
+            <div style="background-color: #d1ecf1; border-left: 4px solid #17a2b8; padding: 15px; margin: 20px 0;">
+              <h4 style="margin-top: 0; color: #0c5460;">Approval Comments:</h4>
+              <p style="margin-bottom: 0; color: #0c5460;">${timesheet.approvalComments}</p>
+            </div>
+          ` : ''}
+          
+          <div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #155724;">Next Steps:</h4>
+            <ul style="color: #155724; margin-bottom: 0;">
+              <li>Your timesheet has been processed</li>
+              <li>Hours will be reflected in payroll</li>
+              <li>Thank you for submitting on time</li>
+            </ul>
+          </div>
+          
+          <p>Thank you for your continued dedication and timely timesheet submission.</p>
           
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
           
           <p style="color: #666; font-size: 14px;">
             Best regards,<br>
             <strong>HR Department</strong><br>
-            Recurring Decimal
+            Recurring Decimal<br>
+            <em>This is an automated message. Please do not reply to this email.</em>
           </p>
         </div>
       `
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Timesheet approval email sent to ${timesheet.employeeName}`);
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Approval email sent successfully:', result.messageId);
     return { success: true };
+    
   } catch (error) {
-    console.error('Error sending timesheet approval email:', error);
+    console.error('❌ Error sending approval email:', error.message);
     return { success: false, error: error.message };
   }
 };
+
 
 module.exports = { 
   sendTimesheetDenialEmail,

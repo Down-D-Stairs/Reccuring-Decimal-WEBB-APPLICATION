@@ -26,7 +26,7 @@ console.log('EMAIL_USER1 (after dotenv):', process.env.EMAIL_USER1);
 console.log('EMAIL_PASS (after dotenv):', process.env.EMAIL_PASS);
 const GuestUser = require('./models/GuestUser');
 const { sendTimesheetDenialEmail, sendTimesheetApprovalEmail } = require('./services/emailService');
-const { sendExpenseDenialEmail } = require('./services/expenseEmailService');
+const { sendExpenseDenialEmail, sendExpenseApprovalEmail } = require('./services/expenseEmailService');
 const { sendStatusEmail } = require('./services/notificationService');
 // Add this import at the top with your other imports
 const Holiday = require('./models/Holiday');
