@@ -1261,6 +1261,18 @@ const fetchTimeEntries = async () => {
   // Check for holiday conflicts when adding hours
   const checkHolidayConflict = (dayName, hours) => {
     if (hours <= 0) return true; // No hours, no conflict
+
+    // Skip holiday warning if Holiday project is selected
+    if (selectedProjectId === 'holiday') {
+      return true;
+    }
+    
+    // Also skip if it's a system project marked as holiday
+    const selectedProject = projects.find(p => p._id === selectedProjectId);
+    if (selectedProject && selectedProject.projectName && 
+        selectedProject.projectName.toLowerCase().includes('holiday')) {
+      return true;
+    }
     
     // Calculate the date for this day
     const weekStartParts = selectedWeek.start.split('-');
@@ -1537,29 +1549,8 @@ const fetchTimeEntries = async () => {
   }, [user.username]); // Remove API_URL from dependencies
 
   const validateDayHours = (day, newHours) => {
-    // Skip validation for non-work projects
-    const nonWorkProjects = ['holiday', 'pto'];
     
-    // Check if it's a hardcoded non-work project
-    if (nonWorkProjects.includes(selectedProjectId)) {
-      return true;
-    }
-    
-    // Check if it's a system project (Holiday, PTO, etc.)
-    const selectedProject = projects.find(p => p._id === selectedProjectId);
-    if (selectedProject && selectedProject.isSystemProject) {
-      return true;
-    }
-    
-    // Check if project name contains holiday/pto keywords
-    if (selectedProject && selectedProject.projectName) {
-      const projectName = selectedProject.projectName.toLowerCase();
-      if (projectName.includes('holiday') || 
-          projectName.includes('pto')) {
-        return true;
-      }
-    }
-    // Calculate existing hours for this day across all projects
+  // Calculate existing hours for this day across all projects
   const existingDayTotal = weeklyEntries.reduce((total, entry) => {
     return total + (Number(entry[day.toLowerCase()] || 0));
   }, 0);
