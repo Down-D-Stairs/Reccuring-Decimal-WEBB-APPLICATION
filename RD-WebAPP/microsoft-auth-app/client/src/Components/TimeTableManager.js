@@ -426,7 +426,7 @@ function TimeTableManager({ onBack, user }) {
   const [currentProjectPage, setCurrentProjectPage] = useState(1);
   const [currentTimesheetPage, setCurrentTimesheetPage] = useState(1);
   const projectsPerPage = 2;
-  const timesheetsPerPage = 4;
+  const timesheetsPerPage = 2;
   const [currentHistoryProjectPage, setCurrentHistoryProjectPage] = useState(1);
   const [currentHistoryTimesheetPage, setCurrentHistoryTimesheetPage] = useState(1);
   const historyProjectsPerPage = 2;
