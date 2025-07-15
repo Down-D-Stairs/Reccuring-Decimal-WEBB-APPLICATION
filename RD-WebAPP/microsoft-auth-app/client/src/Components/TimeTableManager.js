@@ -1537,7 +1537,29 @@ const fetchTimeEntries = async () => {
   }, [user.username]); // Remove API_URL from dependencies
 
   const validateDayHours = (day, newHours) => {
-  // Calculate existing hours for this day across all projects
+    // Skip validation for non-work projects
+    const nonWorkProjects = ['holiday', 'pto'];
+    
+    // Check if it's a hardcoded non-work project
+    if (nonWorkProjects.includes(selectedProjectId)) {
+      return true;
+    }
+    
+    // Check if it's a system project (Holiday, PTO, etc.)
+    const selectedProject = projects.find(p => p._id === selectedProjectId);
+    if (selectedProject && selectedProject.isSystemProject) {
+      return true;
+    }
+    
+    // Check if project name contains holiday/pto keywords
+    if (selectedProject && selectedProject.projectName) {
+      const projectName = selectedProject.projectName.toLowerCase();
+      if (projectName.includes('holiday') || 
+          projectName.includes('pto')) {
+        return true;
+      }
+    }
+    // Calculate existing hours for this day across all projects
   const existingDayTotal = weeklyEntries.reduce((total, entry) => {
     return total + (Number(entry[day.toLowerCase()] || 0));
   }, 0);
