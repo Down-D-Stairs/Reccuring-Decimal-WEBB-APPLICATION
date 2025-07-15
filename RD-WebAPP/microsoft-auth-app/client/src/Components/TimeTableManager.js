@@ -105,6 +105,23 @@ const HistoryView = React.memo(({
                           <tr className="expanded-row">
                             <td colSpan="5">
                               <div className="trip-details-expanded">
+
+                                <div className="submission-info-section">
+                                  <h4>Submission Details:</h4>
+                                  <div className="detail-row">
+                                    <span className="detail-label">Submitted on:</span>
+                                    <span className="detail-value">
+                                      {new Date(timesheet.submittedDate).toLocaleDateString('en-US', { 
+                                        timeZone: 'UTC',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
                                 
                                 {/* Approval information */}
                                 {timesheet.approverEmail && (
@@ -3238,6 +3255,24 @@ return (
                           <tr className="expanded-row">
                             <td colSpan="8">
                               <div className="trip-details-expanded">
+
+                                <div className="submission-info-section">
+                                  <h4>Submission Details:</h4>
+                                  <div className="detail-row">
+                                    <span className="detail-label">Submitted on:</span>
+                                    <span className="detail-value">
+                                      {new Date(timesheet.submittedDate).toLocaleDateString('en-US', { 
+                                        timeZone: 'UTC',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+                                
                                 
                                 {/* Approval information */}
                                 {timesheet.approverEmail && (
