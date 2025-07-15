@@ -24,7 +24,7 @@ const HistoryView = React.memo(({
 
   // Move these constants inside the component
   const historyProjectsPerPage = 2;
-  const historyTimesheetsPerPage = 4;
+  const historyTimesheetsPerPage = 2;
   
   // Move these helper functions inside the component
   const getPaginatedHistoryProjects = (projects) => {
