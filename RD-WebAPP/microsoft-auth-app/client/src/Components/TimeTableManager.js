@@ -430,7 +430,7 @@ function TimeTableManager({ onBack, user }) {
   const [currentHistoryProjectPage, setCurrentHistoryProjectPage] = useState(1);
   const [currentHistoryTimesheetPage, setCurrentHistoryTimesheetPage] = useState(1);
   const historyProjectsPerPage = 2;
-  const historyTimesheetsPerPage = 4;
+  const historyTimesheetsPerPage = 2;
   const [selectedProjectDetails, setSelectedProjectDetails] = useState(null);
   const [isProcessingDecision, setIsProcessingDecision] = useState(false);
   const [showDecisionConfirmation, setShowDecisionConfirmation] = useState(false);
