@@ -2307,3 +2307,90 @@
 }
 
 
+/* Daily Breakdown Section - Compact One-Line Version */
+.daily-breakdown-section {
+  margin-top: 20px;
+}
+
+.daily-breakdown-section h4 {
+  margin-bottom: 12px;
+  color: #495057;
+  font-size: 16px;
+}
+
+.daily-entries-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.day-entry-card {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  min-width: 80px;
+  flex: 0 1 auto;
+}
+
+.day-entry-card:hover {
+  background-color: #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.day-date {
+  color: #495057;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.day-hours {
+  color: #007bff;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.day-notes {
+  color: #6c757d;
+  font-size: 10px;
+  font-style: italic;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #dee2e6;
+  line-height: 1.2;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Modal responsive design */
+@media (max-width: 768px) {
+  .daily-entries-grid {
+    gap: 6px;
+  }
+  
+  .day-entry-card {
+    min-width: 70px;
+    padding: 6px 8px;
+  }
+  
+  .day-date {
+    font-size: 10px;
+  }
+  
+  .day-hours {
+    font-size: 12px;
+  }
+  
+  .day-notes {
+    font-size: 9px;
+    max-width: 70px;
+  }
+}
