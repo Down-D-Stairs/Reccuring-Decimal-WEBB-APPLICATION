@@ -2307,90 +2307,71 @@
 }
 
 
-/* Daily Breakdown Section - Compact One-Line Version */
-.daily-breakdown-section {
-  margin-top: 20px;
-}
-
-.daily-breakdown-section h4 {
-  margin-bottom: 12px;
-  color: #495057;
-  font-size: 16px;
-}
-
-.daily-entries-grid {
+/* Daily Breakdown - Compact One-Line Version */
+.expenses-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
+  margin: 10px 0;
 }
 
-.day-entry-card {
+.expense-item {
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 8px 12px;
-  text-align: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border-radius: 4px;
+  padding: 6px 10px;
   min-width: 80px;
-  flex: 0 1 auto;
+  text-align: center;
+  font-size: 12px;
 }
 
-.day-entry-card:hover {
+.expense-item:hover {
   background-color: #e9ecef;
-  transition: all 0.2s ease;
 }
 
-.day-date {
-  color: #495057;
+.expense-details {
+  margin: 0;
+  padding: 0;
+}
+
+.expense-details p {
+  margin: 2px 0;
   font-size: 11px;
+  line-height: 1.2;
+}
+
+/* Make the date more compact */
+.expense-details p:first-child {
   font-weight: 600;
-  margin-bottom: 4px;
-  line-height: 1.2;
+  color: #495057;
 }
 
-.day-hours {
+/* Make hours stand out */
+.expense-details p:nth-child(2) {
   color: #007bff;
-  font-size: 14px;
   font-weight: bold;
-  margin-bottom: 4px;
 }
 
-.day-notes {
+/* Make notes smaller and italic */
+.expense-details p:nth-child(3) {
   color: #6c757d;
-  font-size: 10px;
   font-style: italic;
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px solid #dee2e6;
-  line-height: 1.2;
-  max-width: 100px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 10px;
 }
 
-/* Modal responsive design */
+/* Responsive - stack on small screens */
 @media (max-width: 768px) {
-  .daily-entries-grid {
-    gap: 6px;
-  }
-  
-  .day-entry-card {
+  .expense-item {
     min-width: 70px;
-    padding: 6px 8px;
+    padding: 4px 8px;
+    font-size: 11px;
   }
   
-  .day-date {
+  .expense-details p {
     font-size: 10px;
   }
   
-  .day-hours {
-    font-size: 12px;
-  }
-  
-  .day-notes {
+  .expense-details p:nth-child(3) {
     font-size: 9px;
-    max-width: 70px;
   }
 }
