@@ -19,7 +19,9 @@ const HistoryView = React.memo(({
   setSelectedProjectDetails,
   setView,
   setSelectedHistoryProjectId,
-  setUserHistoryTimesheets
+  setUserHistoryTimesheets,
+  isAdminOnly,    // Add this
+  isModerator     // Add this
 }) => {
 
   // Move these constants inside the component
@@ -271,12 +273,14 @@ const HistoryView = React.memo(({
                         >
                           View Timesheets
                         </button>
-                        <button
-                          className="details-button"
-                          onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
-                        >
-                          Details
-                        </button>
+                        {(isAdminOnly || isModerator) && (
+                          <button
+                            className="details-button"
+                            onClick={() => setSelectedProjectDetails(projects.find(p => p._id === project._id))}
+                          >
+                            Details
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -3447,13 +3451,14 @@ return (
                             >
                               View Timesheets
                             </button>
-                            <button
-                              className="details-button"
-                              onClick={() => setSelectedProjectDetails(project)}
-                            >
-                              Details
-                            </button>
-                            
+                            {(isAdminOnly || isModerator) && (
+                              <button
+                                className="details-button"
+                                onClick={() => setSelectedProjectDetails(project)}
+                              >
+                                Details
+                              </button>
+                            )}
                             
                           </td>
                         </tr>
@@ -3684,6 +3689,8 @@ return (
         setView={setView}
         setSelectedHistoryProjectId={setSelectedHistoryProjectId}
         setUserHistoryTimesheets={setUserHistoryTimesheets}
+        isAdminOnly={isAdminOnly}  // Add this
+        isModerator={isModerator}  // Add this
       />
     ) : view === 'admin-calendar' ? (
       <AdminCalendarDashboard />
