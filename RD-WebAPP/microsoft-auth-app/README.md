@@ -27,13 +27,13 @@ A full-stack web application with Microsoft authentication, built with React fro
    
    Create a `.env` file in the `server` directory with the following variables:
    ```env
-   MONGODB_URI=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret
-   AZURE_CLIENT_ID=your_azure_client_id
-   AZURE_CLIENT_SECRET=your_azure_client_secret
-   AZURE_TENANT_ID=your_azure_tenant_id
+   MONGODB_URI=your_mongodb_connection_string
+   MONGODB_URI_TIMETABLE=your_timetable_mongodb_connection_string
    EMAIL_USER=your_email_user
-   EMAIL_PASS=your_email_password
+   EMAIL_PASSWORD=your_email_password
+   REACT_APP_API_URL=your_api_base_url
+   PORT=5000
    ```
 
 4. **Build and start the application**
@@ -174,12 +174,11 @@ A full-stack web application with Microsoft authentication, built with React fro
 
 ## 🔧 Configuration
 
-### Microsoft Azure Setup
-1. Go to Azure Portal → App Registrations
-2. Create a new registration
-3. Note down Application (client) ID and Directory (tenant) ID
-4. Create a client secret
-5. Configure redirect URIs for your domain
+### Email Service Setup
+1. Configure your email service (Gmail, Outlook, etc.)
+2. Enable 2-factor authentication if using Gmail
+3. Generate an app-specific password
+4. Add credentials to EMAIL_USER and EMAIL_PASSWORD variables
 
 ### MongoDB Setup
 - Use MongoDB Atlas for cloud hosting
@@ -209,13 +208,13 @@ microsoft-auth-app/
 ## 📝 Environment Variables
 
 ### Required Environment Variables:
-- `MONGODB_URI` - MongoDB connection string
 - `JWT_SECRET` - Secret key for JWT tokens
-- `AZURE_CLIENT_ID` - Azure app client ID
-- `AZURE_CLIENT_SECRET` - Azure app client secret
-- `AZURE_TENANT_ID` - Azure tenant ID
+- `MONGODB_URI` - Main MongoDB connection string
+- `MONGODB_URI_TIMETABLE` - Timetable MongoDB connection string
 - `EMAIL_USER` - Email service username
-- `EMAIL_PASS` - Email service password
+- `EMAIL_PASSWORD` - Email service password
+- `REACT_APP_API_URL` - API base URL for frontend
+- `PORT` - Server port (default: 5000)
 
 ## 🚨 Important Notes
 
