@@ -357,33 +357,7 @@ const fetchProjects = async () => {
   };
 
 
-  const handleStatusChange = async (tripId, newStatus) => {
-    setTrips(trips.map(trip =>
-      trip._id === tripId ? { ...trip, status: newStatus } : trip
-    ));
-    try {
-      const response = await fetch(`${API_URL}/api/trips/${tripId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: newStatus,
-          reason: trips.find(t => t._id === tripId)?.reason || ''
-        })
-      });
-      const updatedTrip = await response.json();
-      setTrips(trips.map(trip =>
-        trip._id === tripId ? updatedTrip : trip
-      ));
-    } catch (error) {
-      console.error('Failed to update status:', error);
-    }
-  };
-
-  const handleReasonChange = (tripId, reason) => {
-    setTrips(trips.map(trip =>
-      trip._id === tripId ? { ...trip, reason } : trip
-    ));
-  };
+  
 
   const handleSubmitDecision = async (tripId) => {
     const trip = trips.find(t => t._id === tripId);
